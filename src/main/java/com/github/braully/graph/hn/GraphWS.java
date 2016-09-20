@@ -43,6 +43,7 @@ public class GraphWS {
     private static final String PARAM_NAME_HULL_NUMBER = "number";
     private static final String PARAM_NAME_HULL_SET = "set";
     private static final String PARAM_NAME_CONVEX_HULL = "hs";
+    private static final String PARAM_NAME_AUX_PROCESS = "aux";
     private int INCLUDED = 2;
     private int NEIGHBOOR_COUNT_INCLUDED = 1;
 
@@ -61,56 +62,42 @@ public class GraphWS {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("caratheodroy")
+    @Path("caratheodory")
     public Map<String, Object> calcCaratheodroyNumberGraph(String jsonGraph) {
-        Integer caratheodroyNumber = -1;
-        Integer[] caratheodroySet = null;
+        Integer caratheodoryNumber = -1;
+        Integer[] caratheodorySet = null;
+        Integer[] convexHull = null;
+        int[] auxProcessor = null;
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             BeanDeserializer bd = null;
-            UndirectedSparseGraphTO<Integer, Integer> readValue = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
-            Set<Integer> minCaratheodroySet = calcMinCaratheodroyNumberGraph(readValue);
-            if (minCaratheodroySet != null && !minCaratheodroySet.isEmpty()) {
-                caratheodroyNumber = minCaratheodroySet.size();
-                caratheodroySet = minCaratheodroySet.toArray(new Integer[0]);
+            UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            ProcessedHullSet caratheodoryNumberGraph = calcMinCaratheodroyNumberGraph(graphRead);
+            if (caratheodoryNumberGraph != null
+                    && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
+                caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
+                caratheodorySet = caratheodoryNumberGraph.caratheodorySet.toArray(new Integer[0]);
+                auxProcessor = caratheodoryNumberGraph.auxProcessor;
+                convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
             }
         } catch (IOException ex) {
             Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        /* Processar a buscar pelo caratheodroyset e caratheodroynumber */
+        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
-        response.put(PARAM_NAME_HULL_NUMBER, caratheodroyNumber);
-        response.put(PARAM_NAME_HULL_SET, caratheodroySet);
-        response.put(PARAM_NAME_CONVEX_HULL, caratheodroySet);
+        response.put(PARAM_NAME_HULL_NUMBER, caratheodoryNumber);
+        response.put(PARAM_NAME_HULL_SET, caratheodorySet);
+        response.put(PARAM_NAME_CONVEX_HULL, convexHull);
+        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
         return response;
-    }
-
-    private UndirectedSparseGraphTO<Integer, Integer> generateRandomGraphSimple(Integer nvertices,
-            Integer minDegree,
-            Integer maxDegree) {
-        UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<Integer, Integer>();
-        Integer[] v = new Integer[nvertices];
-        for (int i = 0; i < nvertices; i++) {
-            v[i] = i;
-            graph.addVertex(v[i]);
-        }
-        int countEdge = 0;
-        for (int i = 0; i < nvertices; i++) {
-            long limite = minDegree + Math.round(Math.random() * (maxDegree - 1));
-            for (int j = 0; j <= limite; j++) {
-                int vrandom = (int) Math.round(Math.random() * (nvertices - 1));
-                graph.addEdge(countEdge++, v[i], v[vrandom]);
-            }
-        }
-        return graph;
     }
 
     private UndirectedSparseGraphTO<Integer, Integer> generateRandomGraph(Integer nvertices,
             Integer minDegree,
             Integer maxDegree) {
-        UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<Integer, Integer>();
+        UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
         int[] degree = new int[nvertices];
@@ -122,7 +109,7 @@ public class GraphWS {
         }
         int countEdge = 0;
         int offset = maxDegree - minDegree;
-//        Integer lastVertexTarget = null;
+
         for (int i = nvertices - 1; i > 0; i--) {
             long limite = minDegree + Math.round(Math.random() * (offset));
             int size = vertexElegibles.size();
@@ -147,160 +134,81 @@ public class GraphWS {
                     target = vertexs[vrandom];
                     graph.addEdge(countEdge++, source, target);
                 }
-//                lastVertexTarget = target;
-
             }
         }
         return graph;
     }
 
-    private Set<Integer> calcMinCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        Set<Integer> ceilling = calcCeillingCaratheodroyNumberGraph(graph);
-        Set<Integer> caratheodroySet = ceilling;
-        if (graph == null || graph.getVertices().isEmpty()) {
-            return ceilling;
+    private ProcessedHullSet calcMinCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        ProcessedHullSet processedCaratheodroySet = null;
+        if (graph == null) {
+            return processedCaratheodroySet;
         }
-        int maxSizeSet = ceilling.size();
+        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
         int currentSize = 1;
-        Collection<Integer> vertices = graph.getVertices();
+
         while (currentSize < maxSizeSet) {
-            Set<Integer> hs = findCaratheodroySetBruteForce(graph, currentSize);
-            if (hs != null && !hs.isEmpty()) {
-                caratheodroySet = hs;
+            processedCaratheodroySet = findCaratheodroySetBruteForce(graph, currentSize);
+            if (processedCaratheodroySet != null
+                    && processedCaratheodroySet.caratheodorySet != null
+                    && !processedCaratheodroySet.caratheodorySet.isEmpty()) {
                 break;
             }
             currentSize++;
         }
-        return caratheodroySet;
+        return processedCaratheodroySet;
     }
 
-    private Set<Integer> calcCeillingCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        Set<Integer> ceilling = new HashSet<>();
-        if (graph != null) {
-            Collection<Integer> vertices = graph.getVertices();
-            if (vertices != null) {
-                ceilling.addAll(vertices);
-            }
-        }
-        return ceilling;
-    }
-
-    public Set<Integer> findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSetSize) {
-        Set<Integer> caratheodroySet = null;
+    public ProcessedHullSet findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSetSize) {
+        ProcessedHullSet processedHullSet = null;
         if (graph == null || graph.getVertexCount() <= 0) {
-            return caratheodroySet;
+            return processedHullSet;
         }
         Collection vertices = graph.getVertices();
+        int veticesCount = vertices.size();
         Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), currentSetSize);
         while (combinationsIterator.hasNext()) {
             int[] currentSet = combinationsIterator.next();
-            Set<Integer> hsp3g = hsp3(graph, currentSet);
+//            Set<Integer> hsp3g = hsp3(graph, currentSet);
+//            Fecho hsp3
+            Set<Integer> hsp3g = new HashSet<>();
+
+            int[] aux = new int[graph.getVertexCount()];
+            for (int i = 0; i < aux.length; i++) {
+                aux[i] = 0;
+            }
+
+            Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+            for (Integer v : currentSet) {
+                mustBeIncluded.add(v);
+            }
+            while (!mustBeIncluded.isEmpty()) {
+                Integer verti = mustBeIncluded.remove();
+                hsp3g.add(verti);
+                aux[verti] = INCLUDED;
+                Collection<Integer> neighbors = graph.getNeighbors(verti);
+                for (int vertn : neighbors) {
+                    if (vertn != verti) {
+                        int previousValue = aux[vertn];
+                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                        if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
+                            mustBeIncluded.add(vertn);
+                        }
+                    }
+                }
+            }
+//        return fecho;
             if (hsp3g.size() == vertices.size()) {
-                caratheodroySet = new HashSet<>(currentSetSize);
+                processedHullSet = new ProcessedHullSet();
+                processedHullSet.auxProcessor = aux;
+                processedHullSet.convexHull = hsp3g;
+                processedHullSet.caratheodorySet = new HashSet<>(currentSetSize);
                 for (int i : currentSet) {
-                    caratheodroySet.add(i);
+                    processedHullSet.caratheodorySet.add(i);
                 }
                 break;
             }
         }
-        return caratheodroySet;
-    }
-
-    public Set<Integer> hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
-            int[] currentSet) {
-        Set<Integer> fecho = new HashSet<>();
-        if (currentSet == null || currentSet.length == 0) {
-            return fecho;
-        }
-        Collection vertices = graph.getVertices();
-        int[] aux = new int[graph.getVertexCount()];
-        for (int i = 0; i < aux.length; i++) {
-            aux[i] = 0;
-        }
-
-        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
-        for (Integer v : currentSet) {
-            mustBeIncluded.add(v);
-        }
-        while (!mustBeIncluded.isEmpty()) {
-            Integer verti = mustBeIncluded.remove();
-            fecho.add(verti);
-            aux[verti] = INCLUDED;
-            Collection<Integer> neighbors = graph.getNeighbors(verti);
-            for (int vertn : neighbors) {
-                if (vertn != verti) {
-                    int previousValue = aux[vertn];
-                    aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
-                        mustBeIncluded.add(vertn);
-                    }
-                }
-            }
-        }
-        return fecho;
-    }
-
-    public void includeVertex(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> fecho, int[] aux, int i) {
-        fecho.add(i);
-        aux[i] = INCLUDED;
-        Collection<Integer> neighbors = graph.getNeighbors(i);
-        for (int vert : neighbors) {
-            if (vert != i) {
-                int previousValue = aux[vert];
-                aux[vert] = aux[vert] + NEIGHBOOR_COUNT_INCLUDED;
-                if (previousValue < INCLUDED && aux[vert] >= INCLUDED) {
-                    includeVertex(graph, fecho, aux, vert);
-                }
-            }
-        }
-    }
-
-    private String saveTmpFileGraphInCsr(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
-        String strFile = null;
-        if (undGraph != null && undGraph.getVertexCount() > 0) {
-            try {
-                int vertexCount = undGraph.getVertexCount();
-                File file = File.createTempFile("graph-csr-", ".txt");
-                file.deleteOnExit();
-
-                strFile = file.getAbsolutePath();
-                FileWriter writer = new FileWriter(file);
-                writer.write("#Graph |V| = " + vertexCount + "\n");
-
-                int sizeRowOffset = 0;
-                List<Integer> csrColIdxs = new ArrayList<>();
-                List<Integer> rowOffset = new ArrayList<>();
-
-                int idx = 0;
-                for (Integer i = 0; i < vertexCount; i++) {
-                    csrColIdxs.add(idx);
-                    Collection<Integer> neighbors = undGraph.getNeighbors(i);
-                    Set<Integer> neighSet = new HashSet<>();
-                    neighSet.addAll(neighbors);
-                    for (Integer vn : neighSet) {
-                        if (!vn.equals(i)) {
-                            rowOffset.add(vn);
-                            idx++;
-                        }
-                    }
-                }
-
-                for (Integer i : csrColIdxs) {
-                    writer.write("" + i);
-                    writer.write(" ");
-                }
-                writer.write("\n");
-                for (Integer i : rowOffset) {
-                    writer.write("" + i);
-                    writer.write(" ");
-                }
-                writer.write("\n");
-                writer.close();
-            } catch (IOException ex) {
-                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        Logger.getLogger(GraphWS.class.getName()).log(Level.INFO, "File tmp graph: " + strFile);
-        return strFile;
+        return processedHullSet;
     }
 }

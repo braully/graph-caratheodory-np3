@@ -60,7 +60,7 @@
 
         <div class="container"
              ng-app="appCaratheodroyNumber" 
-             ng-controller="caratheodroyNumberController">
+             ng-controller="caratheodoryNumberController">
             <div class="row">
                 <form class="col-md-3">
                     <fieldset>
@@ -113,27 +113,27 @@
                         <div class="form-group">
                             <label>Caratheodroy number</label>
                             <input type="number" class="form-control" 
-                                   ng-model="caratheodroy.number" disabled readonly>
+                                   ng-model="caratheodory.number" disabled readonly>
                         </div>
                         <div class="form-group">
                             <label>Caratheodroy set</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodroy.set" disabled readonly>
+                                   ng-model="caratheodory.set" disabled readonly>
                         </div>
 
                         <div class="form-group">
                             <label>Convex hull</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodroy.hs" disabled readonly>
+                                   ng-model="caratheodory.hs" disabled readonly>
                         </div>
 
                         <div class="form-group">
                             <label>Aux vertices</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodroy.aux" disabled readonly>
+                                   ng-model="caratheodory.aux" disabled readonly>
                         </div>
                         <button ng-click="calcCaratheodroyNumberGraph();" 
                                 class="btn btn-primary btn-medium pull-right">
@@ -147,30 +147,33 @@
                         <div class="panel-heading">
                             <h2>Graph</h2>
                         </div>
+
                         <div class="panel-body">
                             <div id="grafo" class="form-group" style="height: 600px;">
 
                             </div>
                         </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordred table-striped">
+                                <thead>
+                                <th>Vertice</th>
+                                <th ng-repeat="v in graph.vertices">{{v}}</th>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Degree</td>
+                                        <td ng-repeat="d in graph.degrees">{{d}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Aux</td>
+                                        <td ng-repeat="ax in caratheodory.aux">{{ax}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div class="panel-footer">
-                            <div class="table-responsive">
-                                <table class="table table-bordred table-striped">
-                                    <thead>
-                                    <th>Vertice</th>
-                                    <th ng-repeat="v in graph.vertices">{{v}}</th>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Degree</td>
-                                            <td ng-repeat="d in graph.degrees">{{d}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Aux</td>
-                                            <td ng-repeat="a in caratheodroy.aux">{{a}}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -179,17 +182,17 @@
 
         <script>
             var app = angular.module('appCaratheodroyNumber', []);
-            app.controller('caratheodroyNumberController', function ($scope, $http) {
+            app.controller('caratheodoryNumberController', function ($scope, $http) {
                 $scope.nvertices = 5;
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2;
                 $scope.graph = null;
 
-                $scope.caratheodroy = {number: [], set: [], aux: [], hs: []};
+                $scope.caratheodory = {number: [], set: [], aux: [], hs: []};
 
                 $scope.calcCaratheodroyNumberGraph = function () {
-                    $http.post('rest/graph/caratheodroy', $scope.graph).success(function (caratheodroydata) {
-                        $scope.caratheodroy = caratheodroydata;
+                    $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
+                        $scope.caratheodory = caratheodorydata;
                     });
                 };
 
