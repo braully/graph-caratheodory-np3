@@ -81,7 +81,7 @@
                                    placeholder="1">
                             <input type="number" 
                                    class="form-control"
-                                   ng-model="maxDegree" min="2"
+                                   ng-model="maxDegree" min="1"
                                    id="maxDegree" name="maxDegree" 
                                    placeholder="5">
                         </div>
@@ -95,11 +95,13 @@
                         <h3>Graph</h3>
                         <div class="form-group">
                             <label>Vertices</label>
-                            <input class="form-control" ng-model="graph.vertices" />
+                            <input class="form-control" disabled
+                                   ng-model="graph.vertices" />
                         </div>
                         <div class="form-group">
                             <label>Edges</label>
-                            <input class="form-control" ng-model="graph.pairs" />
+                            <input class="form-control" disabled
+                                   value="{{graph.pairs}}" />
                         </div>
                         <button ng-click="randomGraph();" 
                                 class="btn btn-primary btn-medium pull-right">
@@ -167,7 +169,7 @@
                                     </tr>
                                     <tr>
                                         <td>Aux</td>
-                                        <td ng-repeat="ax in caratheodory.aux  track by $index">{{ax}}</td>
+                                        <td ng-repeat="ax in caratheodory.aux track by $index">{{ax}}</td>
                                     </tr>
                                 </tbody>
                             </table>
