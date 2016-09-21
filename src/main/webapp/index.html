@@ -163,11 +163,11 @@
                                 <tbody>
                                     <tr>
                                         <td>Degree</td>
-                                        <td ng-repeat="d in graph.degrees">{{d}}</td>
+                                        <td ng-repeat="d in graph.degrees track by $index">{{d}}</td>
                                     </tr>
                                     <tr>
                                         <td>Aux</td>
-                                        <td ng-repeat="ax in caratheodory.aux">{{ax}}</td>
+                                        <td ng-repeat="ax in caratheodory.aux  track by $index">{{ax}}</td>
                                     </tr>
                                 </tbody>
                             </table>
