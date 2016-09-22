@@ -63,7 +63,8 @@
              ng-app="appCaratheodroyNumber" 
              ng-controller="caratheodoryNumberController">
             <div class="row">
-                <form class="col-md-3">
+                <form class="col-md-3" method="post"
+                      enctype="multipart/form-data">
                     <fieldset>
                         <legend>Graph</legend>
                         <div class="form-group">
@@ -104,7 +105,7 @@
                             <input class="form-control" disabled
                                    value="{{graph.pairs}}" />
                         </div>
-                        <div>
+                        <div class="form-group">
                             <button class="btn btn-primary btn-sm" 
                                     ng-click="downloadGraph();">
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
@@ -114,6 +115,14 @@
                                     class="btn btn-primary btn-sm">
                                 <span class="glyphicon glyphicon-repeat"></span>
                                 Random graph
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <input class="form-control" type="file">
+                            <button class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-repeat"></span>
+                                Upload (json)
                             </button>
                         </div>
                     </fieldset>
@@ -210,7 +219,7 @@
                     var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
                     var textContent = JSON.stringify($scope.graph, null, '\t');
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
-                    saveAs(blob ,filename);
+                    saveAs(blob, filename);
                 };
 
                 $scope.randomGraph = function () {
