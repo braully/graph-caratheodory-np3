@@ -11,6 +11,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-resource.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.min.js"></script>
+        <script src="assets/js/filesaver.min.js"></script>
 
         <style>
             .node {
@@ -104,9 +105,10 @@
                                    value="{{graph.pairs}}" />
                         </div>
                         <div>
-                            <button class="btn btn-primary btn-sm">
+                            <button class="btn btn-primary btn-sm" 
+                                    ng-click="downloadGraph();">
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
-                                Download (CSR)
+                                Download (json)
                             </button>
                             <button ng-click="randomGraph();" 
                                     class="btn btn-primary btn-sm">
@@ -202,6 +204,13 @@
                     $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
                     });
+                };
+
+                $scope.downloadGraph = function () {
+                    var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
+                    var textContent = JSON.stringify($scope.graph, null, '\t');
+                    var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
+                    saveAs(blob ,filename);
                 };
 
                 $scope.randomGraph = function () {
