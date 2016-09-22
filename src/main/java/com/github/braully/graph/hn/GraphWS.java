@@ -53,7 +53,7 @@ public class GraphWS {
     public UndirectedSparseGraphTO randomGraph(
             @QueryParam("nvertices") @DefaultValue("5") Integer nvertices,
             @QueryParam("minDegree") @DefaultValue("1") Integer minDegree,
-            @QueryParam("maxDegree") @DefaultValue("1") Integer maxDegree) {
+            @QueryParam("maxDegree") @DefaultValue("1.5") Double maxDegree) {
 //        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraphSimple(nvertices, minDegree, maxDegree);
         UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraph(nvertices, minDegree, maxDegree);
         return graph;
@@ -96,7 +96,7 @@ public class GraphWS {
 
     private UndirectedSparseGraphTO<Integer, Integer> generateRandomGraph(Integer nvertices,
             Integer minDegree,
-            Integer maxDegree) {
+            Double maxDegree) {
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
@@ -108,7 +108,7 @@ public class GraphWS {
             graph.addVertex(vertexs[i]);
         }
         int countEdge = 0;
-        int offset = maxDegree - minDegree;
+        double offset = maxDegree - minDegree;
 
         for (int i = nvertices - 1; i > 0; i--) {
             long limite = minDegree + Math.round(Math.random() * (offset));
