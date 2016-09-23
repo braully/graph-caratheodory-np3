@@ -3,7 +3,7 @@
     <!--References: http://bl.ocks.org/mbostock/4062045-->
     <head>
         <meta charset="utf-8">
-        <title>Caratheodroy Number</title>
+        <title>Caratheodory Number</title>
         <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
         <link  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
@@ -55,7 +55,8 @@
     <body>
         <div class="jumbotron">
             <div class="container">
-                <h1>Caratheodroy Number</h1>
+                <h1>Caratheodory Number</h1>
+                <p>In P3-Convexity</p>
             </div>
         </div>
 
@@ -63,10 +64,10 @@
              ng-app="appCaratheodroyNumber" 
              ng-controller="caratheodoryNumberController">
             <div class="row">
-                <form class="col-md-3" method="post"
-                      enctype="multipart/form-data">
+                <div class="col-md-3">
+
                     <fieldset>
-                        <legend>Graph</legend>
+                        <legend>Generate</legend>
                         <div class="form-group">
                             <label for="nvertices">Vertex count</label>
                             <input type="text" class="form-control" 
@@ -94,7 +95,16 @@
                                 Connected
                             </label>
                         </div>
-                        <h3>Graph</h3>
+                        <div class="form-group pull-right">
+                            <button ng-click="randomGraph();" 
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-repeat"></span>
+                                Random graph
+                            </button>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Graph</legend>
                         <div class="form-group">
                             <label>Vertices</label>
                             <input class="form-control" disabled
@@ -105,23 +115,20 @@
                             <input class="form-control" disabled
                                    value="{{graph.pairs}}" />
                         </div>
+
                         <div class="form-group">
+                            <input name="file" id="file" 
+                                   class="form-control" type="file"
+                                   ng-file-select="onFileSelect($files)">
+                        </div>
+                        <div class="form-group pull-right">
                             <button class="btn btn-primary btn-sm" 
                                     ng-click="downloadGraph();">
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
                                 Download (json)
                             </button>
-                            <button ng-click="randomGraph();" 
-                                    class="btn btn-primary btn-sm">
-                                <span class="glyphicon glyphicon-repeat"></span>
-                                Random graph
-                            </button>
-                        </div>
-
-                        <div class="form-group">
-                            <input class="form-control" type="file">
-                            <button class="btn btn-primary btn-sm">
-                                <span class="glyphicon glyphicon-repeat"></span>
+                            <button ng-click="uploadedFile()" class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-circle-arrow-up"></span>
                                 Upload (json)
                             </button>
                         </div>
@@ -160,7 +167,7 @@
                             Caratheodroy Nº
                         </button>
                     </fieldset>
-                </form>
+                </div>
                 <div class="col-md-9">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -206,21 +213,108 @@
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2.0;
                 $scope.graph = null;
-
+                $scope.file = null;
                 $scope.caratheodory = {number: [], set: [], aux: [], hs: []};
-
                 $scope.calcCaratheodroyNumberGraph = function () {
                     $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
                     });
                 };
-
                 $scope.downloadGraph = function () {
                     var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
                     var textContent = JSON.stringify($scope.graph, null, '\t');
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
+                $scope.uploadedFile = function () {
+                    if (!$scope.file) {
+                        window.alert('File invalid');
+                        return;
+                    }
+//                    console.log("Filename: " + $scope.file.name);
+//                    console.log("Type: " + $scope.file.mediaType);
+//                    console.log("Size: " + $scope.file.size + " bytes");
+                    var fr = new FileReader();
+                    fr.onload = function (e) {
+//                        console.log("File uploaded: " + e.target.result);
+                        var graph = JSON.parse(e.target.result);
+//                        console.log("graph: " + graph.vertices);
+                        if (!graph || !graph.vertices || !graph.pairs) {
+                            window.alert('File format invalid');
+                        } else {
+                            $scope.graph = graph;
+                            $scope.updateGraph();
+                        }
+                    };
+                    fr.readAsText($scope.file);
+                };
+
+                $scope.updateGraph = function () {
+                    var graph = $scope.graph;
+                    var width = $("#grafo").width();
+                    var height = $("#grafo").height();
+                    $("#grafo").html('');
+                    var color = d3.scale.category20();
+                    var force = d3.layout.force()
+                            .charge(-120)
+                            .linkDistance(70)
+                            .size([width, height]);
+                    var svg = d3.select("#grafo")
+                            .append("svg")
+                            .attr("width", width)
+                            .attr("height", height);
+                    var vertex = graph.vertices.map(function (d) {
+                        return {"name": d, "group": 1};
+                    });
+                    var edges = graph.pairs.map(function (d) {
+                        return {"source": d[0], "target": d[1], "value": 2, "origin": d};
+                    });
+                    force.nodes(vertex).links(edges).start();
+                    var link = svg.selectAll(".link")
+                            .data(edges)
+                            .enter().append("line")
+                            .attr("class", "link")
+                            .style("stroke-width", function (d) {
+                                return Math.sqrt(d.value);
+                            });
+                    var nodes = svg.selectAll(".node")
+                            .data(vertex)
+                            .enter().append("g")
+                            .attr("class", "node")
+                            .call(force.drag);
+                    nodes.append("circle")
+                            .attr("class", "node")
+                            .attr("r", 5)
+//                                .attr("x", -8)
+//                                .attr("y", -8)
+                            .style("fill", function (d) {
+                                return color(d.group);
+                            }).call(force.drag);
+                    nodes.append("text").attr("dx", 6)
+                            .attr("dy", ".35em")
+                            .text(function (d) {
+                                return d.name;
+                            });
+                    force.on("tick", function () {
+                        link.attr("x1", function (d) {
+                            return d.source.x;
+                        }).attr("y1", function (d) {
+                            return d.source.y;
+                        }).attr("x2", function (d) {
+                            return d.target.x;
+                        }).attr("y2", function (d) {
+                            return d.target.y;
+                        });
+                        nodes.attr("transform", function (d) {
+                            return "translate(" + d.x + "," + d.y + ")";
+                        }).attr("cx", function (d) {
+                            return d.x;
+                        }).attr("cy", function (d) {
+                            return d.y;
+                        });
+                    });
+                }
+                ;
 
                 $scope.randomGraph = function () {
                     $http.get('rest/graph/random', {
@@ -231,82 +325,23 @@
                         }
                     }).success(function (graph) {
                         $scope.graph = graph;
-                        var width = $("#grafo").width();
-                        var height = $("#grafo").height();
-                        $("#grafo").html('');
-
-                        var color = d3.scale.category20();
-                        var force = d3.layout.force()
-                                .charge(-120)
-                                .linkDistance(70)
-                                .size([width, height]);
-
-                        var svg = d3.select("#grafo")
-                                .append("svg")
-                                .attr("width", width)
-                                .attr("height", height);
-
-                        var vertex = graph.vertices.map(function (d) {
-                            return {"name": d, "group": 1};
-                        });
-
-                        var edges = graph.pairs.map(function (d) {
-                            return {"source": d[0], "target": d[1], "value": 2, "origin": d};
-                        });
-
-                        force.nodes(vertex).links(edges).start();
-
-                        var link = svg.selectAll(".link")
-                                .data(edges)
-                                .enter().append("line")
-                                .attr("class", "link")
-                                .style("stroke-width", function (d) {
-                                    return Math.sqrt(d.value);
-                                });
-
-                        var nodes = svg.selectAll(".node")
-                                .data(vertex)
-                                .enter().append("g")
-                                .attr("class", "node")
-                                .call(force.drag);
-
-                        nodes.append("circle")
-                                .attr("class", "node")
-                                .attr("r", 5)
-//                                .attr("x", -8)
-//                                .attr("y", -8)
-                                .style("fill", function (d) {
-                                    return color(d.group);
-                                }).call(force.drag);
-
-                        nodes.append("text").attr("dx", 6)
-                                .attr("dy", ".35em")
-                                .text(function (d) {
-                                    return d.name;
-                                });
-
-                        force.on("tick", function () {
-                            link.attr("x1", function (d) {
-                                return d.source.x;
-                            }).attr("y1", function (d) {
-                                return d.source.y;
-                            }).attr("x2", function (d) {
-                                return d.target.x;
-                            }).attr("y2", function (d) {
-                                return d.target.y;
-                            });
-                            nodes.attr("transform", function (d) {
-                                return "translate(" + d.x + "," + d.y + ")";
-                            }).attr("cx", function (d) {
-                                return d.x;
-                            }).attr("cy", function (d) {
-                                return d.y;
-                            });
-                        });
-
+                        $scope.updateGraph();
                     });
                 };
+
+
+
                 $scope.randomGraph();
+            });
+            app.directive("ngFileSelect", function () {
+                return {
+                    link: function ($scope, el) {
+                        el.bind("change", function (e) {
+                            var file = (e.srcElement || e.target).files[0];
+                            $scope.file = file;
+                        });
+                    }
+                };
             });
         </script>
     </body>
