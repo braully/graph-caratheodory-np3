@@ -137,22 +137,25 @@
                     <fieldset>
                         <legend>Analyze</legend>
                         <div class="form-group">
-                            <label>Caratheodroy number</label>
+                            <label>Caratheodroy number(c)</label>
                             <input type="number" class="form-control" 
-                                   ng-model="caratheodory.number" disabled readonly>
+                                   ng-model="caratheodory.number" 
+                                   disabled readonly>
                         </div>
                         <div class="form-group">
-                            <label>Caratheodroy set</label>
+                            <label>Caratheodroy set(S)</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodory.set" disabled readonly>
+                                   ng-model="caratheodory.set" 
+                                   disabled readonly>
                         </div>
 
                         <div class="form-group">
-                            <label>Convex hull</label>
+                            <label>Convex hull(H(S))</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodory.hs" disabled readonly>
+                                   ng-model="caratheodory.hs" 
+                                   disabled readonly>
                         </div>
 
                         <div class="form-group">
@@ -161,11 +164,18 @@
                                    class="form-control"
                                    ng-model="caratheodory.aux" disabled readonly>
                         </div>
-                        <button ng-click="calcCaratheodroyNumberGraph();" 
-                                class="btn btn-primary btn-medium pull-right">
-                            <span class="glyphicon glyphicon-certificate"></span>
-                            Caratheodroy Nº
-                        </button>
+                        <div class="form-group pull-right">
+                            <button ng-click="calcCaratheodroyNumberGraph();" 
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Check Set
+                            </button>
+                            <button ng-click="calcCaratheodroyNumberGraph();" 
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Caratheodroy Nº
+                            </button>
+                        </div>
                     </fieldset>
                 </div>
                 <div class="col-md-9">
