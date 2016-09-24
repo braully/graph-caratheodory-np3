@@ -145,7 +145,7 @@
                             <label>Caratheodroy set</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodory.set" disabled readonly>
+                                   ng-model="setstr">
                         </div>
 
                         <div class="form-group">
@@ -161,11 +161,18 @@
                                    class="form-control"
                                    ng-model="caratheodory.aux" disabled readonly>
                         </div>
-                        <button ng-click="calcCaratheodroyNumberGraph();" 
-                                class="btn btn-primary btn-medium pull-right">
-                            <span class="glyphicon glyphicon-certificate"></span>
-                            Caratheodroy Nº
-                        </button>
+                        <div class="form-group pull-right">
+                            <button ng-click="checkSet();" 
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Check Set
+                            </button>
+                            <button ng-click="calcCaratheodroyNumberGraph();" 
+                                    class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Caratheodroy Nº
+                            </button>
+                        </div>
                     </fieldset>
                 </div>
                 <div class="col-md-9">
@@ -214,9 +221,18 @@
                 $scope.maxDegree = 2.0;
                 $scope.graph = null;
                 $scope.file = null;
+                $scope.setstr = null;
                 $scope.caratheodory = {number: [], set: [], aux: [], hs: []};
+
                 $scope.calcCaratheodroyNumberGraph = function () {
                     $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
+                        $scope.caratheodory = caratheodorydata;
+                        $scope.setstr = $scope.caratheodory.set.toString();
+                    });
+                };
+                $scope.checkSet = function () {
+                    $scope.graph.set = $scope.setstr.split(',').map(Number);
+                    $http.post('rest/graph/checkset', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
                     });
                 };
