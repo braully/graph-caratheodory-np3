@@ -260,11 +260,12 @@ public class GraphWS {
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         for (Integer v : currentSet) {
             mustBeIncluded.add(v);
+            aux[v] = INCLUDED;
         }
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
             hsp3g.add(verti);
-            aux[verti] = aux[verti] + INCLUDED;
+//            aux[verti] = aux[verti] + INCLUDED;
             Collection<Integer> neighbors = graph.getNeighbors(verti);
             for (int vertn : neighbors) {
                 if (vertn != verti) {
