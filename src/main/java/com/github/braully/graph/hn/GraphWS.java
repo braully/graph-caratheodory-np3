@@ -253,8 +253,11 @@ public class GraphWS {
         ProcessedHullSet processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
+        int[] auxa = new int[graph.getVertexCount()];
+        int[] auxb = new int[graph.getVertexCount()];
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
+            auxa[i] = auxb[i] = -1;
         }
 
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
@@ -267,18 +270,42 @@ public class GraphWS {
             hsp3g.add(verti);
 //            aux[verti] = aux[verti] + INCLUDED;
             Collection<Integer> neighbors = graph.getNeighbors(verti);
+            
             for (int vertn : neighbors) {
                 if (vertn != verti) {
                     int previousValue = aux[vertn];
                     aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
-                        mustBeIncluded.add(vertn);
+                    if (previousValue < INCLUDED) {
+                        if (aux[vertn] >= INCLUDED) {
+                            mustBeIncluded.add(vertn);
+                            auxb[vertn] = verti;
+                        } else {
+                            auxa[vertn] = verti;
+                        }
                     }
                 }
             }
         }
-//        return fecho;
 
+        System.out.print("Aux = {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            System.out.print(aux[i] + ", ");
+        }
+        System.out.println("}");
+
+        System.out.print("Auxa= {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            System.out.print(auxa[i] + ", ");
+        }
+        System.out.println("}");
+
+        System.out.print("Auxb= {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            System.out.print(auxb[i] + ", ");
+        }
+        System.out.println("}");
+
+//        return fecho;
         processedHullSet = new ProcessedHullSet();
         processedHullSet.auxProcessor = aux;
         processedHullSet.convexHull = hsp3g;
