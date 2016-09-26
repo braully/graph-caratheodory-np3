@@ -96,4 +96,14 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
     public void setDegrees(Collection c) {
 
     }
+
+    private Collection set;
+
+    public Collection getSet() {
+        return set;
+    }
+
+    public void setSet(Collection setStr) {
+        this.set = setStr;
+    }
 }

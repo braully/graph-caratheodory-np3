@@ -7,8 +7,6 @@ package com.github.braully.graph.hn;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializer;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -57,6 +56,41 @@ public class GraphWS {
 //        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraphSimple(nvertices, minDegree, maxDegree);
         UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraph(nvertices, minDegree, maxDegree);
         return graph;
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("checkset")
+    public Map<String, Object> checkset(String jsonGraph) {
+        Integer caratheodoryNumber = -1;
+        Integer[] caratheodorySet = null;
+        Integer[] convexHull = null;
+        int[] auxProcessor = null;
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            BeanDeserializer bd = null;
+            UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            ProcessedHullSet caratheodoryNumberGraph = hsp3(graphRead, graphRead.getSet());
+            if (caratheodoryNumberGraph != null
+                    && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
+                caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
+                caratheodorySet = caratheodoryNumberGraph.caratheodorySet.toArray(new Integer[0]);
+                auxProcessor = caratheodoryNumberGraph.auxProcessor;
+                convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
+        Map<String, Object> response = new HashMap<>();
+        response.put(PARAM_NAME_HULL_NUMBER, caratheodoryNumber);
+        response.put(PARAM_NAME_HULL_SET, caratheodorySet);
+        response.put(PARAM_NAME_CONVEX_HULL, convexHull);
+        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
+        return response;
     }
 
     @POST
@@ -144,7 +178,9 @@ public class GraphWS {
         if (graph == null) {
             return processedCaratheodroySet;
         }
-        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
+//        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
+        int maxSizeSet = graph.getVertexCount() - 1;
+
         int currentSize = 1;
 
         while (currentSize < maxSizeSet) {
@@ -185,7 +221,7 @@ public class GraphWS {
             while (!mustBeIncluded.isEmpty()) {
                 Integer verti = mustBeIncluded.remove();
                 hsp3g.add(verti);
-                aux[verti] = INCLUDED;
+                aux[verti] = aux[verti] + INCLUDED;
                 Collection<Integer> neighbors = graph.getNeighbors(verti);
                 for (int vertn : neighbors) {
                     if (vertn != verti) {
@@ -208,6 +244,47 @@ public class GraphWS {
                 }
                 break;
             }
+        }
+        return processedHullSet;
+    }
+
+    public ProcessedHullSet hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
+            Iterable<Integer> currentSet) {
+        ProcessedHullSet processedHullSet = null;
+        Set<Integer> hsp3g = new HashSet<>();
+        int[] aux = new int[graph.getVertexCount()];
+        for (int i = 0; i < aux.length; i++) {
+            aux[i] = 0;
+        }
+
+        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+        for (Integer v : currentSet) {
+            mustBeIncluded.add(v);
+            aux[v] = INCLUDED;
+        }
+        while (!mustBeIncluded.isEmpty()) {
+            Integer verti = mustBeIncluded.remove();
+            hsp3g.add(verti);
+//            aux[verti] = aux[verti] + INCLUDED;
+            Collection<Integer> neighbors = graph.getNeighbors(verti);
+            for (int vertn : neighbors) {
+                if (vertn != verti) {
+                    int previousValue = aux[vertn];
+                    aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                    if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
+                        mustBeIncluded.add(vertn);
+                    }
+                }
+            }
+        }
+//        return fecho;
+
+        processedHullSet = new ProcessedHullSet();
+        processedHullSet.auxProcessor = aux;
+        processedHullSet.convexHull = hsp3g;
+        processedHullSet.caratheodorySet = new HashSet<>();
+        for (int i : currentSet) {
+            processedHullSet.caratheodorySet.add(i);
         }
         return processedHullSet;
     }
