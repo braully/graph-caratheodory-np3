@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializer;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,10 @@ public class GraphWS {
     private static final String PARAM_NAME_HULL_SET = "set";
     private static final String PARAM_NAME_CONVEX_HULL = "hs";
     private static final String PARAM_NAME_AUX_PROCESS = "aux";
+
+    private static final boolean verbose = true;
+    private static final boolean breankOnFirst = true;
+
     private int INCLUDED = 2;
     private int NEIGHBOOR_COUNT_INCLUDED = 1;
 
@@ -72,7 +77,14 @@ public class GraphWS {
             ObjectMapper mapper = new ObjectMapper();
             BeanDeserializer bd = null;
             UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
-            ProcessedHullSet caratheodoryNumberGraph = hsp3(graphRead, graphRead.getSet());
+            Collection<Integer> set = graphRead.getSet();
+            int[] arr = new int[set.size()];
+            int i = 0;
+            for (Integer v : set) {
+                arr[i] = v;
+                i++;
+            }
+            ProcessedHullSet caratheodoryNumberGraph = hsp3(graphRead, arr);
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
                 caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
@@ -107,7 +119,7 @@ public class GraphWS {
             ObjectMapper mapper = new ObjectMapper();
             BeanDeserializer bd = null;
             UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
-            ProcessedHullSet caratheodoryNumberGraph = calcMinCaratheodroyNumberGraph(graphRead);
+            ProcessedHullSet caratheodoryNumberGraph = calcMaxCaratheodroyNumberGraph(graphRead);
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
                 caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
@@ -173,24 +185,24 @@ public class GraphWS {
         return graph;
     }
 
-    private ProcessedHullSet calcMinCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
+    private ProcessedHullSet calcMaxCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
         ProcessedHullSet processedCaratheodroySet = null;
         if (graph == null) {
             return processedCaratheodroySet;
         }
-//        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
-        int maxSizeSet = graph.getVertexCount() - 1;
+        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
+//        int maxSizeSet = graph.getVertexCount() - 1;
 
-        int currentSize = 1;
+        int currentSize = maxSizeSet;
 
-        while (currentSize < maxSizeSet) {
+        while (currentSize > 2) {
             processedCaratheodroySet = findCaratheodroySetBruteForce(graph, currentSize);
             if (processedCaratheodroySet != null
                     && processedCaratheodroySet.caratheodorySet != null
                     && !processedCaratheodroySet.caratheodorySet.isEmpty()) {
                 break;
             }
-            currentSize++;
+            currentSize--;
         }
         return processedCaratheodroySet;
     }
@@ -205,43 +217,11 @@ public class GraphWS {
         Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), currentSetSize);
         while (combinationsIterator.hasNext()) {
             int[] currentSet = combinationsIterator.next();
-//            Set<Integer> hsp3g = hsp3(graph, currentSet);
-//            Fecho hsp3
-            Set<Integer> hsp3g = new HashSet<>();
+            ProcessedHullSet hsp3g = hsp3(graph, currentSet);
 
-            int[] aux = new int[graph.getVertexCount()];
-            for (int i = 0; i < aux.length; i++) {
-                aux[i] = 0;
-            }
-
-            Queue<Integer> mustBeIncluded = new ArrayDeque<>();
-            for (Integer v : currentSet) {
-                mustBeIncluded.add(v);
-            }
-            while (!mustBeIncluded.isEmpty()) {
-                Integer verti = mustBeIncluded.remove();
-                hsp3g.add(verti);
-                aux[verti] = aux[verti] + INCLUDED;
-                Collection<Integer> neighbors = graph.getNeighbors(verti);
-                for (int vertn : neighbors) {
-                    if (vertn != verti) {
-                        int previousValue = aux[vertn];
-                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                        if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
-                            mustBeIncluded.add(vertn);
-                        }
-                    }
-                }
-            }
 //        return fecho;
-            if (hsp3g.size() == vertices.size()) {
-                processedHullSet = new ProcessedHullSet();
-                processedHullSet.auxProcessor = aux;
-                processedHullSet.convexHull = hsp3g;
-                processedHullSet.caratheodorySet = new HashSet<>(currentSetSize);
-                for (int i : currentSet) {
-                    processedHullSet.caratheodorySet.add(i);
-                }
+            if (hsp3g != null) {
+                processedHullSet = hsp3g;
                 break;
             }
         }
@@ -249,7 +229,7 @@ public class GraphWS {
     }
 
     public ProcessedHullSet hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
-            Iterable<Integer> currentSet) {
+            int[] currentSet) {
         int currentSetSize = 0;
         ProcessedHullSet processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
@@ -294,34 +274,36 @@ public class GraphWS {
             }
         }
 
-        System.out.print("Aux = {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print(aux[i] + " | ");
-        }
-        System.out.println("}");
+        if (verbose) {
+            System.out.print("Aux = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.print(aux[i] + " | ");
+            }
+            System.out.println("}");
 
-        System.out.print("Auxa= {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print((auxa[i] < 0 ? "-" : auxa[i]) + " | ");
-        }
-        System.out.println("}");
+            System.out.print("Auxa= {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.print((auxa[i] < 0 ? "-" : auxa[i]) + " | ");
+            }
+            System.out.println("}");
 
-        System.out.print("Auxb= {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print((auxb[i] < 0 ? "-" : auxb[i]) + " | ");
-        }
-        System.out.println("}");
+            System.out.print("Auxb= {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.print((auxb[i] < 0 ? "-" : auxb[i]) + " | ");
+            }
+            System.out.println("}");
 
-        System.out.print("Auxc= {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print(auxc[i] + " | ");
+            System.out.print("Auxc= {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.print(auxc[i] + " | ");
+            }
+            System.out.println("}");
         }
-        System.out.println("}");
 
         for (int i = 0; i < graph.getVertexCount(); i++) {
             if (auxc[i] >= currentSetSize) {
                 Queue<Integer> queueu = new ArrayDeque<>();
-                Set<Integer> hs = new HashSet<>();
+                Set<Integer> hs = new HashSet<>(currentSetSize);
                 queueu.add(auxa[i]);
                 queueu.add(auxb[i]);
                 while (!queueu.isEmpty()) {
@@ -340,17 +322,17 @@ public class GraphWS {
                         queueu.add(auxb[actual]);
                     }
                 }
-                System.out.println("hs(" + i + ") = " + hs);
+                if (verbose) {
+                    System.out.println("hs(" + i + ") = " + hs);
+                }
+                if (hs.size() == currentSetSize && breankOnFirst) {
+                    processedHullSet = new ProcessedHullSet();
+                    processedHullSet.auxProcessor = aux;
+                    processedHullSet.convexHull = hsp3g;
+                    processedHullSet.caratheodorySet = hs;
+                    break;
+                }
             }
-        }
-
-//        return fecho;
-        processedHullSet = new ProcessedHullSet();
-        processedHullSet.auxProcessor = aux;
-        processedHullSet.convexHull = hsp3g;
-        processedHullSet.caratheodorySet = new HashSet<>();
-        for (int i : currentSet) {
-            processedHullSet.caratheodorySet.add(i);
         }
         return processedHullSet;
     }

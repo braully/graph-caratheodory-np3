@@ -16,5 +16,4 @@ public class ProcessedHullSet {
     Set<Integer> caratheodorySet;
     Set<Integer> convexHull;
     int[] auxProcessor;
-
 }
