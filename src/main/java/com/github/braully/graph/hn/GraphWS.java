@@ -250,13 +250,16 @@ public class GraphWS {
 
     public ProcessedHullSet hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
             Iterable<Integer> currentSet) {
+        int currentSetSize = 0;
         ProcessedHullSet processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
         int[] auxa = new int[graph.getVertexCount()];
         int[] auxb = new int[graph.getVertexCount()];
+        int[] auxc = new int[graph.getVertexCount()];
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
+            auxc[i] = 0;
             auxa[i] = auxb[i] = -1;
         }
 
@@ -264,13 +267,15 @@ public class GraphWS {
         for (Integer v : currentSet) {
             mustBeIncluded.add(v);
             aux[v] = INCLUDED;
+            auxc[v] = 1;
+            currentSetSize++;
         }
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
             hsp3g.add(verti);
 //            aux[verti] = aux[verti] + INCLUDED;
             Collection<Integer> neighbors = graph.getNeighbors(verti);
-            
+
             for (int vertn : neighbors) {
                 if (vertn != verti) {
                     int previousValue = aux[vertn];
@@ -279,8 +284,10 @@ public class GraphWS {
                         if (aux[vertn] >= INCLUDED) {
                             mustBeIncluded.add(vertn);
                             auxb[vertn] = verti;
+                            auxc[vertn] = auxc[vertn] + auxc[verti];
                         } else {
                             auxa[vertn] = verti;
+                            auxc[vertn] = auxc[vertn] + auxc[verti];
                         }
                     }
                 }
@@ -289,21 +296,48 @@ public class GraphWS {
 
         System.out.print("Aux = {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print(aux[i] + ", ");
+            System.out.print(aux[i] + " | ");
         }
         System.out.println("}");
 
         System.out.print("Auxa= {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print(auxa[i] + ", ");
+            System.out.print((auxa[i] < 0 ? "-" : auxa[i]) + " | ");
         }
         System.out.println("}");
 
         System.out.print("Auxb= {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.print(auxb[i] + ", ");
+            System.out.print((auxb[i] < 0 ? "-" : auxb[i]) + " | ");
         }
         System.out.println("}");
+
+        System.out.print("Auxc= {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            System.out.print(auxc[i] + " | ");
+        }
+        System.out.println("}");
+
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            if (auxc[i] >= currentSetSize) {
+                Set<Integer> hs = new HashSet<>();
+                hs.add(auxa[i]);
+                int j = i;
+                while (auxa[j] != -1) {
+                    hs.add(auxa[j]);
+                    hs.add(auxb[j]);
+                    j = auxa[j];
+                }
+                j = i;
+                while (auxb[j] != -1) {
+                    hs.add(auxa[j]);
+                    hs.add(auxb[j]);
+                    j = auxb[j];
+                }
+                hs.add(auxb[i]);
+                System.out.println("hs= " + hs);
+            }
+        }
 
 //        return fecho;
         processedHullSet = new ProcessedHullSet();
