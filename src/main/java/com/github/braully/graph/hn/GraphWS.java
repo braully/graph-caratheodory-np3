@@ -320,22 +320,27 @@ public class GraphWS {
 
         for (int i = 0; i < graph.getVertexCount(); i++) {
             if (auxc[i] >= currentSetSize) {
+                Queue<Integer> queueu = new ArrayDeque<>();
                 Set<Integer> hs = new HashSet<>();
-                hs.add(auxa[i]);
-                int j = i;
-                while (auxa[j] != -1) {
-                    hs.add(auxa[j]);
-                    hs.add(auxb[j]);
-                    j = auxa[j];
+                queueu.add(auxa[i]);
+                queueu.add(auxb[i]);
+                while (!queueu.isEmpty()) {
+                    Integer actual = queueu.remove();
+                    if (actual == -1) {
+                        continue;
+                    }
+                    if (auxa[actual] == -1) {
+                        hs.add(actual);
+                    } else {
+                        queueu.add(auxa[actual]);
+                    }
+                    if (auxb[actual] == -1) {
+                        hs.add(actual);
+                    } else {
+                        queueu.add(auxb[actual]);
+                    }
                 }
-                j = i;
-                while (auxb[j] != -1) {
-                    hs.add(auxa[j]);
-                    hs.add(auxb[j]);
-                    j = auxb[j];
-                }
-                hs.add(auxb[i]);
-                System.out.println("hs= " + hs);
+                System.out.println("hs(" + i + ") = " + hs);
             }
         }
 
