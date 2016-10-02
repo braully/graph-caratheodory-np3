@@ -195,7 +195,7 @@ public class GraphWS {
 
         int currentSize = maxSizeSet;
 
-        while (currentSize > 2) {
+        while (currentSize >= 2) {
             processedCaratheodroySet = findCaratheodroySetBruteForce(graph, currentSize);
             if (processedCaratheodroySet != null
                     && processedCaratheodroySet.caratheodorySet != null
