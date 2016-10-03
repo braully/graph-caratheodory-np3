@@ -62,7 +62,25 @@ public class GraphWS {
             @QueryParam("maxDegree") @DefaultValue("1.5") Double maxDegree,
             @QueryParam("typeGraph") @DefaultValue("random") String typeGraph) {
 //        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraphSimple(nvertices, minDegree, maxDegree);
-        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraph(nvertices, minDegree, maxDegree, typeGraph);
+
+        UndirectedSparseGraphTO<Integer, Integer> graph = null;
+        if (typeGraph != null) {
+            switch (typeGraph) {
+                case "path":
+                    graph = generatePathGraph(nvertices, minDegree, maxDegree);
+                    break;
+                case "cycle":
+                    graph = generateCycleGraph(nvertices, minDegree, maxDegree);
+                    break;
+                case "binary":
+                    graph = generateBinaryGraph(nvertices, minDegree, maxDegree);
+                    break;
+                case "random":
+                default:
+                    graph = generateRandomGraph(nvertices, minDegree, maxDegree);
+                    break;
+            }
+        }
         return graph;
     }
 
@@ -155,9 +173,58 @@ public class GraphWS {
         return response;
     }
 
+    private UndirectedSparseGraphTO<Integer, Integer> generatePathGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
+        UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
+        List<Integer> vertexElegibles = new ArrayList<>(nvertices);
+        Integer[] vertexs = new Integer[nvertices];
+        for (int i = 0; i < nvertices; i++) {
+            vertexElegibles.add(i);
+            vertexs[i] = i;
+            graph.addVertex(vertexs[i]);
+        }
+        int countEdge = 0;
+        for (int i = 0; i < nvertices - 1; i++) {
+            Integer source = vertexs[i];
+            Integer target = vertexs[i] + 1;
+            graph.addEdge(countEdge++, source, target);
+        }
+        return graph;
+    }
+
+    private UndirectedSparseGraphTO<Integer, Integer> generateCycleGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
+        UndirectedSparseGraphTO<Integer, Integer> graph = this.generatePathGraph(nvertices, minDegree, maxDegree);
+        graph.addEdge(graph.getEdgeCount(), graph.getVertexCount() - 1, 0);
+        return graph;
+    }
+
+    private UndirectedSparseGraphTO<Integer, Integer> generateBinaryGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
+        double sqrt = Math.sqrt(nvertices.doubleValue());
+        double pow = Math.pow(2, Math.ceil(sqrt)) + 1;
+        int nvert = (int) pow;
+        UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
+        Queue<Integer> frontier = new ArrayDeque<>();
+        graph.addVertex(0);
+        int countEdge = 0;
+        int countVertice = 1;
+        frontier.add(0);
+
+        while (!frontier.isEmpty() && countVertice < nvert) {
+            Integer verti = frontier.remove();
+            Integer target1 = countVertice++;
+            Integer target2 = countVertice++;
+            graph.addEdge(countEdge++, verti, target1);
+            graph.addEdge(countEdge++, verti, target2);
+            if (countVertice < nvert) {
+                frontier.add(target1);
+                frontier.add(target2);
+            }
+        }
+        return graph;
+    }
+
     private UndirectedSparseGraphTO<Integer, Integer> generateRandomGraph(Integer nvertices,
             Integer minDegree,
-            Double maxDegree, String type) {
+            Double maxDegree) {
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
@@ -170,7 +237,6 @@ public class GraphWS {
         }
         int countEdge = 0;
         double offset = maxDegree - minDegree;
-
         for (int i = nvertices - 1; i > 0; i--) {
             long limite = minDegree + Math.round(Math.random() * (offset));
             int size = vertexElegibles.size();
