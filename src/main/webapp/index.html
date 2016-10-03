@@ -95,23 +95,35 @@
                                 Connected
                             </label>
                         </div>
+                        <div class="form-group">
+                            <label for="typeG">Vertex degree (suggestion)</label>
+                            <select type="select" class="form-control"
+                                    ng-model="typeGraph"
+                                    id="typeG" name="minDegree" 
+                                    placeholder="1">
+                                <option value="random">Random</option>
+                                <option value="path">Path</option>
+                                <option value="cycle">Cycle</option>
+                                <option value="binary">Binary Tree</option>
+                            </select>
+                        </div>
                         <div class="form-group pull-right">
                             <button ng-click="randomGraph();" 
                                     class="btn btn-primary btn-sm">
                                 <span class="glyphicon glyphicon-repeat"></span>
-                                Random graph
+                                Generate graph
                             </button>
                         </div>
                     </fieldset>
                     <fieldset>
                         <legend>Graph</legend>
                         <div class="form-group">
-                            <label>Vertices</label>
+                            <label>Vertices({{graph.vertexCount}})</label>
                             <input class="form-control" disabled
                                    ng-model="graph.vertices" />
                         </div>
                         <div class="form-group">
-                            <label>Edges</label>
+                            <label>Edges({{graph.edgeCount}})</label>
                             <input class="form-control" disabled
                                    value="{{graph.pairs}}" />
                         </div>
@@ -173,14 +185,18 @@
                         </div>
                         <div class="form-group pull-right">
                             <button ng-click="checkSet();" 
-                                    class="btn btn-primary btn-sm">
+                                    class="btn btn-primary btn-xs">
                                 <span class="glyphicon glyphicon-certificate"></span>
                                 Check Set
                             </button>
                             <button ng-click="calcCaratheodroyNumberGraph();" 
-                                    class="btn btn-primary btn-sm">
+                                    class="btn btn-primary btn-xs">
                                 <span class="glyphicon glyphicon-certificate"></span>
-                                Caratheodroy Nº
+                                Nº Carat.
+                            </button>
+                            <button class="btn btn-primary btn-xs">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Nº Carat. Parallel
                             </button>
                         </div>
                     </fieldset>
@@ -229,6 +245,7 @@
                 $scope.nvertices = 5;
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2.0;
+                $scope.typeGraph = 'random';
                 $scope.graph = null;
                 $scope.file = null;
                 $scope.setstr = null;
@@ -344,7 +361,8 @@
                         params: {
                             nvertices: $scope.nvertices,
                             minDegree: $scope.minDegree,
-                            maxDegree: $scope.maxDegree
+                            maxDegree: $scope.maxDegree,
+                            typeGraph: $scope.typeGraph
                         }
                     }).success(function (graph) {
                         $scope.graph = graph;

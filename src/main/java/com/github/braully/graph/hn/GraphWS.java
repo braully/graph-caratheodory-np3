@@ -50,8 +50,8 @@ public class GraphWS {
     private static final boolean verbose = true;
     private static final boolean breankOnFirst = true;
 
-    private int INCLUDED = 2;
-    private int NEIGHBOOR_COUNT_INCLUDED = 1;
+    private final int INCLUDED = 2;
+    private final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -59,9 +59,10 @@ public class GraphWS {
     public UndirectedSparseGraphTO randomGraph(
             @QueryParam("nvertices") @DefaultValue("5") Integer nvertices,
             @QueryParam("minDegree") @DefaultValue("1") Integer minDegree,
-            @QueryParam("maxDegree") @DefaultValue("1.5") Double maxDegree) {
+            @QueryParam("maxDegree") @DefaultValue("1.5") Double maxDegree,
+            @QueryParam("typeGraph") @DefaultValue("random") String typeGraph) {
 //        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraphSimple(nvertices, minDegree, maxDegree);
-        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraph(nvertices, minDegree, maxDegree);
+        UndirectedSparseGraphTO<Integer, Integer> graph = generateRandomGraph(nvertices, minDegree, maxDegree, typeGraph);
         return graph;
     }
 
@@ -149,14 +150,14 @@ public class GraphWS {
         response.put(PARAM_NAME_HULL_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
         response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
-        response.put(PARAM_NAME_TOTAL_TIME_MS, totalTimeMillis);
+        response.put(PARAM_NAME_TOTAL_TIME_MS, (double) ((double) totalTimeMillis / 1000));
         response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
         return response;
     }
 
     private UndirectedSparseGraphTO<Integer, Integer> generateRandomGraph(Integer nvertices,
             Integer minDegree,
-            Double maxDegree) {
+            Double maxDegree, String type) {
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
@@ -372,7 +373,7 @@ public class GraphWS {
                     aux[v] = INCLUDED;
                 }
             }
-            while (!mustBeIncluded.isEmpty()) {
+            while (!mustBeIncluded.isEmpty() && !partial.isEmpty()) {
                 Integer verti = mustBeIncluded.remove();
                 partial.remove(verti);
                 Collection<Integer> neighbors = graph.getNeighbors(verti);
