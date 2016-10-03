@@ -44,6 +44,8 @@ public class GraphWS {
     private static final String PARAM_NAME_HULL_SET = "set";
     private static final String PARAM_NAME_CONVEX_HULL = "hs";
     private static final String PARAM_NAME_AUX_PROCESS = "aux";
+    private static final String PARAM_NAME_TOTAL_TIME_MS = "tms";
+    private static final String PARAM_NAME_PARTIAL_DERIVATED = "phs";
 
     private static final boolean verbose = true;
     private static final boolean breankOnFirst = true;
@@ -72,7 +74,8 @@ public class GraphWS {
         Integer[] caratheodorySet = null;
         Integer[] convexHull = null;
         int[] auxProcessor = null;
-
+        Integer[] partial = null;
+        long totalTimeMillis = -1;
         try {
             ObjectMapper mapper = new ObjectMapper();
             BeanDeserializer bd = null;
@@ -84,13 +87,16 @@ public class GraphWS {
                 arr[i] = v;
                 i++;
             }
+            totalTimeMillis = System.currentTimeMillis();
             ProcessedHullSet caratheodoryNumberGraph = hsp3(graphRead, arr);
+            totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
                 caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
                 caratheodorySet = caratheodoryNumberGraph.caratheodorySet.toArray(new Integer[0]);
                 auxProcessor = caratheodoryNumberGraph.auxProcessor;
                 convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
+                partial = caratheodoryNumberGraph.partial.toArray(new Integer[0]);
             }
         } catch (IOException ex) {
             Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
@@ -102,6 +108,8 @@ public class GraphWS {
         response.put(PARAM_NAME_HULL_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
         response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
+        response.put(PARAM_NAME_TOTAL_TIME_MS, (double) ((double) totalTimeMillis / 1000));
+        response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
         return response;
     }
 
@@ -113,19 +121,23 @@ public class GraphWS {
         Integer caratheodoryNumber = -1;
         Integer[] caratheodorySet = null;
         Integer[] convexHull = null;
+        Integer[] partial = null;
         int[] auxProcessor = null;
-
+        long totalTimeMillis = -1;
         try {
             ObjectMapper mapper = new ObjectMapper();
             BeanDeserializer bd = null;
             UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            totalTimeMillis = System.currentTimeMillis();
             ProcessedHullSet caratheodoryNumberGraph = calcMaxCaratheodroyNumberGraph(graphRead);
+            totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
                 caratheodoryNumber = caratheodoryNumberGraph.caratheodorySet.size();
                 caratheodorySet = caratheodoryNumberGraph.caratheodorySet.toArray(new Integer[0]);
                 auxProcessor = caratheodoryNumberGraph.auxProcessor;
                 convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
+                partial = caratheodoryNumberGraph.partial.toArray(new Integer[0]);
             }
         } catch (IOException ex) {
             Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
@@ -137,6 +149,8 @@ public class GraphWS {
         response.put(PARAM_NAME_HULL_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
         response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
+        response.put(PARAM_NAME_TOTAL_TIME_MS, totalTimeMillis);
+        response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
         return response;
     }
 
@@ -325,15 +339,53 @@ public class GraphWS {
                 if (verbose) {
                     System.out.println("hs(" + i + ") = " + hs);
                 }
-                if (hs.size() == currentSetSize && breankOnFirst) {
-                    processedHullSet = new ProcessedHullSet();
-                    processedHullSet.auxProcessor = aux;
-                    processedHullSet.convexHull = hsp3g;
-                    processedHullSet.caratheodorySet = hs;
-                    break;
+                if (hs.size() == currentSetSize) {
+                    Set<Integer> partial = calcDerivatedPartial(graph,
+                            hsp3g, currentSet);
+                    if (breankOnFirst && partial != null && !partial.isEmpty()) {
+                        processedHullSet = new ProcessedHullSet();
+                        processedHullSet.auxProcessor = aux;
+                        processedHullSet.convexHull = hsp3g;
+                        processedHullSet.caratheodorySet = hs;
+                        processedHullSet.partial = calcDerivatedPartial(graph,
+                                hsp3g, currentSet);
+                        break;
+                    }
                 }
             }
         }
         return processedHullSet;
+    }
+
+    private Set<Integer> calcDerivatedPartial(UndirectedSparseGraphTO<Integer, Integer> graph,
+            Set<Integer> hsp3g, int[] currentSet) {
+        Set<Integer> partial = new HashSet<>();
+        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+        partial.addAll(hsp3g);
+
+        for (Integer p : currentSet) {
+            int[] aux = new int[graph.getVertexCount()];
+            for (Integer v : currentSet) {
+                if (!v.equals(p)) {
+                    mustBeIncluded.add(v);
+                    aux[v] = INCLUDED;
+                }
+            }
+            while (!mustBeIncluded.isEmpty()) {
+                Integer verti = mustBeIncluded.remove();
+                partial.remove(verti);
+                Collection<Integer> neighbors = graph.getNeighbors(verti);
+                for (int vertn : neighbors) {
+                    if (vertn != verti) {
+                        int previousValue = aux[vertn];
+                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                        if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
+                            mustBeIncluded.add(vertn);
+                        }
+                    }
+                }
+            }
+        }
+        return partial;
     }
 }

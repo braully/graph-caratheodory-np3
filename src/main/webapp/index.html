@@ -158,10 +158,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Aux vertices</label>
+                            <label>∂H(S)=H(S)\⋃p∈SH(S\{p})</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="caratheodory.aux" disabled readonly>
+                                   ng-model="caratheodory.phs" 
+                                   disabled readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Time(s)</label>
+                            <input type="text"
+                                   class="form-control"
+                                   ng-model="caratheodory.tms" 
+                                   disabled readonly>
                         </div>
                         <div class="form-group pull-right">
                             <button ng-click="checkSet();" 
@@ -224,7 +232,7 @@
                 $scope.graph = null;
                 $scope.file = null;
                 $scope.setstr = null;
-                $scope.caratheodory = {number: [], set: [], aux: [], hs: []};
+                $scope.caratheodory = {number: [], set: [], aux: [], hs: [], phs: []};
                 $scope.calcCaratheodroyNumberGraph = function () {
                     $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
