@@ -342,15 +342,16 @@ public class GraphWS {
                 if (hs.size() == currentSetSize) {
                     Set<Integer> partial = calcDerivatedPartial(graph,
                             hsp3g, currentSet);
-                    if (breankOnFirst && partial != null && !partial.isEmpty()) {
+                    if (partial != null && !partial.isEmpty()) {
                         processedHullSet = new ProcessedHullSet();
                         processedHullSet.auxProcessor = aux;
                         processedHullSet.convexHull = hsp3g;
                         processedHullSet.caratheodorySet = hs;
                         processedHullSet.partial = calcDerivatedPartial(graph,
                                 hsp3g, currentSet);
-                        break;
+
                     }
+                    break;
                 }
             }
         }
