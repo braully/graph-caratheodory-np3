@@ -7,10 +7,13 @@ package com.github.braully.graph.hn;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,9 +24,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,14 +44,22 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 @Path("graph")
 public class GraphWS {
 
-    private static final String PARAM_NAME_HULL_NUMBER = "number";
-    private static final String PARAM_NAME_HULL_SET = "set";
+    private static final Logger log = Logger.getLogger(GraphWS.class.getSimpleName());
+
+    private static final String PARAM_NAME_CARATHEODORY_NUMBER = "number";
+    private static final String PARAM_NAME_CARATHEODORY_SET = "set";
     private static final String PARAM_NAME_CONVEX_HULL = "hs";
     private static final String PARAM_NAME_AUX_PROCESS = "aux";
     private static final String PARAM_NAME_TOTAL_TIME_MS = "tms";
     private static final String PARAM_NAME_PARTIAL_DERIVATED = "phs";
 
-    private static final boolean verbose = true;
+    private static final String COMMAND_GRAPH_HN = "~/bin/graph-caratheodory-np3.sh";
+
+    private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?Combination: \\{([0-9, ]+)\\}.*?");
+    private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
+    private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
+
+    private static final boolean verbose = false;
     private static final boolean breankOnFirst = true;
 
     private final int INCLUDED = 2;
@@ -123,8 +135,8 @@ public class GraphWS {
 
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
-        response.put(PARAM_NAME_HULL_NUMBER, caratheodoryNumber);
-        response.put(PARAM_NAME_HULL_SET, caratheodorySet);
+        response.put(PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumber);
+        response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
         response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
         response.put(PARAM_NAME_TOTAL_TIME_MS, (double) ((double) totalTimeMillis / 1000));
@@ -164,12 +176,90 @@ public class GraphWS {
 
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
-        response.put(PARAM_NAME_HULL_NUMBER, caratheodoryNumber);
-        response.put(PARAM_NAME_HULL_SET, caratheodorySet);
+        response.put(PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumber);
+        response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
         response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
         response.put(PARAM_NAME_TOTAL_TIME_MS, (double) ((double) totalTimeMillis / 1000));
         response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
+        return response;
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("caratheodory-parallel")
+    public Map<String, Object> calcCaratheodoryNumberGraphParallel(String jsonGraph) {
+        Integer caractheodoryNumber = null;
+        int[] caratheodorySet = null;
+        Integer[] convexHull = null;
+        int[] auxProcessor = null;
+        Integer[] partial = null;
+        String pTime = null;
+        UndirectedSparseGraphTO<Integer, Integer> undGraph = null;
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            BeanDeserializer bd = null;
+            undGraph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            String path = saveTmpFileGraphInCsr(undGraph);
+
+            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
+
+            log.log(Level.INFO, "Command: {0}", commandToExecute);
+            log.log(Level.INFO, "Executing");
+            Process p = Runtime.getRuntime().exec(commandToExecute);
+            p.waitFor();
+            log.log(Level.INFO, "Executed");
+            BufferedReader reader
+                    = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String line = "";
+            log.log(Level.INFO, "Output");
+            while ((line = reader.readLine()) != null) {
+                log.log(Level.INFO, line);
+                try {
+                    if (caratheodorySet == null) {
+                        caratheodorySet = parseCaratheodorySet(line);
+                    }
+                    if (caractheodoryNumber == null) {
+                        caractheodoryNumber = parseCaratheodoryNumber(line);
+                    }
+                    if (pTime == null) {
+                        pTime = parseParallelTime(line);
+                    }
+                } catch (Exception e) {
+                    log.log(Level.WARNING, "", e);
+                }
+            }
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
+
+        ProcessedHullSet caratheodoryNumberGraph = null;
+        if (caratheodorySet != null && caratheodorySet.length > 0) {
+
+            caratheodoryNumberGraph = hsp3(undGraph, caratheodorySet);
+        }
+
+        if (caratheodoryNumberGraph != null
+                && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
+            auxProcessor = caratheodoryNumberGraph.auxProcessor;
+            convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
+            partial = caratheodoryNumberGraph.partial.toArray(new Integer[0]);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put(PARAM_NAME_CARATHEODORY_NUMBER, caractheodoryNumber);
+        response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySet);
+        response.put(PARAM_NAME_CONVEX_HULL, convexHull);
+        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
+        response.put(PARAM_NAME_TOTAL_TIME_MS, pTime);
+        response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
+
         return response;
     }
 
@@ -198,8 +288,8 @@ public class GraphWS {
     }
 
     private UndirectedSparseGraphTO<Integer, Integer> generateBinaryGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
-        double sqrt = Math.sqrt(nvertices.doubleValue());
-        double pow = Math.pow(2, Math.ceil(sqrt)) + 1;
+        double lognv = Math.log(nvertices + 1) / Math.log(2);
+        double pow = Math.pow(2, Math.ceil(lognv)) - 1;
         int nvert = (int) pow;
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         Queue<Integer> frontier = new ArrayDeque<>();
@@ -455,5 +545,93 @@ public class GraphWS {
             }
         }
         return partial;
+    }
+
+    private String saveTmpFileGraphInCsr(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
+        String strFile = null;
+        if (undGraph != null && undGraph.getVertexCount() > 0) {
+            try {
+                int vertexCount = undGraph.getVertexCount();
+                File file = File.createTempFile("graph-csr-", ".txt");
+                file.deleteOnExit();
+
+                strFile = file.getAbsolutePath();
+                FileWriter writer = new FileWriter(file);
+                writer.write("#Graph |V| = " + vertexCount + "\n");
+
+                int sizeRowOffset = 0;
+                List<Integer> csrColIdxs = new ArrayList<>();
+                List<Integer> rowOffset = new ArrayList<>();
+
+                int idx = 0;
+                for (Integer i = 0; i < vertexCount; i++) {
+                    csrColIdxs.add(idx);
+                    Collection<Integer> neighbors = undGraph.getNeighbors(i);
+                    Set<Integer> neighSet = new HashSet<>();
+                    neighSet.addAll(neighbors);
+                    for (Integer vn : neighSet) {
+                        if (!vn.equals(i)) {
+                            rowOffset.add(vn);
+                            idx++;
+                        }
+                    }
+                }
+
+                for (Integer i : csrColIdxs) {
+                    writer.write("" + i);
+                    writer.write(" ");
+                }
+                writer.write("\n");
+                for (Integer i : rowOffset) {
+                    writer.write("" + i);
+                    writer.write(" ");
+                }
+                writer.write("\n");
+                writer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        Logger.getLogger(GraphWS.class.getName()).log(Level.INFO, "File tmp graph: " + strFile);
+        return strFile;
+    }
+
+    private int[] parseCaratheodorySet(String line) {
+        int[] ret = null;
+        Matcher m = PATERN_CARATHEODORY_SET.matcher(line);
+        if (m.find()) {
+            String[] split = m.group(1).split(",");
+            if (split != null && split.length > 0) {
+                ret = new int[split.length];
+                for (int i = 0; i < split.length; i++) {
+                    String st = split[i];
+                    ret[i] = Integer.parseInt(st.trim());
+                }
+            }
+        }
+        return ret;
+    }
+
+    private Integer parseCaratheodoryNumber(String line) {
+        Integer ret = null;
+        Matcher m = PATERN_CARATHEODORY_NUMBER.matcher(line);
+        if (m.find()) {
+            String trim = m.group();
+            trim = m.group(1);
+//            String trim = m.group();
+            if (trim != null && !trim.isEmpty()) {
+                ret = Integer.parseInt(trim.trim());
+            }
+        }
+        return ret;
+    }
+
+    private String parseParallelTime(String line) {
+        String ret = null;
+        Matcher m = PATERN_PARALLEL_TIME.matcher(line);
+        if (m.find()) {
+            ret = m.group(1);
+        }
+        return ret;
     }
 }
