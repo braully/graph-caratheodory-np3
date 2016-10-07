@@ -50,6 +50,12 @@
                 pointer-events: none;
                 font: 10px sans-serif;
             }
+
+            samp {
+                overflow: auto;
+                word-wrap: normal;
+                white-space: pre;
+            }
         </style>
     </head>
     <body>
@@ -212,27 +218,33 @@
 
                             </div>
                         </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-bordred table-striped">
-                                <thead>
-                                <th>Vertice</th>
-                                <th ng-repeat="v in graph.vertices">{{v}}</th>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Degree</td>
-                                        <td ng-repeat="d in graph.degrees track by $index">{{d}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Aux</td>
-                                        <td ng-repeat="ax in caratheodory.aux track by $index">{{ax}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div id="spinner" ng-show="processing">
+                            <img src="assets/img/spinner.gif" alt="">
                         </div>
-                        <div class="panel-footer">
-
+                        <div class="well well-sm pre-scrollable">
+                            <samp>       [INFO] Scanning for projects...</samp>
+                            <samp>       [INFO]                                                                         </samp>
+                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
+                            <samp>       [INFO] Building graph-hull-number 1.0-SNAPSHOT</samp>
+                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
+                            <samp>       [INFO] --- maven-war-plugin:2.3:war (default-war) @ graph-hull-number ---</samp>
+                            <samp>       [INFO] Packaging webapp</samp>
+                            <samp>       [INFO] Assembling webapp [graph-hull-number] in [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT]</samp>
+                            <samp>       [INFO] Processing war project</samp>
+                            <samp>       [INFO] Copying webapp resources [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/src/main/webapp]</samp>
+                            <samp>       [INFO] Webapp assembled in [68 msecs]</samp>
+                            <samp>       [INFO] Building war: /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war</samp>
+                            <samp>       [INFO] </samp>
+                            <samp>       [INFO] --- maven-install-plugin:2.4:install (default-install) @ graph-hull-number ---</samp>
+                            <samp>       [INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.war</samp>
+                            <samp>       [INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/pom.xml to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.pom</samp>
+                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
+                            <samp>       [INFO] BUILD SUCCESS</samp>
+                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
+                            <samp>       [INFO] Total time: 4.218 s</samp>
+                            <samp>       [INFO] Finished at: 2016-10-07T17:23:49+00:00</samp>
+                            <samp>       [INFO] Final Memory: 23M/167M</samp>
+                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
                         </div>
                     </div>
                 </div>
@@ -245,6 +257,7 @@
                 $scope.nvertices = 5;
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2.0;
+                $scope.processing = true;
                 $scope.typeGraph = 'random';
                 $scope.graph = null;
                 $scope.file = null;
@@ -284,14 +297,14 @@
                         window.alert('File invalid');
                         return;
                     }
-//                    console.log("Filename: " + $scope.file.name);
-//                    console.log("Type: " + $scope.file.mediaType);
-//                    console.log("Size: " + $scope.file.size + " bytes");
+                    //                    console.log("Filename: " + $scope.file.name);
+                    //                    console.log("Type: " + $scope.file.mediaType);
+                    //                    console.log("Size: " + $scope.file.size + " bytes");
                     var fr = new FileReader();
                     fr.onload = function (e) {
-//                        console.log("File uploaded: " + e.target.result);
+                        //                        console.log("File uploaded: " + e.target.result);
                         var graph = JSON.parse(e.target.result);
-//                        console.log("graph: " + graph.vertices);
+                        //                        console.log("graph: " + graph.vertices);
                         if (!graph || !graph.vertices || !graph.pairs) {
                             window.alert('File format invalid');
                         } else {
@@ -337,8 +350,8 @@
                     nodes.append("circle")
                             .attr("class", "node")
                             .attr("r", 5)
-//                                .attr("x", -8)
-//                                .attr("y", -8)
+                            //                                .attr("x", -8)
+                            //                                .attr("y", -8)
                             .style("fill", function (d) {
                                 return color(d.group);
                             }).call(force.drag);

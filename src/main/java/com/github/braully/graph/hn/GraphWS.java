@@ -119,7 +119,7 @@ public class GraphWS {
                 i++;
             }
             totalTimeMillis = System.currentTimeMillis();
-            ProcessedHullSet caratheodoryNumberGraph = hsp3(graphRead, arr);
+            ProcessedSet caratheodoryNumberGraph = hsp3(graphRead, arr);
             totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
@@ -160,7 +160,7 @@ public class GraphWS {
             BeanDeserializer bd = null;
             UndirectedSparseGraphTO<Integer, Integer> graphRead = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
             totalTimeMillis = System.currentTimeMillis();
-            ProcessedHullSet caratheodoryNumberGraph = calcMaxCaratheodroyNumberGraph(graphRead);
+            ProcessedSet caratheodoryNumberGraph = calcMaxCaratheodroyNumberGraph(graphRead);
             totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
             if (caratheodoryNumberGraph != null
                     && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
@@ -238,7 +238,7 @@ public class GraphWS {
             log.log(Level.SEVERE, null, ex);
         }
 
-        ProcessedHullSet caratheodoryNumberGraph = null;
+        ProcessedSet caratheodoryNumberGraph = null;
         if (caratheodorySet != null && caratheodorySet.length > 0) {
 
             caratheodoryNumberGraph = hsp3(undGraph, caratheodorySet);
@@ -356,8 +356,8 @@ public class GraphWS {
         return graph;
     }
 
-    private ProcessedHullSet calcMaxCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        ProcessedHullSet processedCaratheodroySet = null;
+    private ProcessedSet calcMaxCaratheodroyNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        ProcessedSet processedCaratheodroySet = null;
         if (graph == null) {
             return processedCaratheodroySet;
         }
@@ -378,8 +378,8 @@ public class GraphWS {
         return processedCaratheodroySet;
     }
 
-    public ProcessedHullSet findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSetSize) {
-        ProcessedHullSet processedHullSet = null;
+    public ProcessedSet findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSetSize) {
+        ProcessedSet processedHullSet = null;
         if (graph == null || graph.getVertexCount() <= 0) {
             return processedHullSet;
         }
@@ -388,7 +388,7 @@ public class GraphWS {
         Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), currentSetSize);
         while (combinationsIterator.hasNext()) {
             int[] currentSet = combinationsIterator.next();
-            ProcessedHullSet hsp3g = hsp3(graph, currentSet);
+            ProcessedSet hsp3g = hsp3(graph, currentSet);
 
 //        return fecho;
             if (hsp3g != null) {
@@ -399,10 +399,10 @@ public class GraphWS {
         return processedHullSet;
     }
 
-    public ProcessedHullSet hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
+    public ProcessedSet hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] currentSet) {
         int currentSetSize = 0;
-        ProcessedHullSet processedHullSet = null;
+        ProcessedSet processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
         int[] auxa = new int[graph.getVertexCount()];
@@ -500,7 +500,7 @@ public class GraphWS {
                     Set<Integer> partial = calcDerivatedPartial(graph,
                             hsp3g, currentSet);
                     if (partial != null && !partial.isEmpty()) {
-                        processedHullSet = new ProcessedHullSet();
+                        processedHullSet = new ProcessedSet();
                         processedHullSet.auxProcessor = aux;
                         processedHullSet.convexHull = hsp3g;
                         processedHullSet.caratheodorySet = hs;

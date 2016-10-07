@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author strike
  */
-public class ProcessedHullSet {
+public class ProcessedSet {
 
     Set<Integer> caratheodorySet;
     Set<Integer> convexHull;
