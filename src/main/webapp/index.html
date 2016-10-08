@@ -107,7 +107,6 @@
                                     ng-model="typeGraph"
                                     id="typeG" name="minDegree" 
                                     placeholder="1">
-                                <option value=""></option>
                                 <option ng-repeat="x in generators" value="{{x.key}}">{{x.value}}</option>
                             </select>
                         </div>
@@ -194,6 +193,7 @@
                                     ng-model="operation"
                                     id="typeOperation"
                                     placeholder="1">
+                                <option value=""></option>
                                 <option ng-repeat="x in operations" value="{{x.type}}">{{x.value}}</option>
                             </select>
                         </div>
