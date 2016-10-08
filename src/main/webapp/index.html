@@ -107,14 +107,12 @@
                                     ng-model="typeGraph"
                                     id="typeG" name="minDegree" 
                                     placeholder="1">
-                                <option value="random">Random</option>
-                                <option value="path">Path</option>
-                                <option value="cycle">Cycle</option>
-                                <option value="binary">Binary Tree</option>
+                                <option value=""></option>
+                                <option ng-repeat="x in generators" value="{{x.key}}">{{x.value}}</option>
                             </select>
                         </div>
                         <div class="form-group pull-right">
-                            <button ng-click="randomGraph();" 
+                            <button ng-click="generateGraph();" 
                                     class="btn btn-primary btn-sm">
                                 <span class="glyphicon glyphicon-repeat"></span>
                                 Generate graph
@@ -189,20 +187,22 @@
                                    ng-model="caratheodory.tms" 
                                    disabled readonly>
                         </div>
+
+                        <div class="form-group">
+                            <label for="typeG">Operation</label>
+                            <select type="select" class="form-control"
+                                    ng-model="operation"
+                                    id="typeOperation"
+                                    placeholder="1">
+                                <option ng-repeat="x in operations" value="{{x.type}}">{{x.value}}</option>
+                            </select>
+                        </div>
+
                         <div class="form-group pull-right">
-                            <button ng-click="checkSet();" 
-                                    class="btn btn-primary btn-xs">
+                            <button ng-click="executeOperation();" 
+                                    class="btn btn-primary">
                                 <span class="glyphicon glyphicon-certificate"></span>
-                                Check Set
-                            </button>
-                            <button ng-click="calcCaratheodroyNumberGraph();" 
-                                    class="btn btn-primary btn-xs">
-                                <span class="glyphicon glyphicon-certificate"></span>
-                                Nº Carat.
-                            </button>
-                            <button class="btn btn-primary btn-xs">
-                                <span class="glyphicon glyphicon-certificate"></span>
-                                Nº Carat. Parallel
+                                Execute
                             </button>
                         </div>
                     </fieldset>
@@ -222,29 +222,29 @@
                             <img src="assets/img/spinner.gif" alt="">
                         </div>
                         <div class="well well-sm pre-scrollable">
-                            <samp>       [INFO] Scanning for projects...</samp>
-                            <samp>       [INFO]                                                                         </samp>
-                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
-                            <samp>       [INFO] Building graph-hull-number 1.0-SNAPSHOT</samp>
-                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
-                            <samp>       [INFO] --- maven-war-plugin:2.3:war (default-war) @ graph-hull-number ---</samp>
-                            <samp>       [INFO] Packaging webapp</samp>
-                            <samp>       [INFO] Assembling webapp [graph-hull-number] in [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT]</samp>
-                            <samp>       [INFO] Processing war project</samp>
-                            <samp>       [INFO] Copying webapp resources [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/src/main/webapp]</samp>
-                            <samp>       [INFO] Webapp assembled in [68 msecs]</samp>
-                            <samp>       [INFO] Building war: /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war</samp>
-                            <samp>       [INFO] </samp>
-                            <samp>       [INFO] --- maven-install-plugin:2.4:install (default-install) @ graph-hull-number ---</samp>
-                            <samp>       [INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.war</samp>
-                            <samp>       [INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/pom.xml to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.pom</samp>
-                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
-                            <samp>       [INFO] BUILD SUCCESS</samp>
-                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
-                            <samp>       [INFO] Total time: 4.218 s</samp>
-                            <samp>       [INFO] Finished at: 2016-10-07T17:23:49+00:00</samp>
-                            <samp>       [INFO] Final Memory: 23M/167M</samp>
-                            <samp>       [INFO] ------------------------------------------------------------------------</samp>
+                            <samp>[INFO] Scanning for projects...</samp>
+                            <samp>[INFO]                                                                         </samp>
+                            <samp>[INFO] ------------------------------------------------------------------------</samp>
+                            <samp>[INFO] Building graph-hull-number 1.0-SNAPSHOT</samp>
+                            <samp>[INFO] ------------------------------------------------------------------------</samp>
+                            <samp>[INFO] --- maven-war-plugin:2.3:war (default-war) @ graph-hull-number ---</samp>
+                            <samp>[INFO] Packaging webapp</samp>
+                            <samp>[INFO] Assembling webapp [graph-hull-number] in [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT]</samp>
+                            <samp>[INFO] Processing war project</samp>
+                            <samp>[INFO] Copying webapp resources [/tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/src/main/webapp]</samp>
+                            <samp>[INFO] Webapp assembled in [68 msecs]</samp>
+                            <samp>[INFO] Building war: /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war</samp>
+                            <samp>[INFO] </samp>
+                            <samp>[INFO] --- maven-install-plugin:2.4:install (default-install) @ graph-hull-number ---</samp>
+                            <samp>[INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/target/graph-hull-number-1.0-SNAPSHOT.war to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.war</samp>
+                            <samp>[INFO] Installing /tmp/build_8c281c1be9f343ff72123199491afaf1/braully-graph-hull-number-d19af07/pom.xml to /app/tmp/cache/.m2/repository/com/github/braully/graph-hull-number/1.0-SNAPSHOT/graph-hull-number-1.0-SNAPSHOT.pom</samp>
+                            <samp>[INFO] ------------------------------------------------------------------------</samp>
+                            <samp>[INFO] BUILD SUCCESS</samp>
+                            <samp>[INFO] ------------------------------------------------------------------------</samp>
+                            <samp>[INFO] Total time: 4.218 s</samp>
+                            <samp>[INFO] Finished at: 2016-10-07T17:23:49+00:00</samp>
+                            <samp>[INFO] Final Memory: 23M/167M</samp>
+                            <samp>[INFO] ------------------------------------------------------------------------</samp>
                         </div>
                     </div>
                 </div>
@@ -257,12 +257,17 @@
                 $scope.nvertices = 5;
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2.0;
+                $scope.generators = null;
+                $scope.operations = null;
+                $scope.operation = null;
                 $scope.processing = true;
                 $scope.typeGraph = 'random';
                 $scope.graph = null;
                 $scope.file = null;
                 $scope.setstr = null;
                 $scope.caratheodory = {number: [], set: [], aux: [], hs: [], phs: []};
+
+
 
                 $scope.calcCaratheodroyNumberGraph = function () {
                     $http.post('rest/graph/caratheodory', $scope.graph).success(function (caratheodorydata) {
@@ -297,14 +302,9 @@
                         window.alert('File invalid');
                         return;
                     }
-                    //                    console.log("Filename: " + $scope.file.name);
-                    //                    console.log("Type: " + $scope.file.mediaType);
-                    //                    console.log("Size: " + $scope.file.size + " bytes");
                     var fr = new FileReader();
                     fr.onload = function (e) {
-                        //                        console.log("File uploaded: " + e.target.result);
                         var graph = JSON.parse(e.target.result);
-                        //                        console.log("graph: " + graph.vertices);
                         if (!graph || !graph.vertices || !graph.pairs) {
                             window.alert('File format invalid');
                         } else {
@@ -380,8 +380,8 @@
                     });
                 }
                 ;
-                $scope.randomGraph = function () {
-                    $http.get('rest/graph/random', {
+                $scope.generateGraph = function () {
+                    $http.get('rest/graph/generate-graph', {
                         params: {
                             nvertices: $scope.nvertices,
                             minDegree: $scope.minDegree,
@@ -393,7 +393,26 @@
                         $scope.updateGraph();
                     });
                 };
-                $scope.randomGraph();
+
+                $scope.executeOperation = function () {
+                    if ($scope.setstr)
+                        $scope.graph.set = $scope.setstr.split(',').map(Number);
+                    $scope.graph.operation = $scope.operation;
+                    $http.post('rest/graph/operation', $scope.graph).success(function (caratheodorydata) {
+                        $scope.caratheodory = caratheodorydata;
+                        $scope.setstr = $scope.caratheodory.set.toString();
+                    });
+                };
+
+                $http.get('rest/graph/list-graph-generator').success(function (gen) {
+                    $scope.generators = gen;
+                });
+
+                $http.get('rest/graph/list-graph-operation').success(function (ops) {
+                    $scope.operations = ops;
+                });
+
+                $scope.generateGraph();
             });
             app.directive("ngFileSelect", function () {
                 return {
