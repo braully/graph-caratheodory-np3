@@ -168,8 +168,8 @@ public class GraphWS {
         return bf;
     }
 
-    @GET
-//    @POST
+//    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("process-status")

@@ -221,7 +221,7 @@
                             <img src="assets/img/spinner.gif" alt="">
                         </div>
                         <div class="well well-sm pre-scrollable">
-                            <samp ng-repeat="l in outputConsole">{{l + '\n'}}</samp>
+                            <samp ng-repeat="l in outputConsole track by $index">{{l + '\n'}}</samp>
                         </div>
                     </div>
                 </div>
@@ -352,6 +352,7 @@
                 $scope.executeOperation = function () {
                     if ($scope.setstr)
                         $scope.graph.set = $scope.setstr.split(',').map(Number);
+                    $scope.outputConsole = [];
                     $scope.graph.operation = $scope.operation;
                     $scope.processing = true;
                     $http.post('rest/graph/operation', $scope.graph).success(function (caratheodorydata) {
@@ -360,6 +361,7 @@
                         if (caratheodorydata && caratheodorydata.set) {
                             $scope.setstr = $scope.caratheodory.set.toString();
                         }
+                        $scope.processing = false;
                     }).error(function (err) {
                         $scope.processing = false;
                         window.alert('Error: ' + err);
@@ -377,8 +379,9 @@
                 $scope.generateGraph();
 
                 $scope.pollerConsoleOutput = function () {
-                    $http.get('rest/graph/process-status').then(function (r) {
+                    $http.post('rest/graph/process-status').success(function (r) {
                         $scope.processing = r.processing;
+                        console.log(r);
                         if (r.output)
                             for (var i = 0; i < r.output.length; i++) {
                                 $scope.outputConsole.push(r.output[i]);
