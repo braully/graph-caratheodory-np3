@@ -6,12 +6,14 @@
 package com.github.braully.graph.hn;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.BeanDeserializer;
 import com.github.braully.graph.generator.GraphGeneratorRandom;
 import com.github.braully.graph.generator.IGraphGenerator;
 import com.github.braully.graph.operation.IGraphOperation;
 import edu.uci.ics.jung.graph.AbstractGraph;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +46,7 @@ public class GraphWS {
     private static final Logger log = Logger.getLogger(GraphWS.class.getSimpleName());
 
     private static final IGraphGenerator GRAPH_GENERATOR_DEFAULT = new GraphGeneratorRandom();
+    private static final String NAME_PARAM_OUTPUT = "CONSOLE_USER_SESSION";
 
     public static final boolean verbose = false;
     public static final boolean breankOnFirst = true;
@@ -160,14 +163,23 @@ public class GraphWS {
         return this.request != null ? this.request.getSession(true) : null;
     }
 
-    @POST
+    private BufferedReader getSessionOutputBufferdReader() {
+        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream("...".getBytes())));
+        return bf;
+    }
+
+    @GET
+//    @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("process-status")
     public Map<String, Object> processStatus() {
         Map<String, Object> map = new HashMap<>();
+        List<String> lines = new ArrayList<>();
+        BufferedReader bf = getSessionOutputBufferdReader();
+        bf.lines().forEach((l) -> lines.add(l));
         map.put("processing", true);
-        map.put("output", "Final Memory: 23M/167M</samp>\n[INFO] ------------------------------------------------------------------------");
+        map.put("output", lines);
         return map;
     }
 
@@ -178,4 +190,5 @@ public class GraphWS {
     public Map<String, Object> cancelProcess() {
         return null;
     }
+
 }

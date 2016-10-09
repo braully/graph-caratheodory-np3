@@ -8,6 +8,7 @@ package com.github.braully.graph.operation;
 import com.github.braully.graph.hn.UndirectedSparseGraphTO;
 import com.github.braully.graph.hn.UtilGraph;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
 
     private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class.getName());
 
-    private static final String COMMAND_GRAPH_HN = "~/bin/graph-caratheodory-np3.sh";
+    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
 
     private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?Combination: \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
@@ -46,7 +47,8 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         try {
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
 
-            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
+//            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
+            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
             log.log(Level.INFO, "Command: {0}", commandToExecute);
             log.log(Level.INFO, "Executing");

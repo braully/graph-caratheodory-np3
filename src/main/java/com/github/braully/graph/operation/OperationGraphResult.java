@@ -25,7 +25,7 @@ public class OperationGraphResult {
     Set<Integer> convexHull;
     int[] auxProcessor;
     Set<Integer> partial;
-    Long totalTimeMillis;
+    long totalTimeMillis;
     Integer caratheodoryNumber;
 
     Map<String, Object> toMap() {
