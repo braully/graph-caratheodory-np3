@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,15 @@ public class GraphWS {
                     Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            Collections.sort(generators, new Comparator<IGraphGenerator>() {
+                @Override
+                public int compare(IGraphGenerator t, IGraphGenerator t1) {
+                    if (t != null && t1 != null) {
+                        return t.getDescription().compareToIgnoreCase(t1.getDescription());
+                    }
+                    return 0;
+                }
+            });
         }
 
         reflections = new Reflections("com.github.braully.graph.operation");
@@ -81,6 +92,15 @@ public class GraphWS {
                     Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            Collections.sort(operators, new Comparator<IGraphOperation>() {
+                @Override
+                public int compare(IGraphOperation t, IGraphOperation t1) {
+                    if (t != null && t1 != null) {
+                        return t.getDescription().compareToIgnoreCase(t1.getDescription());
+                    }
+                    return 0;
+                }
+            });
         }
     }
 
