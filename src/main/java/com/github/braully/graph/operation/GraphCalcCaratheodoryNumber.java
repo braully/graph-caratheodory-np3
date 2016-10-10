@@ -44,7 +44,7 @@ public class GraphCalcCaratheodoryNumber extends GraphCheckCaratheodorySet {
         return result;
     }
 
-    private OperationGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
+    OperationGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
         OperationGraphResult processedHullSet = null;
         if (graph == null || graph.getVertexCount() <= 0) {
             return processedHullSet;

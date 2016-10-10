@@ -26,13 +26,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-        Integer caratheodoryNumber = -1;
-        Integer[] caratheodorySet = null;
-        Integer[] convexHull = null;
-        int[] auxProcessor = null;
-        Integer[] partial = null;
         long totalTimeMillis = -1;
-
         Collection<Integer> set = graphRead.getSet();
         int[] arr = new int[set.size()];
         int i = 0;
@@ -41,13 +35,18 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             i++;
         }
         totalTimeMillis = System.currentTimeMillis();
-        OperationGraphResult caratheodoryNumberGraph = hsp3(graphRead, arr);
+        OperationGraphResult caratheodoryNumberGraph = null;
+        if (set.size() >= 2) {
+            caratheodoryNumberGraph = hsp3(graphRead, arr);
+        }
         totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
 
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
-
-        if (caratheodoryNumberGraph != null
+        if (caratheodoryNumberGraph == null) {
+            caratheodoryNumberGraph = new OperationGraphResult();
+        }
+        if (caratheodoryNumberGraph.caratheodorySet != null
                 && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
             response.putAll(caratheodoryNumberGraph.toMap());
             response.put(PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumberGraph.caratheodorySet.size());

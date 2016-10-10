@@ -57,7 +57,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             log.log(Level.INFO, "Executed");
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            
+
             String line = "";
             log.log(Level.INFO, "Output");
             while ((line = reader.readLine()) != null) {
@@ -115,7 +115,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         return description;
     }
 
-    private int[] parseCaratheodorySet(String line) {
+    int[] parseCaratheodorySet(String line) {
         int[] ret = null;
         Matcher m = PATERN_CARATHEODORY_SET.matcher(line);
         if (m.find()) {
@@ -131,7 +131,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         return ret;
     }
 
-    private Integer parseCaratheodoryNumber(String line) {
+    Integer parseCaratheodoryNumber(String line) {
         Integer ret = null;
         Matcher m = PATERN_CARATHEODORY_NUMBER.matcher(line);
         if (m.find()) {
@@ -145,7 +145,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         return ret;
     }
 
-    private String parseParallelTime(String line) {
+    String parseParallelTime(String line) {
         String ret = null;
         Matcher m = PATERN_PARALLEL_TIME.matcher(line);
         if (m.find()) {

@@ -159,7 +159,8 @@
                             <label>Caratheodroy set(S)</label>
                             <input type="text"
                                    class="form-control"
-                                   ng-model="setstr">
+                                   ng-model="caratheodory.set" 
+                                   disabled readonly>
                         </div>
 
                         <div class="form-group">
@@ -194,7 +195,13 @@
                                 <option value=""></option>
                                 <option ng-repeat="y in operations" value="{{y.key}}">{{y.value}}</option>
                             </select>
+                        </div>
 
+                        <div class="form-group">
+                            <label>Input</label>
+                            <input type="text"
+                                   class="form-control"
+                                   ng-model="inputData">
                         </div>
 
                         <div class="form-group pull-right">
@@ -239,10 +246,10 @@
                 $scope.operation = null;
                 $scope.processing = false;
                 $scope.typeGraph = 'random';
-                $scope.outputConsole = ['[INFO] BUILD SUCCESS', '[INFO] Total time: 4.218 s'];
+                $scope.inputData = null;
+                $scope.outputConsole = ['[INFO] BUILD SUCCESS'];
                 $scope.graph = null;
                 $scope.file = null;
-                $scope.setstr = null;
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
 
                 $scope.downloadGraph = function () {
@@ -350,18 +357,22 @@
                 };
 
                 $scope.executeOperation = function () {
-                    if ($scope.setstr)
-                        $scope.graph.set = $scope.setstr.split(',').map(Number);
-                    $scope.outputConsole = [];
+                    $scope.graph.inputData = $scope.inputData;
+                    if ($scope.inputData)
+                        $scope.graph.set = $scope.inputData.split(',').map(Number);
+                    $scope.outputConsole = ['Processing...'];
                     $scope.graph.operation = $scope.operation;
                     $scope.processing = true;
                     $http.post('rest/graph/operation', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
-                        $scope.setstr = '';
-                        if (caratheodorydata && caratheodorydata.set) {
-                            $scope.setstr = $scope.caratheodory.set.toString();
-                        }
+//                        $scope.inputData = '';
                         $scope.processing = false;
+                        $scope.outputConsole = ['Finish'];
+//                        console.log($scope.caratheodory);
+//                        console.log($scope.caratheodory.set);
+                        if (!$scope.caratheodory.set || $scope.caratheodory.set.length == 0) {
+                            $scope.caratheodory.set = ['∄'];
+                        }
                     }).error(function (err) {
                         $scope.processing = false;
                         window.alert('Error: ' + err);
@@ -381,7 +392,7 @@
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status').success(function (r) {
                         $scope.processing = r.processing;
-                        console.log(r);
+//                        console.log(r);
                         if (r.output)
                             for (var i = 0; i < r.output.length; i++) {
                                 $scope.outputConsole.push(r.output[i]);
@@ -389,7 +400,7 @@
                         $timeout($scope.pollerConsoleOutput, 5000);
                     });
                 };
-                $scope.pollerConsoleOutput();
+//                $scope.pollerConsoleOutput();
             });
             app.directive("ngFileSelect", function () {
                 return {

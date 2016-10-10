@@ -99,6 +99,8 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     private String operation;
 
+    private String inputData;
+
     private Collection set;
 
     public Collection getSet() {
@@ -115,5 +117,13 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public String getInputData() {
+        return inputData;
+    }
+
+    public void setInputData(String inputData) {
+        this.inputData = inputData;
     }
 }
