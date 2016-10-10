@@ -1,6 +1,6 @@
 package com.github.braully.graph.generator;
 
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
+import com.github.braully.graph.UndirectedSparseGraphTO;
 
 public class GraphGeneratorCycle extends GraphGeneratorPath {
 

@@ -5,12 +5,13 @@
  */
 package com.github.braully.graph.operation;
 
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
+import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.Map;
 
 /**
+ * Graph operation.
  *
- * @author strike
+ * @author braully
  */
 public interface IGraphOperation {
 

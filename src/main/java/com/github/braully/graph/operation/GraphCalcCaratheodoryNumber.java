@@ -5,7 +5,7 @@
  */
 package com.github.braully.graph.operation;
 
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
+import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;

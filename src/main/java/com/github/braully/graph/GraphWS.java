@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.braully.graph.hn;
+package com.github.braully.graph;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.braully.graph.generator.GraphGeneratorRandom;
@@ -38,9 +38,9 @@ import javax.ws.rs.core.MediaType;
 import org.reflections.Reflections;
 
 /**
- * REST Web Service
+ * REST Web Service -- Web Services Front end
  *
- * @author strike
+ * @author braully
  */
 @Path("graph")
 public class GraphWS {

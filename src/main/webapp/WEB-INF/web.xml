@@ -11,7 +11,7 @@
         </servlet-class>
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>com.github.braully.graph.hn</param-value>
+            <param-value>com.github.braully.graph</param-value>
         </init-param>
         <init-param>
             <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
@@ -24,22 +24,6 @@
         <servlet-name>rest-ws</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
-    
-<!--    <servlet>
-        <servlet-name>UploadGraphFile</servlet-name>
-        <servlet-class>com.github.braully.graph.hn.UploadGraphFile</servlet-class>
-        <multipart-config>
-            <max-file-size>10485760</max-file-size>
-            <max-request-size>20971520</max-request-size>
-            <file-size-threshold>5242880</file-size-threshold>
-        </multipart-config>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UploadGraphFile</servlet-name>
-        <url-pattern>/upload/*</url-pattern>
-        <http-method>POST</http-method>
-    </servlet-mapping>-->
     
     <session-config>
         <session-timeout>30</session-timeout>

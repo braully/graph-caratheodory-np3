@@ -1,7 +1,7 @@
 package com.github.braully.graph.operation;
 
-import com.github.braully.graph.hn.GraphWS;
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
+import com.github.braully.graph.GraphWS;
+import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;

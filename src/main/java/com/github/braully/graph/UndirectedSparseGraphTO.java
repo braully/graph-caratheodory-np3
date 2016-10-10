@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.braully.graph.hn;
+package com.github.braully.graph;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
@@ -15,8 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Transport Object of Graph representation.
  *
- * @author strike
+ * @author braully
  */
 public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSparseGraph {
 

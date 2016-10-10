@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.braully.graph.hn;
+package com.github.braully.graph;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
@@ -28,7 +28,7 @@ public class ApplicationConfig extends Application {
      * out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.github.braully.graph.hn.GraphWS.class);
+        resources.add(com.github.braully.graph.GraphWS.class);
     }
 
 }

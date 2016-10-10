@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.braully.graph.hn;
+package com.github.braully.graph;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,8 +17,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Graphs utils
  *
- * @author strike
+ * @author Braully
  */
 public class UtilGraph {
 
@@ -34,7 +35,6 @@ public class UtilGraph {
                 FileWriter writer = new FileWriter(file);
                 writer.write("#Graph |V| = " + vertexCount + "\n");
 
-                int sizeRowOffset = 0;
                 List<Integer> csrColIdxs = new ArrayList<>();
                 List<Integer> rowOffset = new ArrayList<>();
 

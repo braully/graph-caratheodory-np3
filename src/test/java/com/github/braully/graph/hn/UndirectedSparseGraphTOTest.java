@@ -5,6 +5,7 @@
  */
 package com.github.braully.graph.hn;
 
+import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializer;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.github.braully.graph.generator;
 
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
+import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayDeque;
 import java.util.Queue;
 

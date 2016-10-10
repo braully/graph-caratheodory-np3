@@ -5,8 +5,8 @@
  */
 package com.github.braully.graph.operation;
 
-import com.github.braully.graph.hn.UndirectedSparseGraphTO;
-import com.github.braully.graph.hn.UtilGraph;
+import com.github.braully.graph.UndirectedSparseGraphTO;
+import com.github.braully.graph.UtilGraph;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
