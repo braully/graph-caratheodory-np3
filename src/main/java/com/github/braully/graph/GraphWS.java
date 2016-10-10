@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -55,6 +57,9 @@ public class GraphWS {
 
     @Context
     private HttpServletRequest request;
+
+    @Context
+    private HttpServletResponse response;
 
     private List<IGraphGenerator> generators = new ArrayList<>();
 
@@ -153,6 +158,27 @@ public class GraphWS {
         }
 
         return (UndirectedSparseGraphTO) graph;
+    }
+
+    @POST
+//    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("download-graph-csr")
+    public void downloadGraphCsr(String jsonGraph) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            if (graph != null) {
+                response.setHeader("Content-disposition", "attachment; filename=" + "file.csr");
+                response.setContentType("text/plain");
+                PrintWriter writer = response.getWriter();
+                UtilGraph.writerGraphToCsr(writer, graph);
+                writer.flush();
+            }
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Fail on dowload", e);
+        }
+
     }
 
     @POST

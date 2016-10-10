@@ -136,6 +136,11 @@
                         </div>
                         <div class="form-group pull-right">
                             <button class="btn btn-primary btn-sm" 
+                                    ng-click="downloadGraphCsr();">
+                                <span class="glyphicon glyphicon-circle-arrow-down"></span>
+                                Download (csr)
+                            </button>
+                            <button class="btn btn-primary btn-sm" 
                                     ng-click="downloadGraph();">
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
                                 Download (json)
@@ -258,6 +263,15 @@
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
+
+                $scope.downloadGraphCsr = function () {
+                    $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
+                        var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.csr';
+                        var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
+                        saveAs(blob, filename);
+                    });
+                };
+
 
                 $scope.uploadedFile = function () {
                     if (!$scope.file) {
