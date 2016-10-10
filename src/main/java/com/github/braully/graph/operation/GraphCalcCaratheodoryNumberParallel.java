@@ -57,7 +57,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             log.log(Level.INFO, "Executed");
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
+            
             String line = "";
             log.log(Level.INFO, "Output");
             while ((line = reader.readLine()) != null) {

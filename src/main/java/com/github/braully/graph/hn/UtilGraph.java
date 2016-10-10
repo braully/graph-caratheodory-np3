@@ -51,6 +51,7 @@ public class UtilGraph {
                         }
                     }
                 }
+                csrColIdxs.add(idx);
 
                 for (Integer i : csrColIdxs) {
                     writer.write("" + i);

@@ -164,7 +164,8 @@ public class GraphWS {
     }
 
     private BufferedReader getSessionOutputBufferdReader() {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream("...".getBytes())));
+//        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream("...".getBytes())));
+        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(new byte[0])));
         return bf;
     }
 
