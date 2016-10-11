@@ -47,8 +47,8 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         try {
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
 
-//            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
-            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
+            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
+//            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
             log.log(Level.INFO, "Command: {0}", commandToExecute);
             log.log(Level.INFO, "Executing");
