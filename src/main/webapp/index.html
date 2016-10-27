@@ -3,7 +3,7 @@
     <!--References: http://bl.ocks.org/mbostock/4062045-->
     <head>
         <meta charset="utf-8">
-        <title>Caratheodory Number</title>
+        <title>Graph Problems</title>
         <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
         <link  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
@@ -61,8 +61,8 @@
     <body >
         <div class="jumbotron">
             <div class="container">
-                <h1>Caratheodory Number</h1>
-                <p>In P3-Convexity</p>
+                <h1>Graph Problems</h1>
+                <p>P3-Convexity</p>
             </div>
         </div>
 
@@ -73,33 +73,6 @@
                     <fieldset>
                         <legend>Generate</legend>
                         <div class="form-group">
-                            <label for="nvertices">Vertex count</label>
-                            <input type="text" class="form-control" 
-                                   id="nvertices"  min="1"
-                                   ng-model="nvertices"
-                                   name="nvertices" autofocus required>
-                        </div>
-                        <div class="form-group">
-                            <label for="minDegree">Vertex degree (suggestion)</label>
-                            <input type="number"
-                                   class="form-control"
-                                   ng-model="minDegree" min="1"
-                                   id="minDegree" name="minDegree" 
-                                   placeholder="1">
-                            <input type="text"
-                                   class="form-control"
-                                   ng-model="maxDegree" min="1.1"
-                                   id="maxDegree" name="maxDegree" 
-                                   placeholder="5">
-                        </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="sim"                                        
-                                       disabled name="spam" checked>
-                                Connected
-                            </label>
-                        </div>
-                        <div class="form-group">
                             <label for="typeG">Type</label>
                             <select type="select" class="form-control"
                                     ng-model="typeGraph"
@@ -108,6 +81,15 @@
                                 <option ng-repeat="x in generators" value="{{x.key}}">{{x.value}}</option>
                             </select>
                         </div>
+
+                        <div class="form-group" ng-repeat="p in typeGraph.parameters">                            
+                            <label>p</label>
+                            <input type="text" 
+                                   class="form-control"
+                                   name="p" 
+                                   autofocus required>
+                        </div>
+
                         <div class="form-group pull-right">
                             <button ng-click="generateGraph();" 
                                     class="btn btn-primary btn-sm">

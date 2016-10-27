@@ -3,15 +3,20 @@ package com.github.braully.graph.generator;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class GraphGeneratorRandom implements IGraphGenerator {
+public class GraphGeneratorRandom extends AbstractGraphGenerator {
 
-    static final String name = "random";
+    static final String N_VERTICES = "Nº Vertices";
+    static final String MIN_DEGREE = "Min Degree";
+    static final String MAX_DEGREE = "Max Degree";
+
+    static final String[] parameters = {N_VERTICES, MIN_DEGREE, MAX_DEGREE};
     static final String description = "Random";
 
     @Override
-    public String getName() {
-        return name;
+    public String[] getParameters() {
+        return parameters;
     }
 
     @Override
@@ -20,7 +25,11 @@ public class GraphGeneratorRandom implements IGraphGenerator {
     }
 
     @Override
-    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
+    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Map parameters) {
+        Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
+        Integer minDegree = getIntegerParameter(parameters, MIN_DEGREE);
+        Double maxDegree = getDoubleParameter(parameters, MAX_DEGREE);
+
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
@@ -61,4 +70,5 @@ public class GraphGeneratorRandom implements IGraphGenerator {
         }
         return graph;
     }
+
 }
