@@ -1,6 +1,8 @@
 package com.github.braully.graph.generator;
 
 import edu.uci.ics.jung.graph.AbstractGraph;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -13,7 +15,7 @@ public interface IGraphGenerator {
      *
      * @return
      */
-    public String getName();
+    public String[] getParameters();
 
     /**
      * Description in Visual representation of Generator.
@@ -23,12 +25,10 @@ public interface IGraphGenerator {
     public String getDescription();
 
     /**
-     * Generate um graph of this type with nvertices.
      *
-     * @param nvertices
-     * @param minDegree
-     * @param maxDegree
+     *
+     * @param parameters
      * @return
      */
-    public AbstractGraph<Integer, Integer> generateGraph(Integer nvertices, Integer minDegree, Double maxDegree);
+    public AbstractGraph<Integer, Integer> generateGraph(Map parameters);
 }

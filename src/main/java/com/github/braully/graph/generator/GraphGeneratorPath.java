@@ -3,15 +3,17 @@ package com.github.braully.graph.generator;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class GraphGeneratorPath implements IGraphGenerator {
+public class GraphGeneratorPath extends AbstractGraphGenerator {
 
-    static final String name = "path";
+    static final String N_VERTICES = "Nº Vertices";
+    static final String[] parameters = {N_VERTICES};
     static final String description = "Path";
 
     @Override
-    public String getName() {
-        return name;
+    public String[] getParameters() {
+        return parameters;
     }
 
     @Override
@@ -20,7 +22,8 @@ public class GraphGeneratorPath implements IGraphGenerator {
     }
 
     @Override
-    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Integer nvertices, Integer minDegree, Double maxDegree) {
+    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Map parameters) {
+        Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];

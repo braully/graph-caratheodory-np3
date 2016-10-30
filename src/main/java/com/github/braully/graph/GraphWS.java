@@ -37,6 +37,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import org.reflections.Reflections;
 
 /**
@@ -129,7 +131,7 @@ public class GraphWS {
         List<Map.Entry<String, String>> types = new ArrayList<>();
         if (generators != null) {
             for (IGraphGenerator generator : generators) {
-                types.add(new AbstractMap.SimpleEntry<String, String>(generator.getName(), generator.getDescription()));
+                types.add(new AbstractMap.SimpleEntry<String, String>(generator.getDescription(), generator.getDescription()));
             }
         }
         return types;
@@ -138,26 +140,35 @@ public class GraphWS {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("generate-graph")
-    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(
-            @QueryParam("nvertices") @DefaultValue("5") Integer nvertices,
-            @QueryParam("minDegree") @DefaultValue("1") Integer minDegree,
-            @QueryParam("maxDegree") @DefaultValue("1.5") Double maxDegree,
-            @QueryParam("typeGraph") @DefaultValue("random") String typeGraph) {
-
+    public UndirectedSparseGraphTO<Integer, Integer> generateGraph(@Context UriInfo info) {
+        MultivaluedMap<String, String> multiParams = info.getQueryParameters();
+        Map<String, String> params = getTranslageParams(multiParams);
+        String typeGraph = params.get("typeGraph");
         AbstractGraph<Integer, Integer> graph = null;
         if (typeGraph != null) {
             for (IGraphGenerator generator : generators) {
-                if (typeGraph.equalsIgnoreCase(generator.getName())) {
-                    graph = generator.generateGraph(nvertices, minDegree, maxDegree);
+                if (typeGraph.equalsIgnoreCase(generator.getDescription())) {
+                    graph = generator.generateGraph(params);
                     break;
                 }
             }
         }
         if (graph == null) {
-            graph = GRAPH_GENERATOR_DEFAULT.generateGraph(nvertices, minDegree, maxDegree);
+            graph = GRAPH_GENERATOR_DEFAULT.generateGraph(params);
         }
 
         return (UndirectedSparseGraphTO) graph;
+    }
+
+    Map<String, String> getTranslageParams(MultivaluedMap<String, String> multiParams) {
+        Map<String, String> map = new HashMap<>();
+        if (multiParams != null) {
+            Set<String> keySet = multiParams.keySet();
+            for (String key : keySet) {
+                map.put(key, multiParams.getFirst(key));
+            }
+        }
+        return map;
     }
 
     @POST
