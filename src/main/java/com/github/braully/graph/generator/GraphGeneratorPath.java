@@ -10,6 +10,7 @@ public class GraphGeneratorPath extends AbstractGraphGenerator {
     static final String N_VERTICES = "Nº Vertices";
     static final String[] parameters = {N_VERTICES};
     static final String description = "Path";
+    static final Integer DEFAULT_NVERTICES = 5;
 
     @Override
     public String[] getParameters() {
@@ -24,6 +25,11 @@ public class GraphGeneratorPath extends AbstractGraphGenerator {
     @Override
     public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Map parameters) {
         Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
+
+        if (nvertices == null) {
+            nvertices = DEFAULT_NVERTICES;
+        }
+
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];

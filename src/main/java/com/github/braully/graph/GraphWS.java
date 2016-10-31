@@ -127,11 +127,11 @@ public class GraphWS {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("list-graph-generator")
-    public List<Map.Entry<String, String>> listGraphGenerator() {
-        List<Map.Entry<String, String>> types = new ArrayList<>();
+    public List<Map.Entry<String, String[]>> listGraphGenerator() {
+        List<Map.Entry<String, String[]>> types = new ArrayList<>();
         if (generators != null) {
             for (IGraphGenerator generator : generators) {
-                types.add(new AbstractMap.SimpleEntry<String, String>(generator.getDescription(), generator.getDescription()));
+                types.add(new AbstractMap.SimpleEntry<String, String[]>(generator.getDescription(), generator.getParameters()));
             }
         }
         return types;
@@ -143,7 +143,7 @@ public class GraphWS {
     public UndirectedSparseGraphTO<Integer, Integer> generateGraph(@Context UriInfo info) {
         MultivaluedMap<String, String> multiParams = info.getQueryParameters();
         Map<String, String> params = getTranslageParams(multiParams);
-        String typeGraph = params.get("typeGraph");
+        String typeGraph = params.get("key");
         AbstractGraph<Integer, Integer> graph = null;
         if (typeGraph != null) {
             for (IGraphGenerator generator : generators) {

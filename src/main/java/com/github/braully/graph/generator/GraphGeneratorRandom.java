@@ -11,6 +11,10 @@ public class GraphGeneratorRandom extends AbstractGraphGenerator {
     static final String MIN_DEGREE = "Min Degree";
     static final String MAX_DEGREE = "Max Degree";
 
+    static final Integer DEFAULT_NVERTICES = 5;
+    static final Integer DEFAULT_MIN_DEGREE = 1;
+    static final Double DEFAULT_MAX_DEGREE = 1.2;
+
     static final String[] parameters = {N_VERTICES, MIN_DEGREE, MAX_DEGREE};
     static final String description = "Random";
 
@@ -29,6 +33,16 @@ public class GraphGeneratorRandom extends AbstractGraphGenerator {
         Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
         Integer minDegree = getIntegerParameter(parameters, MIN_DEGREE);
         Double maxDegree = getDoubleParameter(parameters, MAX_DEGREE);
+
+        if (nvertices == null) {
+            nvertices = DEFAULT_NVERTICES;
+        }
+        if (minDegree == null) {
+            minDegree = DEFAULT_MIN_DEGREE;
+        }
+        if (maxDegree == null) {
+            maxDegree = DEFAULT_MAX_DEGREE;
+        }
 
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);

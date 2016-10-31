@@ -79,19 +79,20 @@
                         <div class="form-group">
                             <label for="typeG">Type</label>
                             <select type="select" class="form-control"
-                                    ng-model="typeGraph"
+                                    ng-model="params.typeGraph"
                                     id="typeG" name="minDegree" 
                                     placeholder="1">
-                                <option ng-repeat="x in generators" value="{{x.key}}">{{x.value}}</option>
+                                <option ng-repeat="x in generators track by $index" 
+                                        value="{{x}}">{{x.key}}</option>
                             </select>
                         </div>
 
-                        <div class="form-group" ng-repeat="p in typeGraph.parameters">                            
-                            <label>p</label>
+                        <div class="form-group" 
+                             ng-repeat="p in params.typeGraph.value track by $index">                            
+                            <label>{{p}}</label>
                             <input type="text" 
                                    class="form-control"
-                                   name="p" 
-                                   autofocus required>
+                                   autofocus>
                         </div>
 
                         <div class="form-group pull-right">
@@ -237,11 +238,13 @@
                 $scope.operation = null;
                 $scope.processing = false;
                 $scope.typeGraph = 'random';
+
                 $scope.inputData = null;
                 $scope.outputConsole = ['[INFO] BUILD SUCCESS'];
                 $scope.graph = null;
                 $scope.file = null;
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
+                $scope.params = {typeGraph: null, param: [], value: []};
 
                 $scope.downloadGraph = function () {
                     var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
@@ -365,14 +368,7 @@
                 }
                 ;
                 $scope.generateGraph = function () {
-                    $http.get('rest/graph/generate-graph', {
-                        params: {
-                            nvertices: $scope.nvertices,
-                            minDegree: $scope.minDegree,
-                            maxDegree: $scope.maxDegree,
-                            typeGraph: $scope.typeGraph
-                        }
-                    }).success(function (graph) {
+                    $http.get('rest/graph/generate-graph', {params: $scope.params}).success(function (graph) {
                         $scope.graph = graph;
                         $scope.updateGraph();
                     });
