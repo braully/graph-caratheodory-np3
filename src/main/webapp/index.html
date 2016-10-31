@@ -80,17 +80,16 @@
                             <label for="typeG">Type</label>
                             <select type="select" class="form-control"
                                     ng-model="typeGraph"
-                                    id="typeG" name="minDegree" 
-                                    placeholder="1">
-                                <option ng-repeat="x in generators track by $index" 
-                                        value="{{x}}">{{x.key}}</option>
+                                    id="typeG" name="typeG"
+                                    ng-options="option.key for option in generators track by option.key">
                             </select>
                         </div>
 
                         <div class="form-group" 
-                             ng-repeat="p in params.typeGraph.value track by $index">                            
+                             ng-repeat="p in typeGraph.value track by $index">                            
                             <label>{{p}}</label>
                             <input type="text" 
+                                   ng-model="mapParam[p]"
                                    class="form-control"
                                    autofocus>
                         </div>
@@ -238,7 +237,8 @@
                 $scope.operation = null;
                 $scope.processing = false;
 
-                $scope.typeGraph = {key: 'random', value: [5, 1, 1.2]};
+                $scope.typeGraph = {};
+                $scope.mapParam = new Map();
                 $scope.inputData = null;
                 $scope.outputConsole = ['[INFO] BUILD SUCCESS'];
                 $scope.graph = null;
@@ -251,6 +251,7 @@
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
+
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.csr';
@@ -258,6 +259,7 @@
                         saveAs(blob, filename);
                     });
                 };
+
                 $scope.uploadedFile = function () {
                     if (!$scope.file) {
                         window.alert('File invalid');
@@ -275,6 +277,7 @@
                     };
                     fr.readAsText($scope.file);
                 };
+
                 $scope.updateGraph = function () {
                     var graph = $scope.graph;
                     var width = $("#grafo").width();
@@ -349,20 +352,21 @@
                     function dragstart(d) {
                         d3.select(this).classed("fixed", d.fixed = true);
                     }
-                }
-                ;
+                };
+
                 $scope.generateGraph = function () {
+                    $scope.mapParam['key'] = $scope.typeGraph.key;
+//                    console.log($scope.mapParam);
                     $http.get('rest/graph/generate-graph',
-                            {params: {
-                                    key: $scope.typeGraph.key,
-                                    value: $scope.typeGraph.value
-                                }
+                            {
+                                params: $scope.mapParam
                             }
                     ).success(function (graph) {
                         $scope.graph = graph;
                         $scope.updateGraph();
                     });
                 };
+
                 $scope.executeOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -385,12 +389,15 @@
                         window.alert('Error: ' + err);
                     });
                 };
+
                 $http.get('rest/graph/list-graph-generator').success(function (gen) {
                     $scope.generators = gen;
                 });
+
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
                 });
+
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status').success(function (r) {
