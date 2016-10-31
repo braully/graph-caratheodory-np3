@@ -79,7 +79,7 @@
                         <div class="form-group">
                             <label for="typeG">Type</label>
                             <select type="select" class="form-control"
-                                    ng-model="params.typeGraph"
+                                    ng-model="typeGraph"
                                     id="typeG" name="minDegree" 
                                     placeholder="1">
                                 <option ng-repeat="x in generators track by $index" 
@@ -237,14 +237,13 @@
                 $scope.operations = null;
                 $scope.operation = null;
                 $scope.processing = false;
-                $scope.typeGraph = 'random';
 
+                $scope.typeGraph = {key: 'random', value: [5, 1, 1.2]};
                 $scope.inputData = null;
                 $scope.outputConsole = ['[INFO] BUILD SUCCESS'];
                 $scope.graph = null;
                 $scope.file = null;
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
-                $scope.params = {typeGraph: null, param: [], value: []};
 
                 $scope.downloadGraph = function () {
                     var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
@@ -252,7 +251,6 @@
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
-
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.csr';
@@ -260,8 +258,6 @@
                         saveAs(blob, filename);
                     });
                 };
-
-
                 $scope.uploadedFile = function () {
                     if (!$scope.file) {
                         window.alert('File invalid');
@@ -285,29 +281,23 @@
                     var height = $("#grafo").height();
                     $("#grafo").html('');
                     var color = d3.scale.category20();
-
                     var force = d3.layout.force()
                             .charge(-120)
                             .linkDistance(70)
                             .size([width, height]);
-
                     var drag = force.drag()
                             .on("dragstart", dragstart);
-
                     var svg = d3.select("#grafo")
                             .append("svg")
                             .attr("width", width)
                             .attr("height", height);
-
                     var vertex = graph.vertices.map(function (d) {
                         return {"name": d, "group": 1};
                     });
-
                     var edges = graph.pairs.map(function (d) {
                         return {"source": d[0], "target": d[1], "value": 2, "origin": d};
                     });
                     force.nodes(vertex).links(edges).start();
-
                     var link = svg.selectAll(".link")
                             .data(edges)
                             .enter().append("line")
@@ -315,14 +305,12 @@
                             .style("stroke-width", function (d) {
                                 return Math.sqrt(d.value);
                             });
-
                     var nodes = svg.selectAll(".node")
                             .data(vertex)
                             .enter().append("g")
                             .attr("class", "node")
                             .on("dblclick", dblclick)
                             .call(force.drag);
-
                     nodes.append("circle")
                             .attr("class", "node")
                             .attr("r", 5)
@@ -331,13 +319,11 @@
                             .style("fill", function (d) {
                                 return color(d.group);
                             }).call(force.drag);
-
                     nodes.append("text").attr("dx", 6)
                             .attr("dy", ".35em")
                             .text(function (d) {
                                 return d.name;
                             });
-
                     force.on("tick", function () {
                         link.attr("x1", function (d) {
                             return d.source.x;
@@ -348,7 +334,6 @@
                         }).attr("y2", function (d) {
                             return d.target.y;
                         });
-
                         nodes.attr("transform", function (d) {
                             return "translate(" + d.x + "," + d.y + ")";
                         }).attr("cx", function (d) {
@@ -357,7 +342,6 @@
                             return d.y;
                         });
                     });
-
                     function dblclick(d) {
                         d3.select(this).classed("fixed", d.fixed = false);
                     }
@@ -368,12 +352,17 @@
                 }
                 ;
                 $scope.generateGraph = function () {
-                    $http.get('rest/graph/generate-graph', {params: $scope.params}).success(function (graph) {
+                    $http.get('rest/graph/generate-graph',
+                            {params: {
+                                    key: $scope.typeGraph.key,
+                                    value: $scope.typeGraph.value
+                                }
+                            }
+                    ).success(function (graph) {
                         $scope.graph = graph;
                         $scope.updateGraph();
                     });
                 };
-
                 $scope.executeOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -396,17 +385,13 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $http.get('rest/graph/list-graph-generator').success(function (gen) {
                     $scope.generators = gen;
                 });
-
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
                 });
-
                 $scope.generateGraph();
-
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status').success(function (r) {
                         $scope.processing = r.processing;
