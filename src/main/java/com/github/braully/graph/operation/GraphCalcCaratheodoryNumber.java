@@ -18,7 +18,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
  */
 public class GraphCalcCaratheodoryNumber extends GraphCheckCaratheodorySet {
 
-    static final String name = "ncaratheodoryj";
+    static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (Java)";
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
@@ -64,11 +64,11 @@ public class GraphCalcCaratheodoryNumber extends GraphCheckCaratheodorySet {
         return processedHullSet;
     }
 
-    public String getName() {
-        return name;
+    public String getTypeProblem() {
+        return type;
     }
 
-    public String getDescription() {
+    public String getName() {
         return description;
     }
 }

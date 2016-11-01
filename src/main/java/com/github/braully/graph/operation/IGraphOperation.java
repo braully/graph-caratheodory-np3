@@ -15,9 +15,9 @@ import java.util.Map;
  */
 public interface IGraphOperation {
 
-    public String getName();
+    public String getTypeProblem();
 
-    public String getDescription();
+    public String getName();
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph);
 }

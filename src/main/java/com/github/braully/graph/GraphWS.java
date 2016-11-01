@@ -103,7 +103,7 @@ public class GraphWS {
                 @Override
                 public int compare(IGraphOperation t, IGraphOperation t1) {
                     if (t != null && t1 != null) {
-                        return t.getDescription().compareToIgnoreCase(t1.getDescription());
+                        return t.getName().compareToIgnoreCase(t1.getName());
                     }
                     return 0;
                 }
@@ -118,7 +118,7 @@ public class GraphWS {
         List<Map.Entry<String, String>> types = new ArrayList<>();
         if (operators != null) {
             for (IGraphOperation operator : operators) {
-                types.add(new AbstractMap.SimpleEntry<String, String>(operator.getName(), operator.getDescription()));
+                types.add(new AbstractMap.SimpleEntry<String, String>(operator.getName(), operator.getTypeProblem()));
             }
         }
         return types;

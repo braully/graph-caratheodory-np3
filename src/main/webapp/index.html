@@ -66,7 +66,6 @@
         <div class="jumbotron">
             <div class="container">
                 <h1>Graph Problems</h1>
-                <p>P3-Convexity</p>
             </div>
         </div>
 
@@ -177,14 +176,24 @@
                                    disabled readonly>
                         </div>
 
+                        <legend>Type</legend>
                         <div class="form-group">
-                            <label for="typeG">Operation</label>
+                            <label for="typeT">Type</label>
+                            <select type="select" class="form-control"
+                                    ng-model="typeOperation" id="typeT" name="typeT">
+                                <option ng-repeat="option in typeOperations" 
+                                        ng-value="option">{{option}}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="typeO">Operation</label>
                             <select class="form-control" name="typeOperation"
                                     ng-model="operation"
-                                    id="typeOperation"
-                                    placeholder="1">
+                                    id="typeOperation">
                                 <option value=""></option>
-                                <option ng-repeat="y in operations" value="{{y.key}}">{{y.value}}</option>
+                                <option ng-repeat="y in operations| filter:typeOperation" 
+                                        value="{{y.key}}">{{y.key}}</option>
                             </select>
                         </div>
 
@@ -234,9 +243,11 @@
                 $scope.maxDegree = 2.0;
                 $scope.generators = null;
                 $scope.operations = null;
+                $scope.typeOperations = null;
                 $scope.operation = null;
                 $scope.processing = false;
 
+                $scope.typeOperation = {};
                 $scope.typeGraph = {};
                 $scope.mapParam = new Map();
                 $scope.inputData = null;
@@ -396,6 +407,15 @@
 
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
+                    if (ops) {
+                        var op;
+                        $scope.typeOperations = new Set();
+                        ops.forEach(function (value) {
+                            $scope.typeOperations.add(value.value);
+                            $scope.typeOperation = value.value;
+                        });
+                        $scope.typeOperations = Array.from($scope.typeOperations);
+                    }
                 });
 
                 $scope.generateGraph();

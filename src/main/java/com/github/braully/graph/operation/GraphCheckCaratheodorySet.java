@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class GraphCheckCaratheodorySet implements IGraphOperation {
 
-    static final String name = "checkset";
+    static final String type = "P3-Convexity";
     static final String description = "Check Set(S)";
 
     public static final String PARAM_NAME_CARATHEODORY_NUMBER = "number";
@@ -212,12 +212,12 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getTypeProblem() {
+        return type;
     }
 
     @Override
-    public String getDescription() {
+    public String getName() {
         return description;
     }
 }

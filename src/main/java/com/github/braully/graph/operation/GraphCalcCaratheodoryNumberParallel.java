@@ -32,7 +32,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
 
-    static final String name = "ncaratheodorycuda";
+    static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (CUDA)";
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
@@ -107,11 +107,11 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         return response;
     }
 
-    public String getName() {
-        return name;
+    public String getTypeProblem() {
+        return type;
     }
 
-    public String getDescription() {
+    public String getName() {
         return description;
     }
 
