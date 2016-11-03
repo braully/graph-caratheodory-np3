@@ -121,24 +121,20 @@ public class GraphCalcCaratheodoryTemp extends GraphCheckCaratheodorySet {
         while (headQueue <= tailQueue) {
             int verti = queue[headQueue];
             headQueue = (headQueue + 1) % maxSizeQueue;
-
-            if (aux[verti] < PROCESSED && verti < nvertices) {
-                int end = csrColIdxs[verti + 1];
-                for (int i = csrColIdxs[verti]; i < end; i++) {
-                    int vertn = csrRowOffset[i];
-                    if (vertn != verti && vertn < nvertices) {
-                        int previousValue = aux[vertn];
-                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                        if (previousValue < INCLUDED) {
-                            if (aux[vertn] >= INCLUDED) {
-                                tailQueue = (tailQueue + 1) % maxSizeQueue;
-                                queue[tailQueue] = vertn;
-                            }
-                            auxc[vertn] = auxc[vertn] + auxc[verti];
+            int end = csrColIdxs[verti + 1];
+            for (int i = csrColIdxs[verti]; i < end; i++) {
+                int vertn = csrRowOffset[i];
+                if (vertn != verti && vertn < nvertices) {
+                    int previousValue = aux[vertn];
+                    aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                    if (previousValue < INCLUDED) {
+                        if (aux[vertn] >= INCLUDED) {
+                            tailQueue = (tailQueue + 1) % maxSizeQueue;
+                            queue[tailQueue] = vertn;
                         }
+                        auxc[vertn] = auxc[vertn] + auxc[verti];
                     }
                 }
-                aux[verti] = aux[verti] + PROCESSED;
             }
         }
 
@@ -206,26 +202,23 @@ public class GraphCalcCaratheodoryTemp extends GraphCheckCaratheodorySet {
                 int verti = queue[headQueue];
                 headQueue = (headQueue + 1) % maxSizeQueue;
                 aux[verti] = 0;
-                if (auxc[verti] < PROCESSED && verti < nvertices) {
-                    int end = csrColIdxs[verti + 1];
-                    for (int x = csrColIdxs[verti]; x < end; x++) {
-                        int vertn = csrRowOffset[x];
-                        if (vertn != verti) {
-                            int previousValue = auxc[vertn];
-                            auxc[vertn] = auxc[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                            if (previousValue < INCLUDED && auxc[vertn] >= INCLUDED) {
-                                tailQueue = (tailQueue + 1) % maxSizeQueue;
-                                queue[tailQueue] = vertn;
-                            }
+                int end = csrColIdxs[verti + 1];
+                for (int x = csrColIdxs[verti]; x < end; x++) {
+                    int vertn = csrRowOffset[x];
+                    if (vertn != verti) {
+                        int previousValue = auxc[vertn];
+                        auxc[vertn] = auxc[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                        if (previousValue < INCLUDED && auxc[vertn] >= INCLUDED) {
+                            tailQueue = (tailQueue + 1) % maxSizeQueue;
+                            queue[tailQueue] = vertn;
                         }
                     }
-                    auxc[verti] = PROCESSED;
                 }
             }
         }
         int countDerivated = 0;
         for (int i = 0; i < auxSize; i++) {
-            if (aux[i] > 0) {
+            if (aux[i] >= INCLUDED) {
                 countDerivated++;
             }
         }
