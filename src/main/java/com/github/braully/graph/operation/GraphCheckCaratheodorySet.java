@@ -93,6 +93,12 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         }
 
         if (GraphWS.verbose) {
+            System.out.print("Cmj = {");
+            for (int i = 0; i < currentSet.length; i++) {
+                System.out.print(currentSet[i] + " | ");
+            }
+            System.out.println("}");
+
             System.out.print("Aux = {");
             for (int i = 0; i < graph.getVertexCount(); i++) {
                 System.out.print(aux[i] + " | ");
