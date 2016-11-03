@@ -80,4 +80,54 @@ public class UtilGraph {
         }
         writer.write("\n");
     }
+
+    public static synchronized List<Integer> csrColIdxs(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
+        if (undGraph == null) {
+            return null;
+        }
+        int vertexCount = undGraph.getVertexCount();
+        List<Integer> csrColIdxs = new ArrayList<>();
+        List<Integer> rowOffset = new ArrayList<>();
+
+        int idx = 0;
+        for (Integer i = 0; i < vertexCount; i++) {
+            csrColIdxs.add(idx);
+            Collection<Integer> neighbors = undGraph.getNeighbors(i);
+            Set<Integer> neighSet = new HashSet<>();
+            neighSet.addAll(neighbors);
+            for (Integer vn : neighSet) {
+                if (!vn.equals(i)) {
+                    rowOffset.add(vn);
+                    idx++;
+                }
+            }
+        }
+        csrColIdxs.add(idx);
+        return csrColIdxs;
+    }
+
+    public static synchronized List<Integer> rowOffset(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
+        if (undGraph == null) {
+            return null;
+        }
+        int vertexCount = undGraph.getVertexCount();
+        List<Integer> csrColIdxs = new ArrayList<>();
+        List<Integer> rowOffset = new ArrayList<>();
+
+        int idx = 0;
+        for (Integer i = 0; i < vertexCount; i++) {
+            csrColIdxs.add(idx);
+            Collection<Integer> neighbors = undGraph.getNeighbors(i);
+            Set<Integer> neighSet = new HashSet<>();
+            neighSet.addAll(neighbors);
+            for (Integer vn : neighSet) {
+                if (!vn.equals(i)) {
+                    rowOffset.add(vn);
+                    idx++;
+                }
+            }
+        }
+        csrColIdxs.add(idx);
+        return rowOffset;
+    }
 }

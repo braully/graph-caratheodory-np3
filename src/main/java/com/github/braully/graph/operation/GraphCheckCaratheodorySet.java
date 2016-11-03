@@ -72,7 +72,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
             hsp3g.add(verti);
-//            aux[verti] = aux[verti] + INCLUDED;
             Collection<Integer> neighbors = graph.getNeighbors(verti);
 
             for (int vertn : neighbors) {
