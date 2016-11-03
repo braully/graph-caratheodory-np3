@@ -13,7 +13,7 @@ public class GraphCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNumbe
     static final String description = "Caratheodory Set of Size  (Java)";
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        OperationGraphResult processedCaratheodroySet = null;
+        OperationConvexityGraphResult processedCaratheodroySet = null;
         Map<String, Object> result = null;
         if (graph == null) {
             return result;
@@ -36,7 +36,7 @@ public class GraphCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNumbe
         }
 
         if (processedCaratheodroySet == null) {
-            processedCaratheodroySet = new OperationGraphResult();
+            processedCaratheodroySet = new OperationConvexityGraphResult();
         }
         return processedCaratheodroySet.toMap();
     }

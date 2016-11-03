@@ -15,13 +15,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     static final String type = "P3-Convexity";
     static final String description = "Check Set(S)";
 
-    public static final String PARAM_NAME_CARATHEODORY_NUMBER = "number";
-    public static final String PARAM_NAME_CARATHEODORY_SET = "set";
-    public static final String PARAM_NAME_CONVEX_HULL = "hs";
-    public static final String PARAM_NAME_AUX_PROCESS = "aux";
-    public static final String PARAM_NAME_TOTAL_TIME_MS = "tms";
-    public static final String PARAM_NAME_PARTIAL_DERIVATED = "phs";
-
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
@@ -35,7 +28,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             i++;
         }
         totalTimeMillis = System.currentTimeMillis();
-        OperationGraphResult caratheodoryNumberGraph = null;
+        OperationConvexityGraphResult caratheodoryNumberGraph = null;
         if (set.size() >= 2) {
             caratheodoryNumberGraph = hsp3(graphRead, arr);
         }
@@ -44,20 +37,20 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
         if (caratheodoryNumberGraph == null) {
-            caratheodoryNumberGraph = new OperationGraphResult();
+            caratheodoryNumberGraph = new OperationConvexityGraphResult();
         }
         if (caratheodoryNumberGraph.caratheodorySet != null
                 && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
             response.putAll(caratheodoryNumberGraph.toMap());
-            response.put(PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumberGraph.caratheodorySet.size());
+            response.put(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumberGraph.caratheodorySet.size());
         }
         return response;
     }
 
-    public OperationGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
+    public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] currentSet) {
         int currentSetSize = 0;
-        OperationGraphResult processedHullSet = null;
+        OperationConvexityGraphResult processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
         int[] auxa = new int[graph.getVertexCount()];
@@ -155,7 +148,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
                     Set<Integer> partial = calcDerivatedPartial(graph,
                             hsp3g, currentSet);
                     if (partial != null && !partial.isEmpty()) {
-                        processedHullSet = new OperationGraphResult();
+                        processedHullSet = new OperationConvexityGraphResult();
                         processedHullSet.caratheodoryNumber = currentSetSize;
                         processedHullSet.auxProcessor = aux;
                         processedHullSet.convexHull = hsp3g;

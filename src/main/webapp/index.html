@@ -138,45 +138,7 @@
                     </fieldset>
 
                     <fieldset>
-                        <legend>Analyze</legend>
-                        <div class="form-group">
-                            <label>Caratheodroy number(c)</label>
-                            <input class="form-control" 
-                                   ng-model="caratheodory.number" 
-                                   disabled readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Caratheodroy set(S)</label>
-                            <input type="text"
-                                   class="form-control"
-                                   ng-model="caratheodory.set" 
-                                   disabled readonly>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Convex hull(H(S))</label>
-                            <input type="text"
-                                   class="form-control"
-                                   ng-model="caratheodory.hs" 
-                                   disabled readonly>
-                        </div>
-
-                        <div class="form-group">
-                            <label>∂H(S)=H(S)\⋃p∈SH(S\{p})</label>
-                            <input type="text"
-                                   class="form-control"
-                                   ng-model="caratheodory.phs" 
-                                   disabled readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Time(s)</label>
-                            <input type="text"
-                                   class="form-control"
-                                   ng-model="caratheodory.tms" 
-                                   disabled readonly>
-                        </div>
-
-                        <legend>Type</legend>
+                        <legend>Problem</legend>
                         <div class="form-group">
                             <label for="typeT">Type</label>
                             <select type="select" class="form-control"
@@ -210,6 +172,15 @@
                                 <span class="glyphicon glyphicon-certificate"></span>
                                 Execute
                             </button>
+                        </div>
+
+                        <legend>Result</legend>
+                        <div class="form-group" 
+                             ng-repeat="(key, value) in mapResult">
+                            <label>{{key}}</label>
+                            <input class="form-control" 
+                                   ng-model="value"
+                                   disabled readonly>
                         </div>
                     </fieldset>
                 </div>
@@ -254,6 +225,7 @@
                 $scope.outputConsole = ['[INFO] BUILD SUCCESS'];
                 $scope.graph = null;
                 $scope.file = null;
+                $scope.mapResult = new Map();
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
 
                 $scope.downloadGraph = function () {
@@ -328,8 +300,6 @@
                     nodes.append("circle")
                             .attr("class", "node")
                             .attr("r", 5)
-                            //                                .attr("x", -8)
-                            //                                .attr("y", -8)
                             .style("fill", function (d) {
                                 return color(d.group);
                             }).call(force.drag);
@@ -367,7 +337,7 @@
 
                 $scope.generateGraph = function () {
                     $scope.mapParam['key'] = $scope.typeGraph.key;
-//                    console.log($scope.mapParam);
+
                     $http.get('rest/graph/generate-graph',
                             {
                                 params: $scope.mapParam
@@ -387,13 +357,14 @@
                     $scope.processing = true;
                     $http.post('rest/graph/operation', $scope.graph).success(function (caratheodorydata) {
                         $scope.caratheodory = caratheodorydata;
-//                        $scope.inputData = '';
                         $scope.processing = false;
                         $scope.outputConsole = ['Finish'];
-//                        console.log($scope.caratheodory);
-//                        console.log($scope.caratheodory.set);
-                        if (!$scope.caratheodory.set || $scope.caratheodory.set.length == 0) {
-                            $scope.caratheodory.set = ['∄'];
+
+                        if (caratheodorydata) {
+                            $scope.mapResult = new Map();
+                            Object.keys(caratheodorydata).forEach(function (key) {
+                                $scope.mapResult[key] = caratheodorydata[key];
+                            });
                         }
                     }).error(function (err) {
                         $scope.processing = false;

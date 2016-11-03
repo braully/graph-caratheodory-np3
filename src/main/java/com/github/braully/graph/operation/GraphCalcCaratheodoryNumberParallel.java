@@ -7,6 +7,11 @@ package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
+import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER;
+import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET;
+import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL;
+import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_PARTIAL_DERIVATED;
+import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -82,7 +87,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             log.log(Level.SEVERE, null, ex);
         }
 
-        OperationGraphResult caratheodoryNumberGraph = null;
+        OperationConvexityGraphResult caratheodoryNumberGraph = null;
         if (caratheodorySet != null && caratheodorySet.length > 0) {
 
             caratheodoryNumberGraph = hsp3(undGraph, caratheodorySet);
@@ -100,7 +105,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         response.put(PARAM_NAME_CARATHEODORY_NUMBER, caractheodoryNumber);
         response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySet);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
-        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
+//        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
         response.put(PARAM_NAME_TOTAL_TIME_MS, pTime);
         response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
 

@@ -22,7 +22,7 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
     static final String description = "Nº Caratheodory (Binary Stratety Java)";
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        OperationGraphResult processedCaratheodroySet = null;
+        OperationConvexityGraphResult processedCaratheodroySet = null;
         Map<String, Object> result = null;
         if (graph == null) {
             return result;
@@ -49,8 +49,8 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
         return result;
     }
 
-    OperationGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
-        OperationGraphResult processedHullSet = null;
+    OperationConvexityGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
+        OperationConvexityGraphResult processedHullSet = null;
         if (graph == null || graph.getVertexCount() <= 0) {
             return processedHullSet;
         }
@@ -59,7 +59,7 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
         Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), currentSize);
         while (combinationsIterator.hasNext()) {
             int[] currentSet = combinationsIterator.next();
-            OperationGraphResult hsp3g = hsp3(graph, currentSet);
+            OperationConvexityGraphResult hsp3g = hsp3(graph, currentSet);
 
             if (hsp3g != null) {
                 processedHullSet = hsp3g;
