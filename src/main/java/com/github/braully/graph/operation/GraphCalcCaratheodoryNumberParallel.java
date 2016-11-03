@@ -33,7 +33,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
 
     private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
 
-    private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?Combination: \\{([0-9, ]+)\\}.*?");
+    private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?S = \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
 
@@ -47,12 +47,10 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         int[] auxProcessor = null;
         Integer[] partial = null;
         String pTime = null;
-        UndirectedSparseGraphTO<Integer, Integer> undGraph = null;
 
         try {
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
-
-            String commandToExecute = COMMAND_GRAPH_HN + " -p " + path;
+            String commandToExecute = getExecuteCommand(path);
 //            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
             log.log(Level.INFO, "Command: {0}", commandToExecute);
@@ -89,8 +87,7 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
 
         OperationConvexityGraphResult caratheodoryNumberGraph = null;
         if (caratheodorySet != null && caratheodorySet.length > 0) {
-
-            caratheodoryNumberGraph = hsp3(undGraph, caratheodorySet);
+            caratheodoryNumberGraph = hsp3(graph, caratheodorySet);
         }
 
         if (caratheodoryNumberGraph != null
@@ -157,5 +154,9 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             ret = m.group(1);
         }
         return ret;
+    }
+
+    String getExecuteCommand(String path) {
+        return COMMAND_GRAPH_HN + " -p " + path;
     }
 }
