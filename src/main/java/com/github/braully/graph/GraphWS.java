@@ -52,7 +52,7 @@ public class GraphWS {
     private static final IGraphGenerator GRAPH_GENERATOR_DEFAULT = new GraphGeneratorRandom();
     private static final String NAME_PARAM_OUTPUT = "CONSOLE_USER_SESSION";
 
-    public static final boolean verbose = true;
+    public static final boolean verbose = false;
     public static final boolean breankOnFirst = true;
 
     @Context
