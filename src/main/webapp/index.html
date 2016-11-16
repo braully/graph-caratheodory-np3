@@ -195,11 +195,89 @@
 
                             </div>
                         </div>
+
                         <div id="spinner" ng-show="processing">
                             <img src="assets/img/spinner.gif" alt="">
                         </div>
+
                         <div class="well well-sm pre-scrollable">
                             <samp ng-repeat="l in outputConsole track by $index">{{l + '\n'}}</samp>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table id="result-table" 
+                                   class="table table-bordred table-striped">
+                                <thead>
+                                <th>S</th>
+                                <th>Type</th>
+                                <th>Operation</th>
+                                <th>Graph</th>
+                                <th>Vertices</th>
+                                <th>Edges</th>
+                                <th>Result</th>
+                                <th>Date</th>
+                                <th>Output</th>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="glyphicon glyphicon-ok alert-info"></span></td>
+                                        <td>P3-Convexity</td>
+                                        <td>Nº Caratheodory</td>
+                                        <td>C10</td>
+                                        <td>10</td>
+                                        <td>10</td>
+                                        <td>
+                                            Caratheodroy number(c): 2 <br />
+                                            Caratheodroy set(S): 0,2 <br />
+                                            ∂H(S)=H(S)\⋃p∈SH(S\{p}): 1,3,4
+                                        </td>
+                                        <td>2015-11-16</td>
+                                        <td>        
+                                            <button type="button" class="btn btn-default btn-md">
+                                                <span class="glyphicon glyphicon-modal-window"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="glyphicon glyphicon-remove alert-danger"></span></td>
+                                        <td>P3-Convexity</td>
+                                        <td>Nº Caratheodory</td>
+                                        <td>K10</td>
+                                        <td>10</td>
+                                        <td>10</td>
+                                        <td>
+                                            Caratheodroy number(c): 2 <br />
+                                            Caratheodroy set(S): 0,2 <br />
+                                            ∂H(S)=H(S)\⋃p∈SH(S\{p}): 1,3,4
+                                        </td>
+                                        <td>2015-11-16</td>
+                                        <td>        
+                                            <button type="button" class="btn btn-default btn-md">
+                                                <span class="glyphicon glyphicon-modal-window"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="glyphicon glyphicon-ban-circle alert-warning"></span></td>
+                                        <td>P3-Convexity</td>
+                                        <td>Nº Caratheodory</td>
+                                        <td>P10</td>
+                                        <td>10</td>
+                                        <td>10</td>
+                                        <td>
+                                            Caratheodroy number(c): 2 <br />
+                                            Caratheodroy set(S): 0,2 <br />
+                                            ∂H(S)=H(S)\⋃p∈SH(S\{p}): 1,3,4
+                                        </td>
+                                        <td>2015-11-16</td>
+                                        <td>        
+                                            <button type="button" class="btn btn-default btn-md">
+                                                <span class="glyphicon glyphicon-modal-window"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
