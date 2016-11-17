@@ -7,8 +7,7 @@ package com.github.braully.graph;
 
 import com.github.braully.graph.operation.IGraphOperation;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -16,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class ExecuteOperation extends Thread {
 
-    private static final Logger log = Logger.getLogger(ExecuteOperation.class.getName());
+    private static final Logger log = Logger.getLogger("WEBCONSOLE");
     /* */
     private IGraphOperation graphOperation;
     private UndirectedSparseGraphTO graph;
@@ -27,14 +26,15 @@ public class ExecuteOperation extends Thread {
     @Override
     public void run() {
         try {
-            log.log(Level.INFO, "[START]");
+            WebConsoleAppender.clear();
+            log.info("[START]");
             processing = true;
             result = graphOperation.doOperation(graph);
-            log.log(Level.INFO, "[FINISH]");
-            log.log(Level.INFO, "[RESULT]");
-            log.log(Level.INFO, result.toString());
+            log.info("[FINISH]");
+            log.info("[RESULT]");
+            log.info(result.toString());
         } catch (Exception e) {
-            log.log(Level.INFO, "[FAILED]", e);
+            log.info("[FAILED]", e);
         } finally {
             processing = false;
         }

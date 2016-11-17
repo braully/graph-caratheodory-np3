@@ -18,10 +18,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
  */
 public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodorySet {
 
-    private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class.getName());
+    private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class);
 
     private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
 
@@ -53,18 +52,18 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             String commandToExecute = getExecuteCommand(path);
 //            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
-            log.log(Level.INFO, "Command: {0}", commandToExecute);
-            log.log(Level.INFO, "Executing");
+            log.info("Command: " + commandToExecute);
+            log.info("Executing");
             Process p = Runtime.getRuntime().exec(commandToExecute);
             p.waitFor();
-            log.log(Level.INFO, "Executed");
+            log.info("Executed");
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
             String line = "";
-            log.log(Level.INFO, "Output");
+            log.info("Output");
             while ((line = reader.readLine()) != null) {
-                log.log(Level.INFO, line);
+                log.info(line);
                 try {
                     if (caratheodorySet == null) {
                         caratheodorySet = parseCaratheodorySet(line);
@@ -76,13 +75,11 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
                         pTime = parseParallelTime(line);
                     }
                 } catch (Exception e) {
-                    log.log(Level.WARNING, "", e);
+                    log.error("Error", e);
                 }
             }
-        } catch (IOException ex) {
-            log.log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
+        } catch (IOException | InterruptedException ex) {
+            log.error("error", ex);
         }
 
         OperationConvexityGraphResult caratheodoryNumberGraph = null;

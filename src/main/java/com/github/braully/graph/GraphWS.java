@@ -29,14 +29,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.spi.LoggingEvent;
 import org.reflections.Reflections;
 
 /**
@@ -244,12 +248,32 @@ public class GraphWS {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("process-status")
-    public Map<String, Object> processStatus() {
+    public Map<String, Object> processStatus(Long lastTime) {
         Map<String, Object> map = new HashMap<>();
         List<String> lines = new ArrayList<>();
-        BufferedReader bf = getSessionOutputBufferdReader();
-        bf.lines().forEach((l) -> lines.add(l));
-        map.put("processing", true);
+        List<LoggingEvent> loggingEvents = null;
+
+        long last = 0;
+
+        if (lastTime != null && lastTime > 0) {
+            loggingEvents = WebConsoleAppender.getLoggingEvents(lastTime);
+            last = lastTime;
+        } else {
+            loggingEvents = WebConsoleAppender.getLoggingEvents();
+        }
+
+        if (loggingEvents != null) {
+            for (LoggingEvent e : loggingEvents) {
+                Object message = e.getMessage();
+                lines.add("" + message);
+                if (e.getTimeStamp() > last) {
+                    last = e.getTimeStamp();
+                }
+            }
+        }
+
+        map.put("processing", executeOperation.isProcessing());
+        map.put("last", last);
         map.put("output", lines);
         return map;
     }

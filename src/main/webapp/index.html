@@ -295,6 +295,7 @@
                 $scope.typeOperations = null;
                 $scope.operation = null;
                 $scope.processing = false;
+                $scope.lastProcessing = 0;
 
                 $scope.typeOperation = {};
                 $scope.typeGraph = {};
@@ -469,17 +470,23 @@
 
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
-                    $http.post('rest/graph/process-status').success(function (r) {
+                    $http.post('rest/graph/process-status', $scope.lastProcessing).success(function (r) {
                         $scope.processing = r.processing;
-//                        console.log(r);
+                        console.log(r);
+                        if (r.last) {
+                            $scope.lastProcessing = r.last;
+                        }
                         if (r.output)
                             for (var i = 0; i < r.output.length; i++) {
                                 $scope.outputConsole.push(r.output[i]);
                             }
-                        $timeout($scope.pollerConsoleOutput, 5000);
+                        if ($scope.processing)
+                            $timeout($scope.pollerConsoleOutput, 10000);
+                        else
+                            $timeout($scope.pollerConsoleOutput, 100000);
                     });
                 };
-//                $scope.pollerConsoleOutput();
+                $scope.pollerConsoleOutput();
             });
             app.directive("ngFileSelect", function () {
                 return {
