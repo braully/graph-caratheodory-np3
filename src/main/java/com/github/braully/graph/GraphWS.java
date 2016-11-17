@@ -55,6 +55,8 @@ public class GraphWS {
     public static final boolean verbose = false;
     public static final boolean breankOnFirst = true;
 
+    private static ExecuteOperation executeOperation = new ExecuteOperation();
+
     @Context
     private HttpServletRequest request;
 
@@ -196,16 +198,29 @@ public class GraphWS {
     @Path("operation")
     public Map<String, Object> operation(String jsonGraph) {
         Map<String, Object> result = null;
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            IGraphOperation operation = null;
             if (graph != null && operators != null && graph.getOperation() != null) {
-                String operation = graph.getOperation();
+                String strOperation = graph.getOperation();
                 for (IGraphOperation graphOperation : operators) {
-                    if (operation.equalsIgnoreCase(graphOperation.getName())) {
-                        result = graphOperation.doOperation(graph);
+                    if (strOperation.equalsIgnoreCase(graphOperation.getName())) {
+                        operation = graphOperation;
                         break;
                     }
+                }
+
+                if (executeOperation.isProcessing()) {
+                    throw new IllegalArgumentException("Processor busy (1-operantion in progress)");
+                }
+
+                if (operation != null) {
+                    executeOperation.setGraph(graph);
+                    executeOperation.setGraphOperation(operation);
+                    executeOperation.run();
+                    result = executeOperation.getResult();
                 }
             }
         } catch (IOException ex) {
