@@ -27,15 +27,17 @@ public class ExecuteOperation extends Thread {
     public void run() {
         try {
             WebConsoleAppender.clear();
-            log.info("[START]");
             processing = true;
+            log.info("[START]");
+            log.info(graphOperation.getTypeProblem() + " : " + graphOperation.getName());
             result = graphOperation.doOperation(graph);
-            log.info("[FINISH]");
-            log.info("[RESULT]");
-            log.info(result.toString());
+            if (result != null) {
+                log.info(result.toString());
+            }
         } catch (Exception e) {
             log.info("[FAILED]", e);
         } finally {
+            log.info("[FINISH]");
             processing = false;
         }
     }
