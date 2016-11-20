@@ -29,13 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -216,15 +213,17 @@ public class GraphWS {
                     }
                 }
 
-                if (executeOperation.isProcessing()) {
-                    throw new IllegalArgumentException("Processor busy (1-operantion in progress)");
-                }
+                synchronized (executeOperation) {
+                    if (executeOperation.isProcessing()) {
+                        throw new IllegalArgumentException("Processor busy (1-operantion in progress)");
+                    }
 
-                if (operation != null) {
-                    executeOperation.setGraph(graph);
-                    executeOperation.setGraphOperation(operation);
-                    executeOperation.run();
-                    result = executeOperation.getResult();
+                    if (operation != null) {
+                        executeOperation.setGraph(graph);
+                        executeOperation.setGraphOperation(operation);
+                        executeOperation.start();
+//                        result = executeOperation.getResult();
+                    }
                 }
             }
         } catch (IOException ex) {

@@ -296,7 +296,6 @@
                 $scope.operation = null;
                 $scope.processing = false;
                 $scope.lastProcessing = 0;
-
                 $scope.typeOperation = {};
                 $scope.typeGraph = {};
                 $scope.mapParam = new Map();
@@ -306,14 +305,12 @@
                 $scope.file = null;
                 $scope.mapResult = new Map();
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
-
                 $scope.downloadGraph = function () {
                     var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
                     var textContent = JSON.stringify($scope.graph, null, '\t');
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
-
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.csr';
@@ -321,7 +318,6 @@
                         saveAs(blob, filename);
                     });
                 };
-
                 $scope.uploadedFile = function () {
                     if (!$scope.file) {
                         window.alert('File invalid');
@@ -339,7 +335,6 @@
                     };
                     fr.readAsText($scope.file);
                 };
-
                 $scope.updateGraph = function () {
                     var graph = $scope.graph;
                     var width = $("#grafo").width();
@@ -413,10 +408,8 @@
                         d3.select(this).classed("fixed", d.fixed = true);
                     }
                 };
-
                 $scope.generateGraph = function () {
                     $scope.mapParam['key'] = $scope.typeGraph.key;
-
                     $http.get('rest/graph/generate-graph',
                             {
                                 params: $scope.mapParam
@@ -426,7 +419,6 @@
                         $scope.updateGraph();
                     });
                 };
-
                 $scope.executeOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -435,10 +427,10 @@
                     $scope.graph.operation = $scope.operation;
                     $scope.processing = true;
                     $http.post('rest/graph/operation', $scope.graph).success(function (caratheodorydata) {
+                        $scope.pollerConsoleOutput();
                         $scope.caratheodory = caratheodorydata;
                         $scope.processing = false;
                         $scope.outputConsole = ['Finish'];
-
                         if (caratheodorydata) {
                             $scope.mapResult = new Map();
                             Object.keys(caratheodorydata).forEach(function (key) {
@@ -450,11 +442,9 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $http.get('rest/graph/list-graph-generator').success(function (gen) {
                     $scope.generators = gen;
                 });
-
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
                     if (ops) {
@@ -467,12 +457,11 @@
                         $scope.typeOperations = Array.from($scope.typeOperations);
                     }
                 });
-
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status', $scope.lastProcessing).success(function (r) {
                         $scope.processing = r.processing;
-                        console.log(r);
+//                        console.log(r);
                         if (r.last) {
                             $scope.lastProcessing = r.last;
                         }
