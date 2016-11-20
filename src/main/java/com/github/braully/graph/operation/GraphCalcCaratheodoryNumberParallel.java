@@ -53,15 +53,15 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
 //            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
             log.info("Command: " + commandToExecute);
-            log.info("Executing");
+//            log.info("Executing");
             Process p = Runtime.getRuntime().exec(commandToExecute);
             p.waitFor();
-            log.info("Executed");
+//            log.info("Executed");
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
             String line = "";
-            log.info("Output");
+//            log.info("Output");
             while ((line = reader.readLine()) != null) {
                 log.info(line);
                 try {

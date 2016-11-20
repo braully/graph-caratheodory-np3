@@ -219,6 +219,7 @@ public class GraphWS {
                     }
 
                     if (operation != null) {
+                        executeOperation = new ExecuteOperation();
                         executeOperation.setGraph(graph);
                         executeOperation.setGraphOperation(operation);
                         executeOperation.start();
@@ -274,6 +275,7 @@ public class GraphWS {
         map.put("processing", executeOperation.isProcessing());
         map.put("last", last);
         map.put("output", lines);
+        map.put("result", executeOperation.getResult());
         return map;
     }
 
