@@ -34,9 +34,9 @@ public class DatabaseFacade {
         }
     }
 
-    static class RecordResultGraph {
+    static class RecordResultGraph implements java.lang.Comparable<RecordResultGraph> {
 
-        String id, status, type, operation, graph, vertices, edges, results, date;
+        String id, status, type, operation, graph, name, vertices, edges, results, date;
 
         public RecordResultGraph() {
         }
@@ -51,13 +51,110 @@ public class DatabaseFacade {
             this.results = results;
             this.date = date;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getOperation() {
+            return operation;
+        }
+
+        public void setOperation(String operation) {
+            this.operation = operation;
+        }
+
+        public String getGraph() {
+            return graph;
+        }
+
+        public void setGraph(String graph) {
+            this.graph = graph;
+        }
+
+        public String getVertices() {
+            return vertices;
+        }
+
+        public void setVertices(String vertices) {
+            this.vertices = vertices;
+        }
+
+        public String getEdges() {
+            return edges;
+        }
+
+        public void setEdges(String edges) {
+            this.edges = edges;
+        }
+
+        public String getResults() {
+            return results;
+        }
+
+        public void setResults(String results) {
+            this.results = results;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        @Override
+        public int compareTo(RecordResultGraph t) {
+            if (t != null && id != null) {
+                return id.compareToIgnoreCase(t.id);
+            }
+            return 0;
+        }
+
     }
 
     public synchronized static List<RecordResultGraph> getAllResults() {
-        List<RecordResultGraph> results = null;
+        List<RecordResultGraph> results = new ArrayList();
         ObjectMapper mapper = new ObjectMapper();
         try {
-            results = mapper.readValue(new File(DATABASE_URL), List.class);
+            List<RecordResultGraph> tmp = results = mapper.readValue(new File(DATABASE_URL), List.class);
+            if (tmp != null) {
+                for (RecordResultGraph t : tmp) {
+                    results.add(t);
+                }
+            }
+
+            Collections.sort(results);
+            Collections.reverse(results);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,7 +167,11 @@ public class DatabaseFacade {
 
                 List<RecordResultGraph> results = null;
                 ObjectMapper mapper = new ObjectMapper();
-                results = mapper.readValue(new File(DATABASE_URL), List.class);
+                try {
+                    results = mapper.readValue(new File(DATABASE_URL), List.class);
+                } catch (Exception e) {
+
+                }
                 if (results == null) {
                     results = new ArrayList<RecordResultGraph>();
                 }
@@ -78,11 +179,12 @@ public class DatabaseFacade {
                 String fileGraph = saveGraph(graph);
                 record.status = "ok";
                 record.graph = fileGraph;
+                record.name = graph.getName();
                 record.edges = "" + graph.getEdgeCount();
                 record.vertices = "" + graph.getVertexCount();
                 record.operation = graphOperation.getName();
                 record.type = graphOperation.getTypeProblem();
-                record.date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                record.date = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
                 record.results = resultMapToString(result);
                 record.id = "" + results.size();
                 results.add(record);

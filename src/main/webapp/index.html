@@ -209,6 +209,46 @@
                             <table id="result-table" 
                                    class="table table-bordred table-striped">
                                 <thead>
+                                <th>#</th>
+                                <th>S</th>
+                                <th>Type</th>
+                                <th>Operation</th>
+                                <th>Graph</th>
+                                <th>Vertices</th>
+                                <th>Edges</th>
+                                <th>Result</th>
+                                <th>Date</th>
+                                <th>Output</th>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="obj in results">
+                                        <td>{{obj.id}}</td>
+                                        <td>
+                                            <span ng-if="obj.status == 'ok'" class="glyphicon glyphicon-ok alert-info"></span>
+                                            <span ng-if="obj.status == 'error'" class="glyphicon glyphicon-remove alert-danger"></span>
+                                        </td>
+                                        <td>{{obj.type}}</td>
+                                        <td>{{obj.operation}}</td>
+                                        <td>{{obj.name}}</td>
+                                        <td>{{obj.vertices}}</td>
+                                        <td>{{obj.edges}}</td>
+                                        <td><pre>{{obj.results}}</pre></td>
+                                        <td>{{obj.date}}</td>
+                                        <td>        
+                                            <button type="button" class="btn btn-default btn-md">
+                                                <span class="glyphicon glyphicon-modal-window"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                        <div class="table-responsive">
+                            <table id="result-table" 
+                                   class="table table-bordred table-striped">
+                                <thead>
                                 <th>S</th>
                                 <th>Type</th>
                                 <th>Operation</th>
@@ -491,6 +531,10 @@
                             $scope.mapResult = new Map();
                             Object.keys(r.result).forEach(function (key) {
                                 $scope.mapResult[key] = r.result[key];
+                            });
+
+                            $http.get('rest/graph/list-result').success(function (rs) {
+                                $scope.results = rs;
                             });
                         }
                         if ($scope.processing)

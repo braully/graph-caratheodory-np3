@@ -76,7 +76,6 @@ public class GraphWS {
                 try {
                     generators.add(cl.newInstance());
                 } catch (InstantiationException | IllegalAccessException ex) {
-                    Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             Collections.sort(generators, new Comparator<IGraphGenerator>() {
@@ -97,7 +96,6 @@ public class GraphWS {
                 try {
                     operators.add(cl.newInstance());
                 } catch (InstantiationException | IllegalAccessException ex) {
-                    Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             Collections.sort(operators, new Comparator<IGraphOperation>() {

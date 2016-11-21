@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
@@ -42,9 +43,10 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         Integer caractheodoryNumber = null;
         int[] caratheodorySet = null;
-        Integer[] convexHull = null;
+        Set<Integer> caratheodorySetTmp = null;
+        Set<Integer> convexHull = null;
         int[] auxProcessor = null;
-        Integer[] partial = null;
+        Set<Integer> partial = null;
         String pTime = null;
 
         try {
@@ -90,16 +92,16 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         if (caratheodoryNumberGraph != null
                 && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
             auxProcessor = caratheodoryNumberGraph.auxProcessor;
-            convexHull = caratheodoryNumberGraph.convexHull.toArray(new Integer[0]);
-            partial = caratheodoryNumberGraph.partial.toArray(new Integer[0]);
+            convexHull = caratheodoryNumberGraph.convexHull;
+            partial = caratheodoryNumberGraph.partial;
+            caratheodorySetTmp = caratheodoryNumberGraph.caratheodorySet;
         }
 
         Map<String, Object> response = new HashMap<>();
 
         response.put(PARAM_NAME_CARATHEODORY_NUMBER, caractheodoryNumber);
-        response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySet);
+        response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySetTmp);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
-//        response.put(PARAM_NAME_AUX_PROCESS, auxProcessor);
         response.put(PARAM_NAME_TOTAL_TIME_MS, pTime);
         response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
 

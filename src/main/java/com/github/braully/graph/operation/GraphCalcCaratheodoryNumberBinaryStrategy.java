@@ -19,7 +19,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCaratheodorySet {
 
     static final String type = "P3-Convexity";
-    static final String description = "Nº Caratheodory (Binary Stratety Java)";
+    static final String description = "Nº Caratheodory (Binary Strategy Java)";
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         OperationConvexityGraphResult processedCaratheodroySet = null;
