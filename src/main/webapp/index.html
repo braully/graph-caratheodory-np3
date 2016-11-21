@@ -291,6 +291,7 @@
                 $scope.nvertices = 5;
                 $scope.minDegree = 1;
                 $scope.maxDegree = 2.0;
+                $scope.results = null;
                 $scope.generators = null;
                 $scope.operations = null;
                 $scope.typeOperations = null;
@@ -454,6 +455,10 @@
                     $scope.generators = gen;
                 });
 
+                $http.get('rest/graph/list-result').success(function (rs) {
+                    $scope.results = rs;
+                });
+
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
                     if (ops) {
@@ -467,11 +472,14 @@
                     }
                 });
 
+
+
+
+
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status', $scope.lastProcessing).success(function (r) {
                         $scope.processing = r.processing;
-//                        console.log(r);
                         if (r.last) {
                             $scope.lastProcessing = r.last;
                         }
@@ -493,6 +501,7 @@
                 };
                 $scope.pollerConsoleOutput();
             });
+
             app.directive("ngFileSelect", function () {
                 return {
                     link: function ($scope, el) {

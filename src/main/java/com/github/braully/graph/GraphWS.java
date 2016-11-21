@@ -114,6 +114,14 @@ public class GraphWS {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("list-result")
+    public List<DatabaseFacade.RecordResultGraph> listResults() {
+        List<DatabaseFacade.RecordResultGraph> allResults = DatabaseFacade.getAllResults();
+        return allResults;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("list-graph-operation")
     public List<Map.Entry<String, String>> listGraphOperation() {
         List<Map.Entry<String, String>> types = new ArrayList<>();

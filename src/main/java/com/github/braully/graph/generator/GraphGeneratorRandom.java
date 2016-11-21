@@ -6,34 +6,34 @@ import java.util.List;
 import java.util.Map;
 
 public class GraphGeneratorRandom extends AbstractGraphGenerator {
-
+    
     static final String N_VERTICES = "Nº Vertices";
     static final String MIN_DEGREE = "Min Degree";
     static final String MAX_DEGREE = "Max Degree";
-
+    
     static final Integer DEFAULT_NVERTICES = 5;
     static final Integer DEFAULT_MIN_DEGREE = 1;
     static final Double DEFAULT_MAX_DEGREE = 1.2;
-
+    
     static final String[] parameters = {N_VERTICES, MIN_DEGREE, MAX_DEGREE};
     static final String description = "Random";
-
+    
     @Override
     public String[] getParameters() {
         return parameters;
     }
-
+    
     @Override
     public String getDescription() {
         return description;
     }
-
+    
     @Override
     public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Map parameters) {
         Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
         Integer minDegree = getIntegerParameter(parameters, MIN_DEGREE);
         Double maxDegree = getDoubleParameter(parameters, MAX_DEGREE);
-
+        
         if (nvertices == null) {
             nvertices = DEFAULT_NVERTICES;
         }
@@ -43,8 +43,10 @@ public class GraphGeneratorRandom extends AbstractGraphGenerator {
         if (maxDegree == null) {
             maxDegree = DEFAULT_MAX_DEGREE;
         }
-
+        
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
+        graph.setName("Random-n" + nvertices + "-min" + minDegree + "-max" + maxDegree);
+        
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
         int[] degree = new int[nvertices];
@@ -84,5 +86,5 @@ public class GraphGeneratorRandom extends AbstractGraphGenerator {
         }
         return graph;
     }
-
+    
 }

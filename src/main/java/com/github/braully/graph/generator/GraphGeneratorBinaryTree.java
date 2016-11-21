@@ -6,33 +6,35 @@ import java.util.Map;
 import java.util.Queue;
 
 public class GraphGeneratorBinaryTree extends AbstractGraphGenerator {
-
+    
     static final String N_VERTICES = "Nº Vertices";
     static final String[] parameters = {N_VERTICES};
-
+    
     static final String description = "Binary Tree";
-
+    
     @Override
     public String[] getParameters() {
         return parameters;
     }
-
+    
     public String getDescription() {
         return description;
     }
-
+    
     public UndirectedSparseGraphTO<Integer, Integer> generateGraph(Map parameters) {
         Integer nvertices = getIntegerParameter(parameters, N_VERTICES);
         double lognv = Math.log(nvertices + 1) / Math.log(2);
         double pow = Math.pow(2, Math.ceil(lognv)) - 1;
         int nvert = (int) pow;
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
+        graph.setName("T" + nvertices);
+        
         Queue<Integer> frontier = new ArrayDeque<>();
         graph.addVertex(0);
         int countEdge = 0;
         int countVertice = 1;
         frontier.add(0);
-
+        
         while (!frontier.isEmpty() && countVertice < nvert) {
             Integer verti = frontier.remove();
             Integer target1 = countVertice++;

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -23,15 +24,19 @@ import java.util.Set;
 public class DatabaseFacade {
 
     private static final String DATABASE_DIRECTORY = System.getProperty("user.home") + File.separator + "." + "graph-problem";
-    private static final String DATABASE_URL = DATABASE_DIRECTORY + "graph-problem-results.json";
+    private static final String DATABASE_URL = DATABASE_DIRECTORY + File.separator + "graph-problem-results.json";
 
     static {
+        try {
+            new File(DATABASE_DIRECTORY).mkdirs();
+        } catch (Exception e) {
 
+        }
     }
 
     static class RecordResultGraph {
 
-        String status, type, operation, graph, vertices, edges, results, date;
+        String id, status, type, operation, graph, vertices, edges, results, date;
 
         public RecordResultGraph() {
         }
@@ -60,10 +65,18 @@ public class DatabaseFacade {
     }
 
     public static synchronized void saveResult(UndirectedSparseGraphTO graph, IGraphOperation graphOperation, Map<String, Object> result) {
-        if (result != null && graph != null) {
+        if (result != null && graph != null && graphOperation != null) {
             try {
+
+                List<RecordResultGraph> results = null;
+                ObjectMapper mapper = new ObjectMapper();
+                results = mapper.readValue(new File(DATABASE_URL), List.class);
+                if (results == null) {
+                    results = new ArrayList<RecordResultGraph>();
+                }
                 RecordResultGraph record = new RecordResultGraph();
                 String fileGraph = saveGraph(graph);
+                record.status = "ok";
                 record.graph = fileGraph;
                 record.edges = "" + graph.getEdgeCount();
                 record.vertices = "" + graph.getVertexCount();
@@ -71,12 +84,7 @@ public class DatabaseFacade {
                 record.type = graphOperation.getTypeProblem();
                 record.date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
                 record.results = resultMapToString(result);
-                List<RecordResultGraph> results = null;
-                ObjectMapper mapper = new ObjectMapper();
-                results = mapper.readValue(new File(DATABASE_URL), List.class);
-                if (results == null) {
-                    results = new ArrayList<RecordResultGraph>();
-                }
+                record.id = "" + results.size();
                 results.add(record);
                 mapper.writeValue(new File(DATABASE_URL), results);
             } catch (Exception e) {
@@ -89,11 +97,20 @@ public class DatabaseFacade {
         if (graph == null) {
             return null;
         }
-        String fileName = graph.getName() + Math.random();
+        String fileName = graph.getName();
+
+        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+        fileName = fileName + "-" + sb.toString() + ".json";
+
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(new File(DATABASE_DIRECTORY + File.separator + fileName), UndirectedSparseGraphTO.class);
-            mapper.writeValue(new File(DATABASE_URL), graph);
+            mapper.writeValue(new File(DATABASE_DIRECTORY + File.separator + fileName), graph);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,6 +128,7 @@ public class DatabaseFacade {
                 strResult.append(strKey);
                 strResult.append(": ");
                 strResult.append(objectTosString(obj));
+                strResult.append("\n");
             }
         }
         return strResult.toString();
