@@ -33,7 +33,7 @@ public class ExecuteOperation extends Thread {
             result = graphOperation.doOperation(graph);
             if (result != null) {
                 log.info(result.toString());                
-                DatabaseFacade.saveResult(graph, result);                
+                DatabaseFacade.saveResult(graph, graphOperation, result);                
             }
         } catch (Exception e) {
             log.info("[FAILED]", e);

@@ -98,6 +98,8 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     }
 
+    private String name;
+
     private String operation;
 
     private String inputData;
@@ -126,5 +128,13 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     public void setInputData(String inputData) {
         this.inputData = inputData;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
