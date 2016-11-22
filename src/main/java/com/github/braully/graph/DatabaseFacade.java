@@ -152,8 +152,6 @@ public class DatabaseFacade {
                     results.add(t);
                 }
             }
-
-//            Collections.sort(results);
             Collections.reverse(results);
         } catch (Exception e) {
             e.printStackTrace();

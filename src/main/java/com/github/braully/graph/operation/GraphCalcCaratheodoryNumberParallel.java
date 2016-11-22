@@ -102,9 +102,10 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
         response.put(PARAM_NAME_CARATHEODORY_NUMBER, caractheodoryNumber);
         response.put(PARAM_NAME_CARATHEODORY_SET, caratheodorySetTmp);
         response.put(PARAM_NAME_CONVEX_HULL, convexHull);
-        response.put(PARAM_NAME_TOTAL_TIME_MS, pTime);
+        if (pTime != null) {
+            response.put(PARAM_NAME_TOTAL_TIME_MS, pTime);
+        }
         response.put(PARAM_NAME_PARTIAL_DERIVATED, partial);
-
         return response;
     }
 

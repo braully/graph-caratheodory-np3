@@ -33,10 +33,10 @@ public class ExecuteOperation extends Thread {
             log.info(graphOperation.getTypeProblem() + " : " + graphOperation.getName());
             long currentTimeMillis = System.currentTimeMillis();
             result = graphOperation.doOperation(graph);
+            currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
             if (result != null) {
                 log.info(result.toString());
                 DatabaseFacade.saveResult(graph, graphOperation, result);
-                currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
                 if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
                     result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
                 }

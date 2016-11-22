@@ -21,6 +21,7 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (Binary Strategy Java)";
 
+    @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         OperationConvexityGraphResult processedCaratheodroySet = null;
         Map<String, Object> result = null;
