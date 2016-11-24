@@ -161,7 +161,11 @@ public class GraphWS {
             }
         }
         if (graph == null) {
-            graph = GRAPH_GENERATOR_DEFAULT.generateGraph(params);
+            if (executeOperation != null && executeOperation.isProcessing()) {
+                graph = executeOperation.getGraph();
+            } else {
+                graph = GRAPH_GENERATOR_DEFAULT.generateGraph(params);
+            }
         }
 
         return (UndirectedSparseGraphTO) graph;

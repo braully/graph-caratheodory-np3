@@ -30,7 +30,8 @@ public class ExecuteOperation extends Thread {
             WebConsoleAppender.clear();
             processing = true;
             log.info("[START]");
-            log.info(graphOperation.getTypeProblem() + " : " + graphOperation.getName());
+            log.info(graphOperation.getTypeProblem() + ": " + graphOperation.getName());
+            log.info("Graph: " + graph.getName());
             long currentTimeMillis = System.currentTimeMillis();
             result = graphOperation.doOperation(graph);
             currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
