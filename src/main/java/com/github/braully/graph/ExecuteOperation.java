@@ -74,6 +74,13 @@ public class ExecuteOperation extends Thread {
         this.result = result;
     }
 
+    @Override
+    public void interrupt() {
+        this.processing = false;
+        super.interrupt();
+        log.info("CANCELED");
+    }
+
     public boolean isProcessing() {
         return processing;
     }

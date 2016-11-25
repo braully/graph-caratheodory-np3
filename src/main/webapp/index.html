@@ -167,10 +167,18 @@
                         </div>
 
                         <div class="form-group pull-right">
-                            <button ng-click="executeOperation();" 
+                            <button ng-click="executeOperation();" ng-disabled="processing"
                                     class="btn btn-primary">
                                 <span class="glyphicon glyphicon-certificate"></span>
                                 Execute
+                            </button>
+                        </div>
+
+                        <div class="form-group pull-right">
+                            <button ng-click="cancelOperation();" ng-disabled="!processing"
+                                    class="btn btn-primary">
+                                <span class="glyphicon glyphicon-remove"></span>
+                                Cancel
                             </button>
                         </div>
                     </fieldset>
@@ -298,6 +306,12 @@
                             window.alert('File format invalid');
                         } else {
                             $scope.graph = graph;
+                            try {
+                                if (!$scope.graph.name) {
+                                    $scope.graph.name = e.target.fileName;
+                                }
+                            } catch (err) {
+                            }
                             $scope.updateGraph();
                         }
                     };
@@ -414,6 +428,15 @@
                     });
                 };
 
+                $scope.cancelOperation = function () {
+                    $http.post('rest/graph/process-cancel').success(function (result) {
+                        $scope.processing = false;
+                    }).error(function (err) {
+                        $scope.processing = false;
+                        window.alert('Error: ' + err);
+                    });
+                };
+
                 $http.get('rest/graph/list-graph-generator').success(function (gen) {
                     $scope.generators = gen;
                 });
@@ -434,10 +457,6 @@
                         $scope.typeOperations = Array.from($scope.typeOperations);
                     }
                 });
-
-
-
-
 
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
