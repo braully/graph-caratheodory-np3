@@ -24,6 +24,6 @@ public class GraphCalcCaratheodoryNumberCSerialBinary extends GraphCalcCaratheod
 
     @Override
     String getExecuteCommand(String path) {
-        return COMMAND_GRAPH_HN + " -sb " + path;
+        return COMMAND_GRAPH_HN + " -sbv " + path;
     }
 }

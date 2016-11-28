@@ -27,7 +27,8 @@ import org.apache.log4j.Logger;
  *
  * @author strike
  */
-public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodorySet {
+public class GraphCalcCaratheodoryNumberParallel
+        extends GraphCheckCaratheodorySet implements Interruptible {
 
     private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class);
 
@@ -36,6 +37,8 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
     private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?S = \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
+
+    protected Process process = null;
 
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (CUDA)";
@@ -56,12 +59,10 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
 
             log.info("Command: " + commandToExecute);
 //            log.info("Executing");
-            Process p = Runtime.getRuntime().exec(commandToExecute);
-            p.waitFor();
+            process = Runtime.getRuntime().exec(commandToExecute);
 //            log.info("Executed");
             BufferedReader reader
-                    = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
+                    = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = "";
 //            log.info("Output");
             while ((line = reader.readLine()) != null) {
@@ -80,8 +81,10 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
                     log.error("Error", e);
                 }
             }
+            process.waitFor();
         } catch (IOException | InterruptedException ex) {
             log.error("error", ex);
+            return null;
         }
 
         OperationConvexityGraphResult caratheodoryNumberGraph = null;
@@ -154,6 +157,15 @@ public class GraphCalcCaratheodoryNumberParallel extends GraphCheckCaratheodoryS
             ret = m.group(1);
         }
         return ret;
+    }
+
+    public void interrupt() {
+        try {
+//            process.destroy();
+            process.destroyForcibly();
+        } catch (Exception e) {
+            log.error("fail on interrupt operation", e);
+        }
     }
 
     String getExecuteCommand(String path) {

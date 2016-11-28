@@ -6,6 +6,7 @@
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.IGraphOperation;
+import com.github.braully.graph.operation.Interruptible;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -77,6 +78,9 @@ public class ExecuteOperation extends Thread {
     @Override
     public void interrupt() {
         this.processing = false;
+        if (graphOperation instanceof Interruptible) {
+            ((Interruptible) graphOperation).interrupt();
+        }
         super.interrupt();
         log.info("CANCELED");
     }
