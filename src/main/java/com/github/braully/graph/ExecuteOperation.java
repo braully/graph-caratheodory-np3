@@ -17,13 +17,20 @@ import org.apache.log4j.Logger;
  */
 public class ExecuteOperation extends Thread {
 
+    private static long count = 0;
     private static final Logger log = Logger.getLogger("WEBCONSOLE");
     /* */
     private IGraphOperation graphOperation;
     private UndirectedSparseGraphTO graph;
     private Map<String, Object> result = null;
+    private Long id;
 
     private boolean processing = false;
+
+    public ExecuteOperation() {
+        super();
+        id = count++;
+    }
 
     @Override
     public void run() {
