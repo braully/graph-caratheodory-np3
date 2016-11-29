@@ -10,7 +10,7 @@ public class GraphGeneratorKP extends AbstractGraphGenerator {
     static final String K_VERTICES = "N";
     static final String P_VERTICES = "M";
     static final String[] parameters = {K_VERTICES, P_VERTICES};
-    static final String description = "KP";
+    static final String description = "Kn*Pm";
     static final Integer DEFAULT_NVERTICES = 5;
     
     @Override
