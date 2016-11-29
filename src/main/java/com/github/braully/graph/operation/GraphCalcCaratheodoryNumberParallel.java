@@ -12,13 +12,15 @@ import static com.github.braully.graph.operation.OperationConvexityGraphResult.P
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL;
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_PARTIAL_DERIVATED;
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.exec.Executor;
 import org.apache.log4j.Logger;
 
 /**
@@ -30,13 +32,14 @@ public class GraphCalcCaratheodoryNumberParallel
 
     private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class);
 
-    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
+    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "Workspace/graph-caratheodory-np3-parallel/dist/Debug/CUDA-Linux/graph-caratheodory";
 
     private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?S = \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
 
     protected Process process = null;
+//    protected Integer pid = null;
 //    protected Executor executor = null;
 
     static final String type = "P3-Convexity";
@@ -54,18 +57,38 @@ public class GraphCalcCaratheodoryNumberParallel
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
             String commandToExecute = getExecuteCommand(path);
 
-//            log.info("Command: " + commandToExecute);
+            log.info("Command: " + commandToExecute);
+
+//            ProcessBuilder processBuilder = new ProcessBuilder(commandToExecute);
+//            process = processBuilder.start();
+//            processBuilder.
             process = Runtime.getRuntime().exec(commandToExecute);
 //            executor = new DefaultExecutor();
 //            ExecuteWatchdog watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
 //            executor.setWatchdog(watchdog);
 //            CommandLine cmd = CommandLine.parse(commandToExecute);
 //            int execute = executor.execute(cmd);
+            InputStreamReader input = new InputStreamReader(process.getInputStream());
+            BufferedReader reader = new BufferedReader(input);
 
-//            InputStreamReader input = new InputStreamReader(process.getInputStream());
-//            BufferedReader reader = new BufferedReader(input);
-//
-//            String line = "";
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                log.info(line);
+                try {
+                    if (caratheodorySet == null) {
+                        caratheodorySet = parseCaratheodorySet(line);
+                    }
+                    if (caractheodoryNumber == null) {
+                        caractheodoryNumber = parseCaratheodoryNumber(line);
+                    }
+                    if (pTime == null) {
+                        pTime = parseParallelTime(line);
+                    }
+                } catch (Exception e) {
+                    log.error("Error", e);
+                }
+            }
+            process.waitFor();
 //            while ((line = reader.readLine()) != null) {
 //                log.info(line);
 //                try {
@@ -82,7 +105,6 @@ public class GraphCalcCaratheodoryNumberParallel
 //                    log.error("Error", e);
 //                }
 //            }
-            process.waitFor();
         } catch (Exception ex) {
             log.error("error", ex);
             return null;
@@ -164,9 +186,17 @@ public class GraphCalcCaratheodoryNumberParallel
     public void interrupt() {
         try {
 //            executor.getWatchdog().destroyProcess();
-            Process destroyForcibly = process.destroyForcibly();
+//            ProcessBuilder pb = new ProcessBuilder();
             process.destroy();
-            destroyForcibly.isAlive();
+            Process destroyForcibly = process.destroyForcibly();
+//            destroyForcibly.isAlive();
+            if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
+                Field f = process.getClass().getDeclaredField("pid");
+                f.setAccessible(true);
+                Long pid = f.getLong(process);
+                Process exec = Runtime.getRuntime().exec("kill -9 " + (pid + 1));
+                destroyForcibly.exitValue();
+            }
         } catch (Exception e) {
             log.error("fail on interrupt operation", e);
         }
