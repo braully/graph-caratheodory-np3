@@ -12,15 +12,13 @@ import static com.github.braully.graph.operation.OperationConvexityGraphResult.P
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL;
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_PARTIAL_DERIVATED;
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.exec.Executor;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,13 +30,14 @@ public class GraphCalcCaratheodoryNumberParallel
 
     private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class);
 
-    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
+    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "Workspace/graph-caratheodory-np3-parallel/dist/Debug/CUDA-Linux/graph-caratheodory-np3-parallel";
 
     private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?S = \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
 
     protected Process process = null;
+//    protected Executor executor = null;
 
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (CUDA)";
@@ -48,41 +47,43 @@ public class GraphCalcCaratheodoryNumberParallel
         int[] caratheodorySet = null;
         Set<Integer> caratheodorySetTmp = null;
         Set<Integer> convexHull = null;
-        int[] auxProcessor = null;
         Set<Integer> partial = null;
         String pTime = null;
 
         try {
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
             String commandToExecute = getExecuteCommand(path);
-//            String commandToExecute = COMMAND_GRAPH_HN + " -s " + path;
 
-            log.info("Command: " + commandToExecute);
-//            log.info("Executing");
+//            log.info("Command: " + commandToExecute);
             process = Runtime.getRuntime().exec(commandToExecute);
-//            log.info("Executed");
-            BufferedReader reader
-                    = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = "";
-//            log.info("Output");
-            while ((line = reader.readLine()) != null) {
-                log.info(line);
-                try {
-                    if (caratheodorySet == null) {
-                        caratheodorySet = parseCaratheodorySet(line);
-                    }
-                    if (caractheodoryNumber == null) {
-                        caractheodoryNumber = parseCaratheodoryNumber(line);
-                    }
-                    if (pTime == null) {
-                        pTime = parseParallelTime(line);
-                    }
-                } catch (Exception e) {
-                    log.error("Error", e);
-                }
-            }
+//            executor = new DefaultExecutor();
+//            ExecuteWatchdog watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
+//            executor.setWatchdog(watchdog);
+//            CommandLine cmd = CommandLine.parse(commandToExecute);
+//            int execute = executor.execute(cmd);
+
+//            InputStreamReader input = new InputStreamReader(process.getInputStream());
+//            BufferedReader reader = new BufferedReader(input);
+//
+//            String line = "";
+//            while ((line = reader.readLine()) != null) {
+//                log.info(line);
+//                try {
+//                    if (caratheodorySet == null) {
+//                        caratheodorySet = parseCaratheodorySet(line);
+//                    }
+//                    if (caractheodoryNumber == null) {
+//                        caractheodoryNumber = parseCaratheodoryNumber(line);
+//                    }
+//                    if (pTime == null) {
+//                        pTime = parseParallelTime(line);
+//                    }
+//                } catch (Exception e) {
+//                    log.error("Error", e);
+//                }
+//            }
             process.waitFor();
-        } catch (IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             log.error("error", ex);
             return null;
         }
@@ -94,7 +95,6 @@ public class GraphCalcCaratheodoryNumberParallel
 
         if (caratheodoryNumberGraph != null
                 && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
-            auxProcessor = caratheodoryNumberGraph.auxProcessor;
             convexHull = caratheodoryNumberGraph.convexHull;
             partial = caratheodoryNumberGraph.partial;
             caratheodorySetTmp = caratheodoryNumberGraph.caratheodorySet;
@@ -112,10 +112,12 @@ public class GraphCalcCaratheodoryNumberParallel
         return response;
     }
 
+    @Override
     public String getTypeProblem() {
         return type;
     }
 
+    @Override
     public String getName() {
         return description;
     }
@@ -142,7 +144,6 @@ public class GraphCalcCaratheodoryNumberParallel
         if (m.find()) {
             String trim = m.group();
             trim = m.group(1);
-//            String trim = m.group();
             if (trim != null && !trim.isEmpty()) {
                 ret = Integer.parseInt(trim.trim());
             }
@@ -159,10 +160,13 @@ public class GraphCalcCaratheodoryNumberParallel
         return ret;
     }
 
+    @Override
     public void interrupt() {
         try {
-//            process.destroy();
-            process.destroyForcibly();
+//            executor.getWatchdog().destroyProcess();
+            Process destroyForcibly = process.destroyForcibly();
+            process.destroy();
+            destroyForcibly.isAlive();
         } catch (Exception e) {
             log.error("fail on interrupt operation", e);
         }

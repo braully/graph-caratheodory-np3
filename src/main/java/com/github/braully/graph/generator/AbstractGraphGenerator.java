@@ -25,7 +25,7 @@ public abstract class AbstractGraphGenerator implements IGraphGenerator {
         try {
             ret = parameters.get(paramName).toString();
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Fail parse", e);
+//            log.log(Level.SEVERE, "Fail parse", e);
         }
         return ret;
     }
@@ -35,7 +35,7 @@ public abstract class AbstractGraphGenerator implements IGraphGenerator {
         try {
             ret = Integer.parseInt(parameters.get(paramName).toString());
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Fail parse integer", e);
+//            log.log(Level.SEVERE, "Fail parse integer", e);
         }
         return ret;
     }
@@ -45,7 +45,7 @@ public abstract class AbstractGraphGenerator implements IGraphGenerator {
         try {
             ret = Double.parseDouble(parameters.get(paramName).toString());
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Fail parse double", e);
+//            log.log(Level.SEVERE, "Fail parse double", e);
         }
         return ret;
     }
