@@ -38,7 +38,9 @@ public class GraphCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNumbe
         if (processedCaratheodroySet == null) {
             processedCaratheodroySet = new OperationConvexityGraphResult();
         }
-        return processedCaratheodroySet.toMap();
+        processedCaratheodroySet.caratheodoryNumber = null;
+        Map<String, Object> toMap = processedCaratheodroySet.toMap();
+        return toMap;
     }
 
     public String getTypeProblem() {

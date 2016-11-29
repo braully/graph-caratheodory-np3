@@ -49,6 +49,7 @@ import org.reflections.Reflections;
 public class GraphWS {
     
     private static final Logger log = Logger.getLogger(GraphWS.class.getSimpleName());
+    private static final org.apache.log4j.Logger logWebconsole = org.apache.log4j.Logger.getLogger("WEBCONSOLE");
     
     private static final IGraphGenerator GRAPH_GENERATOR_DEFAULT = new GraphGeneratorRandom();
     private static final String NAME_PARAM_OUTPUT = "CONSOLE_USER_SESSION";
@@ -146,6 +147,28 @@ public class GraphWS {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("open-graph")
+    public UndirectedSparseGraphTO<Integer, Integer> openGraphSaved(@Context UriInfo info) {
+        MultivaluedMap<String, String> multiParams = info.getQueryParameters();
+        Map<String, String> params = getTranslageParams(multiParams);
+        String nameGraph = params.get("graph");
+        AbstractGraph<Integer, Integer> graph = null;
+        if (nameGraph != null) {
+            try {
+                graph = DatabaseFacade.openGraph(nameGraph);
+            } catch (IOException ex) {
+                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+                logWebconsole.info("Failed to load " + nameGraph);
+            }
+            if (graph != null) {
+                logWebconsole.info("Graph " + nameGraph + " lodaded");
+            }
+        }
+        return (UndirectedSparseGraphTO) graph;
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("generate-graph")
     public UndirectedSparseGraphTO<Integer, Integer> generateGraph(@Context UriInfo info) {
         MultivaluedMap<String, String> multiParams = info.getQueryParameters();
@@ -189,7 +212,8 @@ public class GraphWS {
     public void downloadGraphCsr(String jsonGraph) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class
+            );
             if (graph != null) {
                 response.setHeader("Content-disposition", "attachment; filename=" + "file.csr");
                 response.setContentType("text/plain");
@@ -212,7 +236,8 @@ public class GraphWS {
         
         try {
             ObjectMapper mapper = new ObjectMapper();
-            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class
+            );
             IGraphOperation operation = null;
             if (graph != null && operators != null && graph.getOperation() != null) {
                 String strOperation = graph.getOperation();
@@ -234,11 +259,13 @@ public class GraphWS {
                         executeOperation.setGraphOperation(operation);
                         executeOperation.start();
 //                        result = executeOperation.getResult();
+
                     }
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GraphWS.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

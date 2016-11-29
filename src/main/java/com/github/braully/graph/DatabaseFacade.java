@@ -8,6 +8,7 @@ package com.github.braully.graph;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.braully.graph.operation.IGraphOperation;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,7 +194,7 @@ public class DatabaseFacade {
         }
     }
 
-    private static String saveGraph(UndirectedSparseGraphTO graph) {
+    public static String saveGraph(UndirectedSparseGraphTO graph) {
         if (graph == null) {
             return null;
         }
@@ -215,6 +216,16 @@ public class DatabaseFacade {
             e.printStackTrace();
         }
         return fileName;
+    }
+
+    public static UndirectedSparseGraphTO openGraph(String nameFile) throws IOException {
+        if (nameFile == null) {
+            return null;
+        }
+        UndirectedSparseGraphTO graph = null;
+        ObjectMapper mapper = new ObjectMapper();
+        graph = mapper.readValue(new File(DATABASE_DIRECTORY + File.separator + nameFile), UndirectedSparseGraphTO.class);
+        return graph;
     }
 
     private static String resultMapToString(Map<String, Object> result) {

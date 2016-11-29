@@ -272,7 +272,7 @@
                                         </td>
                                         <td>{{obj.type}}</td>
                                         <td>{{obj.operation}}</td>
-                                        <td>{{obj.name}}</td>
+                                        <td><a href ng-click="openGraph(obj.graph)">{{obj.name}}</a></td>
                                         <td>{{obj.vertices}}</td>
                                         <td>{{obj.edges}}</td>
                                         <td>{{obj.date}}</td>
@@ -331,6 +331,14 @@
                         saveAs(blob, filename);
                     });
                 };
+
+                $scope.openGraph = function (g) {
+                    $http.get('rest/graph/open-graph', {params: {graph: g}})
+                            .success(function (graph) {
+                                $scope.graph = graph;
+                                $scope.updateGraph();
+                            });
+                }
 
                 $scope.uploadedFile = function () {
                     if (!$scope.file) {

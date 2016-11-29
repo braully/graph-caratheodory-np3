@@ -38,6 +38,9 @@ public class ExecuteOperation extends Thread {
             currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
             if (result != null) {
                 log.info(result.toString());
+                if (graph.getInputData() != null && !graph.getInputData().trim().isEmpty()) {
+                    result.put("Input", graph.getInputData());
+                }
                 if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
                     result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
                 }
