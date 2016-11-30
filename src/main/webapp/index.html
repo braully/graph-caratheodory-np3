@@ -264,7 +264,7 @@
                                 <th>Output</th>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="obj in results| orderBy:sortType:sortReverse | filter:searchFish">
+                                    <tr ng-repeat="obj in results| orderBy:sortType:sortReverse | filter: {'type' : typeOperation}| filter: {'operation' : operation}  | filter:searchName">
                                         <td>{{obj.id}}</td>
                                         <td>
                                             <span ng-if="obj.status == 'ok'" class="glyphicon glyphicon-ok alert-info"></span>
@@ -313,6 +313,7 @@
                 $scope.file = null;
                 $scope.mapResult = new Map();
                 $scope.sortType = 'id';
+                $scope.searchName = '';
                 $scope.sortReverse = false;
 
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
