@@ -203,6 +203,6 @@ public class GraphCalcCaratheodoryNumberParallel
     }
 
     String getExecuteCommand(String path) {
-        return COMMAND_GRAPH_HN + " -p " + path;
+        return COMMAND_GRAPH_HN + " -pv " + path;
     }
 }
