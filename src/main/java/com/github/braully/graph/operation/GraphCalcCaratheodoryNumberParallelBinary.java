@@ -24,6 +24,6 @@ public class GraphCalcCaratheodoryNumberParallelBinary extends GraphCalcCaratheo
 
     @Override
     String getExecuteCommand(String path) {
-        return COMMAND_GRAPH_HN + " -pb " + path;
+        return COMMAND_GRAPH_HN + " -pbv " + path;
     }
 }

@@ -32,7 +32,7 @@ public class GraphCalcCaratheodoryNumberParallel
 
     private static final Logger log = Logger.getLogger(GraphCalcCaratheodoryNumberParallel.class);
 
-    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "Workspace/graph-caratheodory-np3-parallel/dist/Debug/CUDA-Linux/graph-caratheodory";
+    private static final String COMMAND_GRAPH_HN = System.getProperty("user.home") + File.separator + "graph-caratheodory-np3.sh";
 
     private static final Pattern PATERN_CARATHEODORY_SET = Pattern.compile(".*?S = \\{([0-9, ]+)\\}.*?");
     private static final Pattern PATERN_CARATHEODORY_NUMBER = Pattern.compile(".*?S\\| = ([0-9]+).*?");
