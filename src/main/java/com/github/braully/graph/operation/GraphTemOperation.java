@@ -130,7 +130,7 @@ public class GraphTemOperation implements IGraphOperation {
 
             for (int i = 0; i < k; i++) {
                 int p = currentCombinations[i];
-                headQueue = 0;
+                headQueue = nvertices;
                 tailQueue = -1;
 
                 for (int j = 0; j < nvertices; j++) {
@@ -152,12 +152,7 @@ public class GraphTemOperation implements IGraphOperation {
                         headQueue++;
                         continue;
                     }
-
                     auxbackup[verti] = 0;
-                    if (verti < nvertices) {
-                        continue;
-                    }
-
                     int end = csrColIdxs[verti + 1];
                     for (int x = csrColIdxs[verti]; x < end; x++) {
                         int vertn = rowOffset[x];
@@ -170,7 +165,7 @@ public class GraphTemOperation implements IGraphOperation {
                             }
                         }
                     }
-
+                    auxcbackup[verti] = PROCESSED;
                 }
             }
             for (int i = 0; i < nvertices; i++) {
