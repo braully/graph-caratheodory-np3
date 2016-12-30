@@ -99,15 +99,12 @@ public class GraphTemOperation implements IGraphOperation {
                     continue;
                 }
                 if (vertn != verti && aux[vertn] < INCLUDED) {
-                    int previousValue = aux[vertn];
                     aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (previousValue < INCLUDED) {
-                        if (aux[vertn] == INCLUDED) {
-                            headQueue = Math.min(headQueue, vertn);
-                            tailQueue = Math.max(tailQueue, vertn);
-                        }
-                        auxc[vertn] = auxc[vertn] + auxc[verti];
+                    if (aux[vertn] == INCLUDED) {
+                        headQueue = Math.min(headQueue, vertn);
+                        tailQueue = Math.max(tailQueue, vertn);
                     }
+                    auxc[vertn] = auxc[vertn] + auxc[verti];
                 }
             }
             aux[verti] = PROCESSED;
@@ -157,9 +154,8 @@ public class GraphTemOperation implements IGraphOperation {
                     for (int x = csrColIdxs[verti]; x < end; x++) {
                         int vertn = rowOffset[x];
                         if (vertn != verti && auxcbackup[vertn] < INCLUDED) {
-                            int previousValue = auxcbackup[vertn];
                             auxcbackup[vertn] = auxcbackup[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                            if (previousValue < INCLUDED && auxcbackup[vertn] == INCLUDED) {
+                            if (auxcbackup[vertn] == INCLUDED) {
                                 headQueue = Math.min(headQueue, vertn);
                                 tailQueue = Math.max(tailQueue, vertn);
                             }
