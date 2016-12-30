@@ -8,7 +8,6 @@ package com.github.braully.graph.operation;
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -94,6 +93,63 @@ public class GraphCalcCaratheodoryTemp extends GraphCheckCaratheodorySet {
     }
 
     int checkCaratheodorySetP3CSR(int[] csrColIdxs, int nvertices,
+            int[] csrRowOffset, int sizeRowOffset,
+            int[] aux, int[] auxc,
+            int auxSize,
+            int[] currentCombinations,
+            int k, int idx) {
+
+        for (int i = 0; i < nvertices; i++) {
+            aux[i] = 0;
+            auxc[i] = 0;
+        }
+
+        int headQueue = nvertices;
+        //        int tailQueue = -1;
+        int tailQueue = 0;
+
+        for (int i = 0; i < k; i++) {
+            int idi = currentCombinations[i];
+            aux[idi] = INCLUDED;
+            auxc[idi] = 1;
+            headQueue = Math.min(headQueue, idi);
+            tailQueue = Math.max(tailQueue, idi);
+        }
+
+        while (headQueue <= tailQueue) {
+            int verti = currentCombinations[headQueue];
+
+            if (verti >= nvertices || aux[verti] != INCLUDED) {
+                headQueue++;
+                continue;
+            }
+
+            int end = csrColIdxs[verti + 1];
+            for (int i = csrColIdxs[verti]; i < end; i++) {
+                int vertn = csrRowOffset[i];
+                if (vertn >= nvertices) {
+                    continue;
+                }
+                if (vertn != verti && aux[vertn] < INCLUDED) {
+                    int previousValue = aux[vertn];
+                    aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                    if (previousValue < INCLUDED) {
+                        if (aux[vertn] >= INCLUDED) {
+                            //                            tailQueue = (tailQueue + 1) % maxSizeQueue;
+                            //                            queue[tailQueue] = vertn;
+                            headQueue = Math.min(headQueue, aux[vertn]);
+                            tailQueue = Math.max(tailQueue, aux[vertn]);
+                        }
+                        auxc[vertn] = auxc[vertn] + auxc[verti];
+                    }
+                }
+            }
+            aux[verti] = PROCESSED;
+        }
+        return 0;
+    }
+
+    int checkCaratheodorySetP3CSRBkp(int[] csrColIdxs, int nvertices,
             int[] csrRowOffset, int sizeRowOffset,
             int[] aux, int[] auxc,
             int auxSize,
