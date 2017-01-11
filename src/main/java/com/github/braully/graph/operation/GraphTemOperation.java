@@ -1,19 +1,18 @@
 package com.github.braully.graph.operation;
 
-import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
 import static com.github.braully.graph.operation.GraphCalcCaratheodoryTemp.PROCESSED;
-import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.INCLUDED;
-import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.NEIGHBOOR_COUNT_INCLUDED;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 
 public class GraphTemOperation implements IGraphOperation {
 
@@ -23,30 +22,84 @@ public class GraphTemOperation implements IGraphOperation {
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-        long totalTimeMillis = -1;
-        Collection<Integer> set = graphRead.getSet();
-        int[] arr = new int[set.size()];
-        int i = 0;
-        for (Integer v : set) {
-            arr[i] = v;
-            i++;
+//    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
+//        long totalTimeMillis = -1;
+//        Collection<Integer> set = graphRead.getSet();
+//        int[] arr = new int[set.size()];
+//        int i = 0;
+//        for (Integer v : set) {
+//            arr[i] = v;
+//            i++;
+//        }
+//        totalTimeMillis = System.currentTimeMillis();
+//
+//
+//        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
+//        Map<String, Object> response = new HashMap<>();
+//        
+//        if (set.size() >= 2) {
+//            Map<String, Object> tMap = hsp3(graphRead, arr);
+//            response.putAll(tMap);
+//        }
+//        totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
+//        return response;
+//    }
+    @Override
+    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        OperationConvexityGraphResult processedCaratheodroySet = null;
+        Map<String, Object> result = null;
+        if (graph == null) {
+            return result;
         }
-        totalTimeMillis = System.currentTimeMillis();
+        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
+        int currentSize = maxSizeSet;
+        int left = 0;
+        int rigth = maxSizeSet;
+        result = new HashMap<>();
 
-
-        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
-        Map<String, Object> response = new HashMap<>();
-
-        if (set.size() >= 2) {
-            Map<String, Object> tMap = hsp3(graphRead, arr);
-            response.putAll(tMap);
+        while (left <= rigth) {
+            currentSize = (left + rigth) / 2;
+            processedCaratheodroySet = findCaratheodroySetBruteForce(graph, currentSize);
+            if (processedCaratheodroySet != null
+                    && processedCaratheodroySet.caratheodorySet != null
+                    && !processedCaratheodroySet.caratheodorySet.isEmpty()) {
+                result.clear();
+                result.putAll(processedCaratheodroySet.toMap());
+                left = currentSize + 1;
+            } else {
+                rigth = currentSize - 1;
+            }
         }
-        totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
-        return response;
+        return result;
     }
 
-    public Map<String, Object> hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
+    OperationConvexityGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
+        OperationConvexityGraphResult processedHullSet = null;
+        if (graph == null || graph.getVertexCount() <= 0) {
+            return processedHullSet;
+        }
+        Collection vertices = graph.getVertices();
+
+        Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), currentSize);
+        while (combinationsIterator.hasNext()) {
+            int[] currentSet = combinationsIterator.next();
+            int hsp3 = hsp3(graph, currentSet);
+
+            if (hsp3 > 0) {
+                processedHullSet = new OperationConvexityGraphResult();
+                Set<Integer> curSet = new HashSet<Integer>();
+                for (int h = 0; h < currentSize; h++) {
+                    curSet.add(currentSet[h]);
+                }
+                processedHullSet.caratheodoryNumber = currentSize;
+                processedHullSet.caratheodorySet = curSet;
+                break;
+            }
+        }
+        return processedHullSet;
+    }
+
+    public int hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] currentCombinations) {
 
         List<Integer> csrColIdxsList = UtilGraph.csrColIdxs(graph);
@@ -171,25 +224,30 @@ public class GraphTemOperation implements IGraphOperation {
             }
         }
 
-        Map<String, Object> tmap = new HashMap<>();
-        tmap.put("Aux", aux);
-        tmap.put("Auxc", auxc);
-        tmap.put("Sizederivated", sizederivated);
-        if (true) {
-            System.out.print("Aux = {");
-            for (int i = 0; i < nvertices; i++) {
-                System.out.print(aux[i] + " | ");
-            }
-            System.out.println("}");
-
-            System.out.print("Auxc= {");
-            for (int i = 0; i < nvertices; i++) {
-                System.out.print(auxc[i] + " | ");
-            }
-            System.out.println("}");
+        if (sizederivated == 0 && checkDerivated) {
+            System.out.println("*** MISSCHECK ***");
         }
 
-        return tmap;
+//        Map<String, Object> tmap = new HashMap<>();
+//        tmap.put("Aux", aux);
+//        tmap.put("Auxc", auxc);
+//        tmap.put("Sizederivated", sizederivated);
+//        if (true) {
+//            System.out.print("Aux = {");
+//            for (int i = 0; i < nvertices; i++) {
+//                System.out.print(aux[i] + " | ");
+//            }
+//            System.out.println("}");
+//
+//            System.out.print("Auxc= {");
+//            for (int i = 0; i < nvertices; i++) {
+//                System.out.print(auxc[i] + " | ");
+//            }
+//            System.out.println("}");
+//        }
+//
+//        return tmap;
+        return sizederivated;
     }
 
     /**
