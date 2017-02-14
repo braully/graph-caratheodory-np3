@@ -14,6 +14,7 @@ import static com.github.braully.graph.operation.OperationConvexityGraphResult.P
 import static com.github.braully.graph.operation.OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -39,12 +40,11 @@ public class GraphCalcCaratheodoryNumberParallel
     private static final Pattern PATERN_PARALLEL_TIME = Pattern.compile("Total time parallel: (\\w+)");
 
     protected Process process = null;
-//    protected Integer pid = null;
-//    protected Executor executor = null;
 
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (CUDA)";
 
+    @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         Integer caractheodoryNumber = null;
         int[] caratheodorySet = null;
@@ -56,18 +56,8 @@ public class GraphCalcCaratheodoryNumberParallel
         try {
             String path = UtilGraph.saveTmpFileGraphInCsr(graph);
             String commandToExecute = getExecuteCommand(path);
-
             log.info("Command: " + commandToExecute);
-
-//            ProcessBuilder processBuilder = new ProcessBuilder(commandToExecute);
-//            process = processBuilder.start();
-//            processBuilder.
             process = Runtime.getRuntime().exec(commandToExecute);
-//            executor = new DefaultExecutor();
-//            ExecuteWatchdog watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
-//            executor.setWatchdog(watchdog);
-//            CommandLine cmd = CommandLine.parse(commandToExecute);
-//            int execute = executor.execute(cmd);
             InputStreamReader input = new InputStreamReader(process.getInputStream());
             BufferedReader reader = new BufferedReader(input);
 
@@ -89,23 +79,7 @@ public class GraphCalcCaratheodoryNumberParallel
                 }
             }
             process.waitFor();
-//            while ((line = reader.readLine()) != null) {
-//                log.info(line);
-//                try {
-//                    if (caratheodorySet == null) {
-//                        caratheodorySet = parseCaratheodorySet(line);
-//                    }
-//                    if (caractheodoryNumber == null) {
-//                        caractheodoryNumber = parseCaratheodoryNumber(line);
-//                    }
-//                    if (pTime == null) {
-//                        pTime = parseParallelTime(line);
-//                    }
-//                } catch (Exception e) {
-//                    log.error("Error", e);
-//                }
-//            }
-        } catch (Exception ex) {
+        } catch (IOException | InterruptedException ex) {
             log.error("error", ex);
             return null;
         }
@@ -185,11 +159,8 @@ public class GraphCalcCaratheodoryNumberParallel
     @Override
     public void interrupt() {
         try {
-//            executor.getWatchdog().destroyProcess();
-//            ProcessBuilder pb = new ProcessBuilder();
             process.destroy();
             Process destroyForcibly = process.destroyForcibly();
-//            destroyForcibly.isAlive();
             if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
                 Field f = process.getClass().getDeclaredField("pid");
                 f.setAccessible(true);

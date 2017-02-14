@@ -130,4 +130,8 @@ public class UtilGraph {
         csrColIdxs.add(idx);
         return rowOffset;
     }
+
+    static String saveTmpFileGraphInAdjMatrix(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        return "";
+    }
 }

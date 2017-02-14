@@ -99,6 +99,7 @@ public class GraphWS {
                 } catch (InstantiationException | IllegalAccessException ex) {
                 }
             }
+            operators.addAll(UtilCProjects.listOperations());
             Collections.sort(operators, new Comparator<IGraphOperation>() {
                 @Override
                 public int compare(IGraphOperation t, IGraphOperation t1) {
