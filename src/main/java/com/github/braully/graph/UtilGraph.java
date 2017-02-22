@@ -132,6 +132,48 @@ public class UtilGraph {
     }
 
     static String saveTmpFileGraphInAdjMatrix(UndirectedSparseGraphTO<Integer, Integer> graph) {
-        return "";
+        String strFile = null;
+        if (graph != null && graph.getVertexCount() > 0) {
+            try {
+                int vertexCount = graph.getVertexCount();
+                File file = File.createTempFile("graph-csr-", ".txt");
+                file.deleteOnExit();
+
+                strFile = file.getAbsolutePath();
+                FileWriter writer = new FileWriter(file);
+                writerGraphToAdjMatrix(writer, graph);
+                writer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        Logger.getLogger(GraphWS.class.getName()).log(Level.INFO, "File tmp graph: " + strFile);
+        return strFile;
+    }
+
+    public static synchronized void writerGraphToAdjMatrix(Writer writer, UndirectedSparseGraphTO<Integer, Integer> undGraph) throws IOException {
+        if (undGraph == null || writer == null) {
+            return;
+        }
+        int vertexCount = undGraph.getVertexCount();
+//        writer.write("#Graph |V| = " + vertexCount + "\n");
+
+        for (Integer i = 0; i < vertexCount; i++) {
+            Collection<Integer> neighbors = undGraph.getNeighbors(i);
+            for (Integer j = 0; j < vertexCount; j++) {
+                if (neighbors.contains(j)) {
+                    writer.write("1");
+                } else {
+                    writer.write("0");
+                }
+                if (j < vertexCount - 1) {
+                    writer.write(" ");
+                }
+            }
+            if (i < vertexCount - 1) {
+                writer.write("\n");
+            }
+        }
+        writer.write("\n");
     }
 }
