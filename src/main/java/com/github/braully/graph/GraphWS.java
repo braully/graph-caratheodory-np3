@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.braully.graph.generator.GraphGeneratorRandom;
 import com.github.braully.graph.generator.IGraphGenerator;
 import com.github.braully.graph.operation.IGraphOperation;
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 import edu.uci.ics.jung.graph.AbstractGraph;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.AbstractMap;
@@ -42,28 +45,28 @@ import org.reflections.Reflections;
  */
 @Path("graph")
 public class GraphWS {
-    
+
     private static final Logger log = Logger.getLogger(GraphWS.class.getSimpleName());
     private static final org.apache.log4j.Logger logWebconsole = org.apache.log4j.Logger.getLogger("WEBCONSOLE");
-    
+
     private static final IGraphGenerator GRAPH_GENERATOR_DEFAULT = new GraphGeneratorRandom();
     private static final String NAME_PARAM_OUTPUT = "CONSOLE_USER_SESSION";
-    
+
     public static final boolean verbose = false;
     public static final boolean breankOnFirst = true;
-    
+
     private static ExecuteOperation executeOperation = new ExecuteOperation();
-    
+
     @Context
     private HttpServletRequest request;
-    
+
     @Context
     private HttpServletResponse response;
-    
+
     private List<IGraphGenerator> generators = new ArrayList<>();
-    
+
     private List<IGraphOperation> operators = new ArrayList<>();
-    
+
     {
         Reflections reflections = new Reflections("com.github.braully.graph.generator");
         Set<Class<? extends IGraphGenerator>> classes = reflections.getSubTypesOf(IGraphGenerator.class);
@@ -84,7 +87,7 @@ public class GraphWS {
                 }
             });
         }
-        
+
         reflections = new Reflections("com.github.braully.graph.operation");
         Set<Class<? extends IGraphOperation>> classesOperatio = reflections.getSubTypesOf(IGraphOperation.class);
         if (classes != null) {
@@ -106,7 +109,7 @@ public class GraphWS {
             });
         }
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("list-result")
@@ -114,7 +117,7 @@ public class GraphWS {
         List<DatabaseFacade.RecordResultGraph> allResults = DatabaseFacade.getAllResults();
         return allResults;
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("list-graph-operation")
@@ -127,7 +130,7 @@ public class GraphWS {
         }
         return types;
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("list-graph-generator")
@@ -140,7 +143,7 @@ public class GraphWS {
         }
         return types;
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("open-graph")
@@ -162,7 +165,7 @@ public class GraphWS {
         }
         return (UndirectedSparseGraphTO) graph;
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("generate-graph")
@@ -186,10 +189,10 @@ public class GraphWS {
                 graph = GRAPH_GENERATOR_DEFAULT.generateGraph(params);
             }
         }
-        
+
         return (UndirectedSparseGraphTO) graph;
     }
-    
+
     Map<String, String> getTranslageParams(MultivaluedMap<String, String> multiParams) {
         Map<String, String> map = new HashMap<>();
         if (multiParams != null) {
@@ -200,7 +203,7 @@ public class GraphWS {
         }
         return map;
     }
-    
+
     @POST
 //    @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -220,16 +223,36 @@ public class GraphWS {
         } catch (Exception e) {
             log.log(Level.SEVERE, "Fail on dowload", e);
         }
-        
     }
-    
+
+    @POST
+//    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("download-graph-mat")
+    public void downloadGraphMat(String jsonGraph) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class
+            );
+            if (graph != null) {
+                response.setHeader("Content-disposition", "attachment; filename=" + "file.csr");
+                response.setContentType("text/plain");
+                PrintWriter writer = response.getWriter();
+                UtilGraph.writerGraphToAdjMatrix(writer, graph);
+                writer.flush();
+            }
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Fail on dowload", e);
+        }
+    }
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("operation")
     public Map<String, Object> operation(String jsonGraph) {
         Map<String, Object> result = null;
-        
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             UndirectedSparseGraphTO graph = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class
@@ -243,12 +266,12 @@ public class GraphWS {
                         break;
                     }
                 }
-                
+
                 synchronized (executeOperation) {
                     if (executeOperation.isProcessing()) {
                         throw new IllegalArgumentException("Processor busy (1-operantion in progress)");
                     }
-                    
+
                     if (operation != null) {
                         executeOperation = new ExecuteOperation();
                         executeOperation.setGraph(graph);
@@ -265,11 +288,11 @@ public class GraphWS {
         }
         return result;
     }
-    
+
     public HttpSession getSession() {
         return this.request != null ? this.request.getSession(true) : null;
     }
-    
+
     private BufferedReader getSessionOutputBufferdReader() {
 //        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream("...".getBytes())));
         BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(new byte[0])));
@@ -285,16 +308,16 @@ public class GraphWS {
         Map<String, Object> map = new HashMap<>();
         List<String> lines = new ArrayList<>();
         List<LoggingEvent> loggingEvents = null;
-        
+
         long last = 0;
-        
+
         if (lastTime != null && lastTime > 0) {
             loggingEvents = WebConsoleAppender.getLoggingEvents(lastTime);
             last = lastTime;
         } else {
             loggingEvents = WebConsoleAppender.getLoggingEvents();
         }
-        
+
         if (loggingEvents != null) {
             for (LoggingEvent e : loggingEvents) {
                 Object message = e.getMessage();
@@ -304,14 +327,14 @@ public class GraphWS {
                 }
             }
         }
-        
+
         map.put("processing", executeOperation.isProcessing());
         map.put("last", last);
         map.put("output", lines);
         map.put("result", executeOperation.getResult());
         return map;
     }
-    
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -323,10 +346,34 @@ public class GraphWS {
                     executeOperation.interrupt();
                 }
             } catch (Exception e) {
-                
+
             }
         }
         return null;
     }
-    
+
+    @POST
+    @Path("upload-file-graph")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public UndirectedSparseGraphTO<Integer, Integer>
+            uploadFileGraph(@FormDataParam("file") InputStream uploadedInputStream,
+                    @FormDataParam("file") FormDataContentDisposition fileDetail,
+                    @FormDataParam("fileName") String fileName) {
+        UndirectedSparseGraphTO<Integer, Integer> ret = null;
+        try {
+            if (fileName != null && !fileName.trim().isEmpty()) {
+                String tmpFileName = fileName.trim().toLowerCase();
+                if (tmpFileName.endsWith("csr")) {
+                    ret = UtilGraph.loadGraphCsr(uploadedInputStream);
+                } else if (tmpFileName.endsWith("mat")) {
+                    ret = UtilGraph.loadGraphAdjMatrix(uploadedInputStream);
+                }
+            }
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "", e);
+        }
+        return ret;
+
+    }
 }

@@ -5,9 +5,13 @@
  */
 package com.github.braully.graph;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -175,5 +179,59 @@ public class UtilGraph {
             }
         }
         writer.write("\n");
+    }
+
+    static UndirectedSparseGraphTO<Integer, Integer> loadGraphCsr(InputStream uploadedInputStream) throws IOException {
+        UndirectedSparseGraphTO<Integer, Integer> ret = null;
+        if (uploadedInputStream != null) {
+            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+            String csrColIdxsStr = null;
+            String rowOffsetStr = null;
+
+            String readLine = null;
+            while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
+            }
+            csrColIdxsStr = readLine;
+            while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
+            }
+            rowOffsetStr = readLine;
+//            System.out.println("CsrColIdxs: " + csrColIdxsStr);
+//            System.out.println("RowOffset: " + rowOffsetStr);
+        }
+        return ret;
+    }
+
+    static UndirectedSparseGraphTO<Integer, Integer> loadGraphAdjMatrix(InputStream uploadedInputStream) throws IOException {
+        UndirectedSparseGraphTO<Integer, Integer> ret = null;
+        if (uploadedInputStream != null) {
+            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+            List<String> lines = new ArrayList<>();
+            String readLine = null;
+            Integer verticeCount = 0;
+            ret = new UndirectedSparseGraphTO<>();
+            while ((readLine = r.readLine()) != null) {
+                if (!readLine.trim().isEmpty() && !readLine.trim().startsWith("#")) {
+                    lines.add(readLine);
+                    System.out.println(readLine);
+                    ret.addVertex(verticeCount);
+                    verticeCount = verticeCount + 1;
+                }
+            }
+            int edgeCount = 0;
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                if (line != null) {
+                    String[] split = line.split(" ");
+                    if (split != null) {
+                        for (int j = 0; j < split.length; j++) {
+                            if ("1".equals(split[j])) {
+                                ret.addEdge(edgeCount++, i, j);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret;
     }
 }

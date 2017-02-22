@@ -117,7 +117,7 @@
                         <div class="form-group">
                             <input name="file" id="file" 
                                    class="form-control" type="file"
-                                   ng-file-select="onFileSelect($files)">
+                                   ng-file-select="onFileSelect($file)">
                         </div>
                         <div class="form-group pull-right">
                             <button class="btn btn-primary btn-sm" 
@@ -130,9 +130,14 @@
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
                                 Download (json)
                             </button>
+                            <button class="btn btn-primary btn-sm" 
+                                    ng-click="downloadGraphMat();">
+                                <span class="glyphicon glyphicon-circle-arrow-down"></span>
+                                Download (mat)
+                            </button>
                             <button ng-click="uploadedFile()" class="btn btn-primary btn-sm">
                                 <span class="glyphicon glyphicon-circle-arrow-up"></span>
-                                Upload (json)
+                                Upload
                             </button>
                         </div>
                     </fieldset>
@@ -333,6 +338,14 @@
                     });
                 };
 
+                $scope.downloadGraphMat = function () {
+                    $http.post('rest/graph/download-graph-mat', $scope.graph).success(function (textContent) {
+                        var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.mat';
+                        var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
+                        saveAs(blob, filename);
+                    });
+                };
+
                 $scope.openGraph = function (g) {
                     $http.get('rest/graph/open-graph', {params: {graph: g}})
                             .success(function (graph) {
@@ -348,20 +361,34 @@
                     }
                     var fr = new FileReader();
                     fr.onload = function (e) {
-                        var graph = JSON.parse(e.target.result);
-                        if (!graph || !graph.vertices || !graph.pairs) {
-                            window.alert('File format invalid');
-                        } else {
+//                        console.log(e);
+                        var fileName = $scope.file.name.toLowerCase();
+                        if (fileName.endsWith(".json")) {
+                            var graph = JSON.parse(e.target.result);
+                            if (!graph || !graph.vertices || !graph.pairs) {
+                                window.alert('File format invalid');
+                                return;
+                            }
                             $scope.graph = graph;
-                            try {
-                                if (!$scope.graph.name) {
-                                    $scope.graph.name = e.target.fileName;
-                                }
-                            } catch (err) {
+                        } else if (fileName.endsWith(".csr")
+                                || fileName.endsWith(".mat")) {
+                            var url = 'rest/graph/upload-file-graph';
+                            var fd = new FormData();
+                            fd.append("file", e.target.result);
+                            fd.append("fileName", $scope.file.name);
+                            $http.post(url, fd, {headers: {'Content-Type': undefined}}).success(function (graph) {
+                                $scope.graph = graph;
+                            });
+                        }
+                        if ($scope.graph) {
+                            if (!$scope.graph.name) {
+                                $scope.graph.name = $scope.file.name;
                             }
                             $scope.updateGraph();
                         }
                     };
+//                    console.log('Scope.file');
+//                    console.log($scope.file);
                     fr.readAsText($scope.file);
                 };
 
@@ -385,7 +412,7 @@
                         return {"name": d, "group": 1};
                     });
                     var edges = graph.pairs.map(function (d) {
-                        return {"source": d[0], "target": d[1], "value": 2, "origin": d, "left":true, "right": true};
+                        return {"source": d[0], "target": d[1], "value": 2, "origin": d, "left": true, "right": true};
                     });
                     force.nodes(vertex).links(edges).start();
                     var link = svg.selectAll(".link")
