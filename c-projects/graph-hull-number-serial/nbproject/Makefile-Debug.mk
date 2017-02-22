@@ -62,7 +62,7 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/graph-hull-number-serial: ${OBJECTFIL
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/graph-hull-number-serial ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/graph-hull-number-serial.o: graph-hull-number-serial.cpp 
+${OBJECTDIR}/graph-hull-number-serial.o: graph-hull-number-serial.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.cc) -g -o ${OBJECTDIR}/graph-hull-number-serial.o graph-hull-number-serial.cpp
 
@@ -72,7 +72,6 @@ ${OBJECTDIR}/graph-hull-number-serial.o: graph-hull-number-serial.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/graph-hull-number-serial
 
 # Subprojects
 .clean-subprojects:

@@ -227,13 +227,10 @@ void serialFindCaratheodoryNumber(int nvertices, int *csrColIdxs, int sizeCsrCol
             k_i++;
         } else {
             result_d = k_i + 1;
-            printf("\nCartheodory Find - Thread-%d: sizederivated=%d k=%d k_i=%d",
+            printf("\nCartheodory Find - Thread-%d: sizederivated:%d k:%d k_i:%d",
                     idx, sizederivated, k, k_i);
         }
     }
-
-    //printf("\nThread-%d: szoffset=%d nvs=%d k=%d k_i=[%d, %d]=%d",
-    //    idx, sizeRowOffset, nvertices, k, idx * offset, limmit, execCount);
     free(memspace);
 }
 
@@ -259,9 +256,6 @@ int findCaratheodoryNumber(int nvertices, int *csrColIdxs, int sizeCsrColIdxs,
     initialCombination(nvertices, k, currentCombinations, k_i);
 
     while (k_i < limmit && !result_d) {
-        //        printf("\n%d-Chk", k_i);
-        //        printCombination(currentCombinations, k);
-        //clean aux vector            
         for (int i = 0; i < nvertices; i++) {
             aux[i] = 0;
             auxc[i] = 0;
@@ -299,18 +293,6 @@ int findCaratheodoryNumber(int nvertices, int *csrColIdxs, int sizeCsrColIdxs,
             }
             aux[verti] = PROCESSED;
         }
-
-        //        printf("\n%d-Aux", k_i);
-        //        printCombination(aux, nvertices);
-        //        printf("\n%d-Auc", k_i);
-        //        printf("S = {");
-        //        for (int i = 0; i < nvertices; i++) {
-        //            printf("%2u", auxc[i]);
-        //            if (i < nvertices - 1) {
-        //                printf(", ");
-        //            }
-        //        }
-        //        printf(" }");
 
         bool checkDerivated = false;
 
@@ -370,13 +352,15 @@ int findCaratheodoryNumber(int nvertices, int *csrColIdxs, int sizeCsrColIdxs,
             k_i++;
         } else {
             result_d = k_i + 1;
-            printf("\nCartheodory Find - Thread-%d: sizederivated=%d k=%d k_i=%d",
-                    idx, sizederivated, k, k_i);
+            printf("\nCartheodory Find - sizederivated:%d k:%d k_i:%d",
+                    sizederivated, k, k_i);
+            printf("\nResult Serial Binary");
+            printf("\n∂H(S) = {");
+            for (int i = 0; i < nvertices; i++)
+                if (aux[i] >= INCLUDED) printf("%d,", i);
+            printf("}\n");
         }
     }
-
-    //printf("\nThread-%d: szoffset=%d nvs=%d k=%d k_i=[%d, %d]",
-    //    idx, sizeRowOffset, nvertices, k, idx * offset, limmit);
     free(memspace);
     return result_d;
 }
@@ -414,37 +398,32 @@ void findSerialCaratheodoryNumberBinaryStrategy(int verticesCount, int* csrColId
             lastIdxCaratheodorySet = result_h - 1;
             left = k + 1;
             result_h = 0;
-            printf("\nCaratheodory set size=%d..Ok idx=%d", k, lastIdxCaratheodorySet);
+            //            printf("\nCaratheodory set size=%d..Ok idx=%d", k, lastIdxCaratheodorySet);
         } else {
             rigth = k - 1;
-            printf("\nCaratheodory set size=%d..Not", k);
+            //            printf("\nCaratheodory set size=%d..Not", k);
         }
     }
 
     if (lastSize > 0) {
-        printf("\nResult Parallel Binary\n");
         int *currentCombination = (int *) malloc(lastSize * sizeof (int));
         initialCombination(verticesCount, lastSize, currentCombination, lastIdxCaratheodorySet);
         printCombination(currentCombination, lastSize);
-        printf("\nS=%d-Comb(%d,%d) \n|S| = %d\n",
+        printf("\nS=%d-Comb(%d,%d) \nCaratheodroy number(c) = %d\n",
                 lastIdxCaratheodorySet, verticesCount, lastSize, lastSize);
-    } else {
-        printf("\nCaratheodory set not found!");
     }
+    //    else {
+    //        printf("\nCaratheodory set not found!");
+    //    }
 }
 
 int main(int argc, char** argv) {
     int opt = 0;
-    char* strFile = "graph-test/graph-csr-8775879977288244551.txt";
+    char* strFile = "graph-test.txt";
     //    char* strFile = "graph-test/graph-csr-41289295013299317.txt";
-    bool serial = true;
-    bool binary = true;
 
-    if ((argc <= 1) || (argv[argc - 1] == NULL) || (argv[argc - 1][0] == '-')) {
-        //        serial = true;
-        binary = true;
-    } else {
-        strFile = argv[argc - 1];
+    if (argc > 1) {
+        strFile = argv[1];
     }
 
     DIR *dpdf;

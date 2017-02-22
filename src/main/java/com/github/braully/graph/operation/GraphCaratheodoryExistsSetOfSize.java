@@ -7,7 +7,7 @@ import java.util.Map;
  *
  * @author strike
  */
-public class GraphCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNumber {
+public class GraphCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNumberBinaryStrategy {
 
     static final String type = "P3-Convexity";
     static final String description = "Caratheodory Set of Size  (Java)";

@@ -21,28 +21,28 @@ import org.apache.log4j.Logger;
  * @author strike
  */
 public class CBInaryOperation implements IGraphOperation, Interruptible {
-
+    
     private static final Logger log = Logger.getLogger(CBInaryOperation.class);
-
+    
     String type, name, exec;
     FormatGraphParameter format;
     protected Process process;
-
+    
     CBInaryOperation(String exec, String type, String operation, String format) {
         this.type = type;
         this.exec = exec;
         this.name = operation;
         this.format = FormatGraphParameter.getFormat(format);
     }
-
+    
     static enum FormatGraphParameter {
         FILE_CSR("FileCSR"), FILE_ADJACENCY_MATRIX("FileAM");
         String name;
-
+        
         private FormatGraphParameter(String name) {
             this.name = name;
         }
-
+        
         static FormatGraphParameter getFormat(String strformat) {
             FormatGraphParameter format = null;
             if (strformat != null && !strformat.isEmpty()) {
@@ -57,39 +57,44 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
             return format;
         }
     }
-
+    
     @Override
     public String getTypeProblem() {
         return type;
     }
-
+    
     @Override
     public String getName() {
         return name;
     }
-
+    
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         Map<String, Object> response = null;
         try {
             String commandToExecute = getExecuteCommand(graph);
+            log.info(commandToExecute);
             File execFile = new File(exec);
             execFile.setExecutable(true);
             process = Runtime.getRuntime().exec(commandToExecute);
             InputStreamReader input = new InputStreamReader(process.getInputStream());
             BufferedReader reader = new BufferedReader(input);
-
+            
             response = new HashMap<>();
             String lastLine = "";
             String line = "";
             while ((line = reader.readLine()) != null) {
-                if (line != null && !line.trim().isEmpty()) {
-                    log.info(line);
-                    String[] splits = line.split(":", 2);
-                    if (splits != null && splits.length >= 2) {
-                        response.put(splits[0], splits[1].trim());
+                try {
+                    if (line != null && !line.trim().isEmpty()) {
+                        log.info(line);
+                        String[] splits = line.split("=", 2);
+                        if (splits != null && splits.length >= 2) {
+                            response.put(splits[0].trim(), splits[1].trim());
+                        }
+                        lastLine = line;
                     }
-                    lastLine = line;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             if (response.isEmpty()) {
@@ -100,10 +105,10 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
             log.error("error", ex);
             return null;
         }
-
+        
         return response;
     }
-
+    
     @Override
     public void interrupt() {
         try {
@@ -120,12 +125,12 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
             log.error("fail on interrupt operation", e);
         }
     }
-
+    
     private String getExecuteCommand(UndirectedSparseGraphTO<Integer, Integer> graph) {
         String path = "";
-
+        
         String inputData = graph.getInputData();
-
+        
         if (format != null) {
             switch (format) {
                 case FILE_CSR:
