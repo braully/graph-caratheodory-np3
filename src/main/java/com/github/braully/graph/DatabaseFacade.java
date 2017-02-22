@@ -7,6 +7,7 @@ package com.github.braully.graph;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.braully.graph.operation.IGraphOperation;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -19,7 +20,6 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- *
  * @author braully
  */
 public class DatabaseFacade {
@@ -149,9 +149,11 @@ public class DatabaseFacade {
         try {
             List<RecordResultGraph> tmp = results = mapper.readValue(new File(DATABASE_URL), List.class);
             if (tmp != null) {
-                for (RecordResultGraph t : tmp) {
-                    results.add(t);
-                }
+                try {
+                    for (RecordResultGraph t : tmp) {
+                        results.add(t);
+                    }
+                } catch (ClassCastException e) { }
             }
             Collections.reverse(results);
         } catch (Exception e) {

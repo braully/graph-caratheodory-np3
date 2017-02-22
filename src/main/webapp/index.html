@@ -385,7 +385,7 @@
                         return {"name": d, "group": 1};
                     });
                     var edges = graph.pairs.map(function (d) {
-                        return {"source": d[0], "target": d[1], "value": 2, "origin": d};
+                        return {"source": d[0], "target": d[1], "value": 2, "origin": d, "left":true, "right": true};
                     });
                     force.nodes(vertex).links(edges).start();
                     var link = svg.selectAll(".link")

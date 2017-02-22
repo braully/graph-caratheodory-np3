@@ -1,19 +1,15 @@
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.IGraphOperation;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 
 /**
- *
  * @author Braully Rocha
  */
 public class UtilCProjects {
@@ -103,7 +99,13 @@ public class UtilCProjects {
                     if (content.isFile() && content.getName().equalsIgnoreCase(DEFAULT_FILE_NAME_DESCRIPTOR)) {
                         File binaryDir = new File(file, "bin");
                         if (!binaryDir.exists()) {
+                            binaryDir = new File(file, "dist");
+                        }
+                        if (!binaryDir.exists()) {
                             binaryDir = new File(file, "build");
+                        }
+                        if (!binaryDir.exists()) {
+                            binaryDir = file;
                         }
                         Iterator<File> iterateFiles = FileUtils.iterateFiles(binaryDir, null, true);
                         File binaryExec = iterateFiles.next();
