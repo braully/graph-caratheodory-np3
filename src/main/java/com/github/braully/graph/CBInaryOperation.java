@@ -133,13 +133,13 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
     public void interrupt() {
         try {
             process.destroy();
-            Process destroyForcibly = process.destroyForcibly();
+//            Process destroyForcibly = process.destroy();
             if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
                 Field f = process.getClass().getDeclaredField("pid");
                 f.setAccessible(true);
                 Long pid = f.getLong(process);
                 Process exec = Runtime.getRuntime().exec("kill -9 " + (pid + 1));
-                destroyForcibly.exitValue();
+                process.exitValue();
             }
         } catch (Exception e) {
             log.error("fail on interrupt operation", e);
