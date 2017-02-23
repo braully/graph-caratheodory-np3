@@ -142,7 +142,7 @@ int checkConvexityP3(int *csrColIdxs, int nvertices,
 
     while (headQueue <= tailQueue) {
         if (verboseSerial) {
-            printf("\nP3(k=%2d,c=%ld)-%ld: ", sizeComb, idx, countExec++);
+            printf("\nP3(k=%2d,c=%d)-%d: ", sizeComb, idx, countExec++);
             printQueue(queue, headQueue, tailQueue);
         }
         int verti = queue[headQueue];

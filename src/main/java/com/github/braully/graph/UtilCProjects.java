@@ -125,7 +125,9 @@ public class UtilCProjects {
                         while (format != null && format.startsWith("#")) {
                             format = frConReader.readLine();
                         }
-                        operations.add(new CBInaryOperation(binaryExec.getAbsolutePath(), type, operation, format));
+                        if (binaryExec != null) {
+                            operations.add(new CBInaryOperation(binaryExec.getAbsolutePath(), type, operation, format));
+                        }
                     }
                 }
             } catch (Exception e) {

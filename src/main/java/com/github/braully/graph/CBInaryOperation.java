@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 public class CBInaryOperation implements IGraphOperation, Interruptible {
 
     private static final Logger log = Logger.getLogger(CBInaryOperation.class);
+    private static final Logger logWebconsole = Logger.getLogger("WEBCONSOLE");
 
     String type, name, exec;
     FormatGraphParameter format;
@@ -73,7 +74,7 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
         Map<String, Object> response = null;
         try {
             String commandToExecute = getExecuteCommand(graph);
-            log.info(commandToExecute);
+            logWebconsole.info(commandToExecute);
             File execFile = new File(exec);
             execFile.setExecutable(true);
             process = Runtime.getRuntime().exec(commandToExecute);
@@ -86,7 +87,7 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
             while ((line = reader.readLine()) != null) {
                 try {
                     if (line != null && !line.trim().isEmpty()) {
-                        log.info(line);
+                        logWebconsole.info(line);
                         String[] splits = line.split("=", 2);
                         if (splits != null && splits.length >= 2) {
                             response.put(splits[0].trim(), splits[1].trim());
@@ -94,6 +95,8 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
                         lastLine = line;
                     }
                 } catch (Exception e) {
+                    logWebconsole.error("Error: " + e.getLocalizedMessage());
+                    log.error("fail on execute", e);
                     e.printStackTrace();
                 }
             }
@@ -101,6 +104,23 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
                 response.put("Result", lastLine);
             }
             int waitFor = process.waitFor();
+            if (waitFor > 0) {
+                response.put("Result", "Erro");
+                try {
+                    InputStreamReader inputError = new InputStreamReader(process.getErrorStream());
+                    BufferedReader readerError = new BufferedReader(inputError);
+
+                    String erorline = "";
+                    while ((erorline = readerError.readLine()) != null) {
+
+                        if (erorline != null && !erorline.trim().isEmpty()) {
+                            logWebconsole.info("Error: " + erorline);
+                        }
+
+                    }
+                } catch (Exception e) {
+                }
+            }
         } catch (IOException | InterruptedException ex) {
             log.error("error", ex);
             return null;
@@ -144,7 +164,7 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
             }
         }
         String tmpExec = exec + " " + path;
-        if (inputData == null) {
+        if (inputData != null) {
             tmpExec = tmpExec + " " + inputData;
         }
         return tmpExec;
