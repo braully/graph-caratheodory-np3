@@ -37,7 +37,7 @@ public class CBInaryOperation implements IGraphOperation, Interruptible {
     }
 
     static enum FormatGraphParameter {
-        FILE_CSR("FileCSR"), FILE_ADJACENCY_MATRIX("FileAM");
+        FILE_CSR("FileCSR"), FILE_ADJACENCY_MATRIX("FileAdjMatrix");
         String name;
 
         private FormatGraphParameter(String name) {
