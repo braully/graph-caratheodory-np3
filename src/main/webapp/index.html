@@ -324,7 +324,7 @@
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
 
                 $scope.downloadGraph = function () {
-                    var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.json';
+                    var filename = 'graph-' + $scope.graph.name + '.json';
                     var textContent = JSON.stringify($scope.graph, null, '\t');
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
@@ -332,7 +332,7 @@
 
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
-                        var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.csr';
+                        var filename = 'graph-' + $scope.graph.name + '.csr';
                         var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                         saveAs(blob, filename);
                     });
@@ -340,7 +340,7 @@
 
                 $scope.downloadGraphMat = function () {
                     $http.post('rest/graph/download-graph-mat', $scope.graph).success(function (textContent) {
-                        var filename = 'graph-' + $scope.nvertices + '-' + $scope.minDegree + '-' + $scope.maxDegree + '.mat';
+                        var filename = 'graph-' + $scope.graph.name + '.mat';
                         var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                         saveAs(blob, filename);
                     });

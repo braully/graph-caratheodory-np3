@@ -11,15 +11,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Graphs utils
@@ -27,6 +25,9 @@ import java.util.logging.Logger;
  * @author Braully
  */
 public class UtilGraph {
+
+    private static final Logger logWebconsole = Logger.getLogger("WEBCONSOLE");
+    private static final Logger log = Logger.getLogger(UtilGraph.class);
 
     public static synchronized String saveTmpFileGraphInCsr(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
         String strFile = null;
@@ -41,10 +42,10 @@ public class UtilGraph {
                 writerGraphToCsr(writer, undGraph);
                 writer.close();
             } catch (IOException ex) {
-                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(null, ex);
             }
         }
-        Logger.getLogger(GraphWS.class.getName()).log(Level.INFO, "File tmp graph: " + strFile);
+        log.info("File tmp graph: " + strFile);
         return strFile;
     }
 
@@ -148,10 +149,10 @@ public class UtilGraph {
                 writerGraphToAdjMatrix(writer, graph);
                 writer.close();
             } catch (IOException ex) {
-                Logger.getLogger(GraphWS.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(null, ex);
             }
         }
-        Logger.getLogger(GraphWS.class.getName()).log(Level.INFO, "File tmp graph: " + strFile);
+        log.info("File tmp graph: " + strFile);
         return strFile;
     }
 
@@ -183,54 +184,85 @@ public class UtilGraph {
 
     static UndirectedSparseGraphTO<Integer, Integer> loadGraphCsr(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO<Integer, Integer> ret = null;
-        if (uploadedInputStream != null) {
-            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
-            String csrColIdxsStr = null;
-            String rowOffsetStr = null;
+        try {
+            if (uploadedInputStream != null) {
+                BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+                String csrColIdxsStr = null;
+                String rowOffsetStr = null;
 
-            String readLine = null;
-            while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
-            }
-            csrColIdxsStr = readLine;
-            while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
-            }
-            rowOffsetStr = readLine;
+                String readLine = null;
+                while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
+                }
+                csrColIdxsStr = readLine;
+                while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
+                }
+                rowOffsetStr = readLine;
+                if (csrColIdxsStr != null && !csrColIdxsStr.trim().isEmpty()
+                        && rowOffsetStr != null && !rowOffsetStr.trim().isEmpty()) {
+                    String[] csrColIdxsStrSplited = csrColIdxsStr.trim().split(" ");
+                    String[] rowOffsetStrSplited = rowOffsetStr.trim().split(" ");
+                    ret = new UndirectedSparseGraphTO<>();
+                    int vertexCount = csrColIdxsStrSplited.length - 1;
+                    int edgeCount = 0;
+                    if (csrColIdxsStrSplited != null && csrColIdxsStrSplited.length > 0) {
+                        for (int i = 0; i < vertexCount; i++) {
+                            ret.addVertex(i);
+                        }
+                        for (int i = 0; i < vertexCount; i++) {
+                            int ini = Integer.parseInt(csrColIdxsStrSplited[i]);
+                            int fim = Integer.parseInt(csrColIdxsStrSplited[i + 1]);
+                            for (; ini < fim; ini++) {
+                                String strFim = rowOffsetStrSplited[ini];
+                                ret.addEdge(edgeCount++, i, Integer.parseInt(strFim));
+                            }
+                        }
+                    }
+                }
 //            System.out.println("CsrColIdxs: " + csrColIdxsStr);
 //            System.out.println("RowOffset: " + rowOffsetStr);
+            }
+        } catch (Exception e) {
+            log.error("error", e);
+            logWebconsole.info("Error: format invalid --" + e.getLocalizedMessage());
         }
         return ret;
     }
 
     static UndirectedSparseGraphTO<Integer, Integer> loadGraphAdjMatrix(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO<Integer, Integer> ret = null;
-        if (uploadedInputStream != null) {
-            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
-            List<String> lines = new ArrayList<>();
-            String readLine = null;
-            Integer verticeCount = 0;
-            ret = new UndirectedSparseGraphTO<>();
-            while ((readLine = r.readLine()) != null) {
-                if (!readLine.trim().isEmpty() && !readLine.trim().startsWith("#")) {
-                    lines.add(readLine);
-                    System.out.println(readLine);
-                    ret.addVertex(verticeCount);
-                    verticeCount = verticeCount + 1;
+        try {
+            if (uploadedInputStream != null) {
+                BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+                List<String> lines = new ArrayList<>();
+                String readLine = null;
+                Integer verticeCount = 0;
+                ret = new UndirectedSparseGraphTO<>();
+                while ((readLine = r.readLine()) != null) {
+                    if (!readLine.trim().isEmpty() && !readLine.trim().startsWith("#")) {
+                        lines.add(readLine);
+                        System.out.println(readLine);
+                        ret.addVertex(verticeCount);
+                        verticeCount = verticeCount + 1;
+                    }
                 }
-            }
-            int edgeCount = 0;
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                if (line != null) {
-                    String[] split = line.split(" ");
-                    if (split != null) {
-                        for (int j = 0; j < split.length; j++) {
-                            if ("1".equals(split[j])) {
-                                ret.addEdge(edgeCount++, i, j);
+                int edgeCount = 0;
+                for (int i = 0; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    if (line != null) {
+                        String[] split = line.split(" ");
+                        if (split != null) {
+                            for (int j = 0; j < split.length; j++) {
+                                if ("1".equals(split[j])) {
+                                    ret.addEdge(edgeCount++, i, j);
+                                }
                             }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            log.error("error", e);
+            logWebconsole.info("Error: format invalid --" + e.getLocalizedMessage());
         }
         return ret;
     }
