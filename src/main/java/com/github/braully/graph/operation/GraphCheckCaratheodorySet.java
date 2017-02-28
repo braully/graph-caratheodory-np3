@@ -15,8 +15,9 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     static final String type = "P3-Convexity";
     static final String description = "Check Set(S)";
 
-    public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
+    public static final int INCLUDED = 2;
+    public static final int PROCESSED = 3;
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         long totalTimeMillis = -1;
@@ -53,13 +54,10 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         OperationConvexityGraphResult processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
-        int[] auxa = new int[graph.getVertexCount()];
-        int[] auxb = new int[graph.getVertexCount()];
         int[] auxc = new int[graph.getVertexCount()];
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
             auxc[i] = 0;
-            auxa[i] = auxb[i] = -1;
         }
 
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
@@ -75,21 +73,18 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             Collection<Integer> neighbors = graph.getNeighbors(verti);
 
             for (int vertn : neighbors) {
-                if (vertn != verti) {
-                    int previousValue = aux[vertn];
+                if (vertn == verti) {
+                    continue;
+                }
+                if (vertn != verti && aux[vertn] < INCLUDED) {
                     aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (previousValue < INCLUDED) {
-                        if (aux[vertn] >= INCLUDED) {
-                            mustBeIncluded.add(vertn);
-                            auxb[vertn] = verti;
-                            auxc[vertn] = auxc[vertn] + auxc[verti];
-                        } else {
-                            auxa[vertn] = verti;
-                            auxc[vertn] = auxc[vertn] + auxc[verti];
-                        }
+                    if (aux[vertn] == INCLUDED) {
+                        mustBeIncluded.add(vertn);
                     }
+                    auxc[vertn] = auxc[vertn] + auxc[verti];
                 }
             }
+            aux[verti] = PROCESSED;
         }
 
         if (GraphWS.verbose) {
@@ -105,18 +100,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             }
             System.out.println("}");
 
-            System.out.print("Auxa= {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.print((auxa[i] < 0 ? "-" : auxa[i]) + " | ");
-            }
-            System.out.println("}");
-
-            System.out.print("Auxb= {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.print((auxb[i] < 0 ? "-" : auxb[i]) + " | ");
-            }
-            System.out.println("}");
-
             System.out.print("Auxc= {");
             for (int i = 0; i < graph.getVertexCount(); i++) {
                 System.out.print(auxc[i] + " | ");
@@ -124,46 +107,30 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             System.out.println("}");
         }
 
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            if (auxc[i] >= currentSetSize) {
-                Queue<Integer> queueu = new ArrayDeque<>();
-                Set<Integer> hs = new HashSet<>(currentSetSize);
-                queueu.add(auxa[i]);
-                queueu.add(auxb[i]);
-                while (!queueu.isEmpty()) {
-                    Integer actual = queueu.remove();
-                    if (actual == -1) {
-                        continue;
-                    }
-                    if (auxa[actual] == -1) {
-                        hs.add(actual);
-                    } else {
-                        queueu.add(auxa[actual]);
-                    }
-                    if (auxb[actual] == -1) {
-                        hs.add(actual);
-                    } else {
-                        queueu.add(auxb[actual]);
-                    }
-                }
-                if (GraphWS.verbose) {
-                    System.out.println("hs(" + i + ") = " + hs);
-                }
-                if (hs.size() == currentSetSize) {
-                    Set<Integer> partial = calcDerivatedPartial(graph,
-                            hsp3g, currentSet);
-                    if (partial != null && !partial.isEmpty()) {
-                        processedHullSet = new OperationConvexityGraphResult();
-                        processedHullSet.caratheodoryNumber = currentSetSize;
-                        processedHullSet.auxProcessor = aux;
-                        processedHullSet.convexHull = hsp3g;
-                        processedHullSet.caratheodorySet = hs;
-                        processedHullSet.partial = calcDerivatedPartial(graph,
-                                hsp3g, currentSet);
+        boolean checkDerivated = false;
 
-                    }
-                    break;
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            if (auxc[i] >= currentSet.length && aux[i] == PROCESSED) {
+                checkDerivated = true;
+                break;
+            }
+        }
+
+        if (checkDerivated) {
+
+            Set<Integer> partial = calcDerivatedPartial(graph,
+                    hsp3g, currentSet);
+            if (partial != null && !partial.isEmpty()) {
+                Set<Integer> setCurrent = new HashSet<>();
+                for (int i : currentSet) {
+                    setCurrent.add(i);
                 }
+                processedHullSet = new OperationConvexityGraphResult();
+                processedHullSet.caratheodoryNumber = currentSetSize;
+                processedHullSet.auxProcessor = aux;
+                processedHullSet.convexHull = hsp3g;
+                processedHullSet.caratheodorySet = setCurrent;
+                processedHullSet.partial = partial;
             }
         }
         return processedHullSet;
