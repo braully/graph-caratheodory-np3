@@ -3,9 +3,11 @@ package com.github.braully.graph.operation;
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -87,26 +89,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             aux[verti] = PROCESSED;
         }
 
-        if (GraphWS.verbose) {
-            System.out.print("Cmj = {");
-            for (int i = 0; i < currentSet.length; i++) {
-                System.out.print(currentSet[i] + " | ");
-            }
-            System.out.println("}");
-
-            System.out.print("Aux = {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.print(aux[i] + " | ");
-            }
-            System.out.println("}");
-
-            System.out.print("Auxc= {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.print(auxc[i] + " | ");
-            }
-            System.out.println("}");
-        }
-
         boolean checkDerivated = false;
 
         for (int i = 0; i < graph.getVertexCount(); i++) {
@@ -115,10 +97,9 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
                 break;
             }
         }
-
+        Set<Integer> partial = null;
         if (checkDerivated) {
-
-            Set<Integer> partial = calcDerivatedPartial(graph,
+            partial = calcDerivatedPartial(graph,
                     hsp3g, currentSet);
             if (partial != null && !partial.isEmpty()) {
                 Set<Integer> setCurrent = new HashSet<>();
@@ -133,6 +114,56 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
                 processedHullSet.partial = partial;
             }
         }
+
+        if (false) {
+            Set<Integer> curSet = new HashSet<>();
+            for (int i = 0; i < currentSet.length; i++) {
+                curSet.add(currentSet[i]);
+            }
+
+            System.out.print("\n∂H(S)= {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                if (partial != null && partial.contains(i)) {
+                    System.out.printf("%2d | ", i);
+                } else {
+                    System.out.print("   | ");
+                }
+            }
+            System.out.println("}");
+
+            System.out.print("H(S) = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                if (hsp3g.contains(i)) {
+                    System.out.printf("%2d | ", i);
+                } else {
+                    System.out.print("   | ");
+                }
+            }
+            System.out.println("}");
+
+            System.out.print("S    = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                if (curSet.contains(i)) {
+                    System.out.printf("%2d | ", i);
+                } else {
+                    System.out.print("   | ");
+                }
+            }
+            System.out.println("}");
+
+            System.out.print("Aux  = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.printf("%2d | ", aux[i]);
+            }
+            System.out.println("}");
+
+            System.out.print("Auxc = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                System.out.printf("%2d | ", auxc[i]);
+            }
+            System.out.println("}");
+        }
+
         return processedHullSet;
     }
 
