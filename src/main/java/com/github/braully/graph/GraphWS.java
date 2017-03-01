@@ -294,12 +294,10 @@ public class GraphWS {
     }
 
     private BufferedReader getSessionOutputBufferdReader() {
-//        BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream("...".getBytes())));
         BufferedReader bf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(new byte[0])));
         return bf;
     }
 
-//    @GET
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

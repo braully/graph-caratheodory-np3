@@ -7,8 +7,12 @@ package com.github.braully.graph;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.braully.graph.operation.IGraphOperation;
+import java.io.BufferedWriter;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,10 +30,14 @@ public class DatabaseFacade {
 
     private static final String DATABASE_DIRECTORY = System.getProperty("user.home") + File.separator + "." + "graph-problem";
     private static final String DATABASE_URL = DATABASE_DIRECTORY + File.separator + "graph-problem-results.json";
+    private static final String DATABASE_DIRECTORY_GRAPH = DATABASE_DIRECTORY + File.separator + "graph";
+    private static final String DATABASE_DIRECTORY_CONSOLE = DATABASE_DIRECTORY + File.separator + "console";
 
     static {
         try {
             new File(DATABASE_DIRECTORY).mkdirs();
+            new File(DATABASE_DIRECTORY_GRAPH).mkdirs();
+            new File(DATABASE_DIRECTORY_CONSOLE).mkdirs();
         } catch (Exception e) {
 
         }
@@ -37,12 +45,14 @@ public class DatabaseFacade {
 
     static class RecordResultGraph implements java.lang.Comparable<RecordResultGraph> {
 
-        String id, status, type, operation, graph, name, vertices, edges, results, date;
+        String id, status, type, operation, graph, name, vertices, edges, results, date, console;
 
         public RecordResultGraph() {
         }
 
-        public RecordResultGraph(String status, String type, String operation, String graph, String vertices, String edges, String results, String date) {
+        public RecordResultGraph(String status, String type,
+                String operation, String graph, String vertices,
+                String edges, String results, String date, String console) {
             this.status = status;
             this.type = type;
             this.operation = operation;
@@ -51,6 +61,7 @@ public class DatabaseFacade {
             this.edges = edges;
             this.results = results;
             this.date = date;
+            this.console = console;
         }
 
         public String getName() {
@@ -153,7 +164,8 @@ public class DatabaseFacade {
                     for (RecordResultGraph t : tmp) {
                         results.add(t);
                     }
-                } catch (ClassCastException e) { }
+                } catch (ClassCastException e) {
+                }
             }
             Collections.reverse(results);
         } catch (Exception e) {
@@ -162,7 +174,9 @@ public class DatabaseFacade {
         return results;
     }
 
-    public static synchronized void saveResult(UndirectedSparseGraphTO graph, IGraphOperation graphOperation, Map<String, Object> result) {
+    public static synchronized void saveResult(UndirectedSparseGraphTO graph,
+            IGraphOperation graphOperation,
+            Map<String, Object> result, List<String> consoleOut) {
         if (result != null && graph != null && graphOperation != null) {
             try {
 
@@ -178,6 +192,7 @@ public class DatabaseFacade {
                 }
                 RecordResultGraph record = new RecordResultGraph();
                 String fileGraph = saveGraph(graph);
+                String fileConsole = saveConsole(consoleOut, fileGraph);
                 record.status = "ok";
                 record.graph = fileGraph;
                 record.name = graph.getName();
@@ -188,6 +203,7 @@ public class DatabaseFacade {
                 record.date = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
                 record.results = resultMapToString(result);
                 record.id = "" + results.size();
+                record.console = fileConsole;
                 results.add(record);
                 mapper.writeValue(new File(DATABASE_URL), results);
             } catch (Exception e) {
@@ -213,7 +229,34 @@ public class DatabaseFacade {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(new File(DATABASE_DIRECTORY + File.separator + fileName), graph);
+            mapper.writeValue(new File(DATABASE_DIRECTORY_GRAPH + File.separator + fileName), graph);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fileName;
+    }
+
+    private static String saveConsole(List<String> consoleOut, String fileGraphName) {
+        if (consoleOut == null || consoleOut.isEmpty()) {
+            return null;
+        }
+        String fileName = fileGraphName;
+
+        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+
+        fileName = fileGraphName + ".log";
+        File fileOut = new File(DATABASE_DIRECTORY_GRAPH + File.separator + fileName);
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(fileOut));
+            for (String l : consoleOut) {
+                bw.write(l);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -226,7 +269,7 @@ public class DatabaseFacade {
         }
         UndirectedSparseGraphTO graph = null;
         ObjectMapper mapper = new ObjectMapper();
-        graph = mapper.readValue(new File(DATABASE_DIRECTORY + File.separator + nameFile), UndirectedSparseGraphTO.class);
+        graph = mapper.readValue(new File(DATABASE_DIRECTORY_GRAPH + File.separator + nameFile), UndirectedSparseGraphTO.class);
         return graph;
     }
 

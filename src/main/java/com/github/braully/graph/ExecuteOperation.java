@@ -51,7 +51,8 @@ public class ExecuteOperation extends Thread {
                 if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
                     result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
                 }
-                DatabaseFacade.saveResult(graph, graphOperation, result);
+                DatabaseFacade.saveResult(graph, graphOperation, result, 
+                        WebConsoleAppender.getLines());
             }
         } catch (Exception e) {
             log.info("[FAILED]", e);

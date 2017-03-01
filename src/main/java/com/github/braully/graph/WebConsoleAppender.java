@@ -74,4 +74,16 @@ public class WebConsoleAppender extends AppenderSkeleton {
         }
         return tmpLoggs;
     }
+
+    static List<String> getLines() {
+        List<String> lines = new ArrayList<>();
+        if (loggingEvents != null) {
+            for (LoggingEvent e : loggingEvents) {
+                Object message = e.getMessage();
+                lines.add("" + message);
+            }
+        }
+
+        return lines;
+    }
 }
