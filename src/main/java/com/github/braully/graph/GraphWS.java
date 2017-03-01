@@ -369,6 +369,9 @@ public class GraphWS {
                 } else if (tmpFileName.endsWith("mat")) {
                     ret = UtilGraph.loadGraphAdjMatrix(uploadedInputStream);
                 }
+                if (ret != null) {
+                    ret.setName(fileName);
+                }
             }
         } catch (Exception e) {
             log.log(Level.SEVERE, "", e);
