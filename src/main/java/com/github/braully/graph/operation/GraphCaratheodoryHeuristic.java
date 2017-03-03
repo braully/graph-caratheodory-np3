@@ -74,6 +74,7 @@ public class GraphCaratheodoryHeuristic
     private Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph, Integer v, Set<Integer> s, Set<Integer> hs, Set<Integer> partial) {
         int[] aux = new int[graph.getVertexCount()];
         int[] auxc = new int[graph.getVertexCount()];
+        Set<Integer> promotable = new HashSet<>();
 
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
@@ -82,13 +83,33 @@ public class GraphCaratheodoryHeuristic
 
         partial.add(v);
         hs.add(v);
+
         Integer nv0 = selectBestNeighbor(v, s, hs, partial, graph, aux, auxc);
         addVertToS(nv0, s, hs, partial, graph, aux, auxc);
+        promotable.add(nv0);
+
         Integer nv1 = selectBestNeighbor(v, s, hs, partial, graph, aux, auxc);
         addVertToS(nv1, s, hs, partial, graph, aux, auxc);
+        promotable.add(nv1);
+
+        while (!promotable.isEmpty()) {
+            Integer vp = selectBestPromotableVertice(s, hs, partial,
+                    promotable, graph, aux, auxc);
+
+            if (vp != null) {
+                removeVertFromS(nv1, s, hs, partial, graph, aux, auxc);
+
+                nv0 = selectBestNeighbor(vp, s, hs, partial, graph, aux, auxc);
+                addVertToS(nv0, s, hs, partial, graph, aux, auxc);
+                promotable.add(nv0);
+
+                nv1 = selectBestNeighbor(vp, s, hs, partial, graph, aux, auxc);
+                addVertToS(nv1, s, hs, partial, graph, aux, auxc);
+                promotable.add(nv1);
+            }
+        }
 
 //        boolean checkDerivated = false;
-//
 //        for (int i = 0; i < graph.getVertexCount(); i++) {
 //            if (auxc[i] >= s.size() && aux[i] == PROCESSED) {
 //                checkDerivated = true;
@@ -154,6 +175,34 @@ public class GraphCaratheodoryHeuristic
         System.out.println("}");
 
         return s;
+    }
+
+    private void removeVertFromS(Integer nv1, Set<Integer> s, Set<Integer> hs, Set<Integer> partial, UndirectedSparseGraphTO<Integer, Integer> graph, int[] aux, int[] auxc) {
+
+    }
+
+    private Integer selectBestPromotableVertice(Set<Integer> s, Set<Integer> hs,
+            Set<Integer> partial, Set<Integer> promotable,
+            UndirectedSparseGraphTO<Integer, Integer> graph, int[] aux, int[] auxc) {
+        Integer bestVertex = null;
+        Integer bestRanking = null;
+        if (promotable != null) {
+            Set<Integer> removable = new HashSet<>();
+            for (Integer vtmp : promotable) {
+                boolean canBePromoted = true;
+                if (canBePromoted) {
+                    Integer vtmpRanking = graph.degree(vtmp);
+                    if (bestVertex == null || vtmpRanking < bestRanking) {
+                        bestRanking = vtmpRanking;
+                        bestVertex = vtmp;
+                    } else {
+                        removable.add(vtmp);
+                    }
+                }
+                promotable.removeAll(removable);
+            }
+        }
+        return bestVertex;
     }
 
     private Integer selectBestNeighbor(Integer v, Set<Integer> s, Set<Integer> hs,
