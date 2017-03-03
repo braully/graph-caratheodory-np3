@@ -71,7 +71,9 @@ public class GraphCaratheodoryHeuristic
         return description;
     }
 
-    private Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph, Integer v, Set<Integer> s, Set<Integer> hs, Set<Integer> partial) {
+    private Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph,
+            Integer v, Set<Integer> s, Set<Integer> hs,
+            Set<Integer> partial) {
         int[] aux = new int[graph.getVertexCount()];
         int[] auxc = new int[graph.getVertexCount()];
         Set<Integer> promotable = new HashSet<>();
@@ -177,13 +179,17 @@ public class GraphCaratheodoryHeuristic
         return s;
     }
 
-    private void removeVertFromS(Integer nv1, Set<Integer> s, Set<Integer> hs, Set<Integer> partial, UndirectedSparseGraphTO<Integer, Integer> graph, int[] aux, int[] auxc) {
+    private void removeVertFromS(Integer nv1, Set<Integer> s,
+            Set<Integer> hs, Set<Integer> partial,
+            UndirectedSparseGraphTO<Integer, Integer> graph,
+            int[] aux, int[] auxc) {
 
     }
 
     private Integer selectBestPromotableVertice(Set<Integer> s, Set<Integer> hs,
             Set<Integer> partial, Set<Integer> promotable,
-            UndirectedSparseGraphTO<Integer, Integer> graph, int[] aux, int[] auxc) {
+            UndirectedSparseGraphTO<Integer, Integer> graph,
+            int[] aux, int[] auxc) {
         Integer bestVertex = null;
         Integer bestRanking = null;
         if (promotable != null) {
