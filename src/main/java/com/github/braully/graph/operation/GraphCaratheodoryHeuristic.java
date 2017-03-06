@@ -142,7 +142,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("∂®Hs= {");
+        System.out.print("∂®Hs=  {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
             if (derivatedPartialReal != null && derivatedPartialReal.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -202,7 +202,7 @@ public class GraphCaratheodoryHeuristic
                     continue;
                 }
                 if (aux[vertn]-- >= INCLUDED) {
-                    if (aux[vertn] < INCLUDED) {
+                    if (aux[vertn] < INCLUDED && !s.contains(vertn)) {
                         mustBeRemoved.add(vertn);
                     }
                 }
@@ -270,7 +270,7 @@ public class GraphCaratheodoryHeuristic
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
         s.add(verti);
-        aux[verti] = INCLUDED;
+        aux[verti] = aux[verti] + INCLUDED;
 
         Collection<Integer> neighbors = graph.getNeighbors(verti);
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
