@@ -49,6 +49,64 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
 
     public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] currentSet) {
+        OperationConvexityGraphResult processedHullSet = null;
+        processedHullSet = hsp3aux(graph, currentSet);
+        if (processedHullSet == null || processedHullSet.partial == null || processedHullSet.partial.isEmpty()) {
+            processedHullSet = null;
+        }
+
+//        if (false) {
+//            Set<Integer> curSet = new HashSet<>();
+//            for (int i = 0; i < currentSet.length; i++) {
+//                curSet.add(currentSet[i]);
+//            }
+//
+//            System.out.print("\n∂H(S)= {");
+//            for (int i = 0; i < graph.getVertexCount(); i++) {
+//                if (partial != null && partial.contains(i)) {
+//                    System.out.printf("%2d | ", i);
+//                } else {
+//                    System.out.print("   | ");
+//                }
+//            }
+//            System.out.println("}");
+//
+//            System.out.print("H(S) = {");
+//            for (int i = 0; i < graph.getVertexCount(); i++) {
+//                if (hsp3g.contains(i)) {
+//                    System.out.printf("%2d | ", i);
+//                } else {
+//                    System.out.print("   | ");
+//                }
+//            }
+//            System.out.println("}");
+//
+//            System.out.print("S    = {");
+//            for (int i = 0; i < graph.getVertexCount(); i++) {
+//                if (curSet.contains(i)) {
+//                    System.out.printf("%2d | ", i);
+//                } else {
+//                    System.out.print("   | ");
+//                }
+//            }
+//            System.out.println("}");
+//
+//            System.out.print("Aux  = {");
+//            for (int i = 0; i < graph.getVertexCount(); i++) {
+//                System.out.printf("%2d | ", aux[i]);
+//            }
+//            System.out.println("}");
+//
+//            System.out.print("Auxc = {");
+//            for (int i = 0; i < graph.getVertexCount(); i++) {
+//                System.out.printf("%2d | ", auxc[i]);
+//            }
+//            System.out.println("}");
+//        }
+        return processedHullSet;
+    }
+
+    public OperationConvexityGraphResult hsp3aux(UndirectedSparseGraphTO<Integer, Integer> graph, int[] currentSet) {
         int currentSetSize = 0;
         OperationConvexityGraphResult processedHullSet = null;
         Set<Integer> hsp3g = new HashSet<>();
@@ -58,7 +116,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             aux[i] = 0;
             auxc[i] = 0;
         }
-
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         for (Integer v : currentSet) {
             mustBeIncluded.add(v);
@@ -85,9 +142,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
             }
             aux[verti] = PROCESSED;
         }
-
         boolean checkDerivated = false;
-
         for (int i = 0; i < graph.getVertexCount(); i++) {
             if (auxc[i] >= currentSet.length && aux[i] == PROCESSED) {
                 checkDerivated = true;
@@ -98,69 +153,17 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         if (checkDerivated) {
             partial = calcDerivatedPartial(graph,
                     hsp3g, currentSet);
-            if (partial != null && !partial.isEmpty()) {
-                Set<Integer> setCurrent = new HashSet<>();
-                for (int i : currentSet) {
-                    setCurrent.add(i);
-                }
-                processedHullSet = new OperationConvexityGraphResult();
-                processedHullSet.caratheodoryNumber = currentSetSize;
-                processedHullSet.auxProcessor = aux;
-                processedHullSet.convexHull = hsp3g;
-                processedHullSet.caratheodorySet = setCurrent;
-                processedHullSet.partial = partial;
-            }
         }
-
-        if (false) {
-            Set<Integer> curSet = new HashSet<>();
-            for (int i = 0; i < currentSet.length; i++) {
-                curSet.add(currentSet[i]);
-            }
-
-            System.out.print("\n∂H(S)= {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                if (partial != null && partial.contains(i)) {
-                    System.out.printf("%2d | ", i);
-                } else {
-                    System.out.print("   | ");
-                }
-            }
-            System.out.println("}");
-
-            System.out.print("H(S) = {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                if (hsp3g.contains(i)) {
-                    System.out.printf("%2d | ", i);
-                } else {
-                    System.out.print("   | ");
-                }
-            }
-            System.out.println("}");
-
-            System.out.print("S    = {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                if (curSet.contains(i)) {
-                    System.out.printf("%2d | ", i);
-                } else {
-                    System.out.print("   | ");
-                }
-            }
-            System.out.println("}");
-
-            System.out.print("Aux  = {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.printf("%2d | ", aux[i]);
-            }
-            System.out.println("}");
-
-            System.out.print("Auxc = {");
-            for (int i = 0; i < graph.getVertexCount(); i++) {
-                System.out.printf("%2d | ", auxc[i]);
-            }
-            System.out.println("}");
+        Set<Integer> setCurrent = new HashSet<>();
+        for (int i : currentSet) {
+            setCurrent.add(i);
         }
-
+        processedHullSet = new OperationConvexityGraphResult();
+        processedHullSet.caratheodoryNumber = currentSetSize;
+        processedHullSet.auxProcessor = aux;
+        processedHullSet.convexHull = hsp3g;
+        processedHullSet.caratheodorySet = setCurrent;
+        processedHullSet.partial = partial;
         return processedHullSet;
     }
 

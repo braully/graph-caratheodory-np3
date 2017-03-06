@@ -130,7 +130,16 @@ public class GraphCaratheodoryHeuristic
 //            partial = calcDerivatedPartial(graph,
 //                    hs, s);
 //        }
-        Set<Integer> derivatedPartialReal = calcDerivatedPartial(graph, hs, s);
+        int stmp[] = new int[s.size()];
+        Integer cont = 0;
+        for (Integer vs : s) {
+            stmp[cont++] = vs;
+        }
+        OperationConvexityGraphResult hsp3 = hsp3aux(graph, stmp);
+        Set<Integer> derivatedPartialReal = hsp3.partial;
+        int[] auxReal = hsp3.auxProcessor;
+        Set<Integer> convexHullReal = hsp3.convexHull;
+//        Set<Integer> derivatedPartialReal = calcDerivatedPartial(graph, hs, s);
 
         System.out.print("\n∂H(S)= {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
@@ -162,6 +171,16 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
+        System.out.print("H®s  = {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            if (convexHullReal.contains(i)) {
+                System.out.printf("%2d | ", i);
+            } else {
+                System.out.print("   | ");
+            }
+        }
+        System.out.println("}");
+
         System.out.print("S    = {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
             if (s.contains(i)) {
@@ -178,6 +197,12 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
+        System.out.print("Aux® = {");
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            System.out.printf("%2d | ", auxReal[i]);
+        }
+        System.out.println("}");
+
         return s;
     }
 
@@ -185,7 +210,9 @@ public class GraphCaratheodoryHeuristic
             Set<Integer> hs, Set<Integer> partial,
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
-        s.remove(verti);
+        if (!s.remove(verti)) {
+            return;
+        }
         aux[verti] = aux[verti] - INCLUDED;
         if (aux[verti] < 0) {
             aux[verti] = 0;
