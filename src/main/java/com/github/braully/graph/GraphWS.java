@@ -7,8 +7,12 @@ import com.github.braully.graph.operation.IGraphOperation;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import edu.uci.ics.jung.graph.AbstractGraph;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,6 +27,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -51,6 +58,8 @@ public class GraphWS {
 
     private static final IGraphGenerator GRAPH_GENERATOR_DEFAULT = new GraphGeneratorRandom();
     private static final String NAME_PARAM_OUTPUT = "CONSOLE_USER_SESSION";
+
+    private static final int DEFAULT_BUFFER_SIZE = 512;
 
     public static final boolean verbose = true;
     public static final boolean breankOnFirst = true;
@@ -202,6 +211,23 @@ public class GraphWS {
             }
         }
         return map;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+//    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("download-all-result")
+    public void downloadGraphCsr() {
+        try {
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + "all-result" + ".zip\"");
+            response.setContentType("application/zip");
+            ServletOutputStream outputStream = response.getOutputStream();
+            DatabaseFacade.allResultsZiped(outputStream);
+            outputStream.flush();
+//            outputStream.close();
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Fail on dowload", e);
+        }
     }
 
     @POST

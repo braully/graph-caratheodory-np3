@@ -135,6 +135,11 @@
                                 <span class="glyphicon glyphicon-circle-arrow-down"></span>
                                 Download (mat)
                             </button>
+                            <button class="btn btn-primary btn-sm" 
+                                    ng-click="downloadAllResult();">
+                                <span class="glyphicon glyphicon-circle-arrow-down"></span>
+                                Download All Results (zip)
+                            </button>
                             <button ng-click="uploadedFile()" class="btn btn-primary btn-sm">
                                 <span class="glyphicon glyphicon-circle-arrow-up"></span>
                                 Upload
@@ -269,7 +274,7 @@
                                 <th>Output</th>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="obj in results| orderBy:sortType:sortReverse | filter: {'type' : typeOperation}| filter: {'operation' : operation}  | filter:searchName">
+                                    <tr ng-repeat="obj in results| orderBy:sortType:sortReverse | filter: {'type' : typeOperation} | filter: {'operation' : operation} | filter:searchName">
                                         <td>{{obj.id}}</td>
                                         <td>
                                             <span ng-if="obj.status == 'ok'" class="glyphicon glyphicon-ok alert-info"></span>
@@ -320,16 +325,13 @@
                 $scope.sortType = 'id';
                 $scope.searchName = '';
                 $scope.sortReverse = false;
-
                 $scope.caratheodory = {number: null, set: [], aux: [], hs: [], phs: []};
-
                 $scope.downloadGraph = function () {
                     var filename = 'graph-' + $scope.graph.name + '.json';
                     var textContent = JSON.stringify($scope.graph, null, '\t');
                     var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, filename);
                 };
-
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.graph.name + '.csr';
@@ -337,7 +339,6 @@
                         saveAs(blob, filename);
                     });
                 };
-
                 $scope.downloadGraphMat = function () {
                     $http.post('rest/graph/download-graph-mat', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.graph.name + '.mat';
@@ -345,7 +346,13 @@
                         saveAs(blob, filename);
                     });
                 };
-
+                $scope.downloadAllResult = function () {
+                    $http.get('rest/graph/download-all-result', {responseType: 'arraybuffer'}).then(function (response) {
+                        var filename = 'all-results.zip';
+                        var blob = new Blob([response.data], {type: "application/binary"});
+                        saveAs(blob, filename);
+                    });
+                };
                 $scope.openGraph = function (g) {
                     $http.get('rest/graph/open-graph', {params: {graph: g}})
                             .success(function (graph) {
@@ -379,6 +386,9 @@
                             $http.post(url, fd, {headers: {'Content-Type': undefined}}).success(function (graph) {
                                 $scope.graph = graph;
                             });
+                        } else {
+                            window.alert('File invalid');
+                            return;
                         }
                         if ($scope.graph) {
                             if (!$scope.graph.name) {
@@ -391,7 +401,6 @@
 //                    console.log($scope.file);
                     fr.readAsText($scope.file);
                 };
-
                 $scope.updateGraph = function () {
                     var graph = $scope.graph;
                     var width = $("#grafo").width();
@@ -465,7 +474,6 @@
                         d3.select(this).classed("fixed", d.fixed = true);
                     }
                 };
-
                 $scope.generateGraph = function () {
                     $scope.mapParam['key'] = $scope.typeGraph.key;
                     $http.get('rest/graph/generate-graph',
@@ -477,7 +485,6 @@
                         $scope.updateGraph();
                     });
                 };
-
                 $scope.executeOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -501,7 +508,6 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $scope.cancelOperation = function () {
                     $http.post('rest/graph/process-cancel').success(function (result) {
                         $scope.processing = false;
@@ -510,15 +516,12 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $http.get('rest/graph/list-graph-generator').success(function (gen) {
                     $scope.generators = gen;
                 });
-
                 $http.get('rest/graph/list-result').success(function (rs) {
                     $scope.results = rs;
                 });
-
                 $http.get('rest/graph/list-graph-operation').success(function (ops) {
                     $scope.operations = ops;
                     if (ops) {
@@ -531,7 +534,6 @@
                         $scope.typeOperations = Array.from($scope.typeOperations);
                     }
                 });
-
                 $scope.generateGraph();
                 $scope.pollerConsoleOutput = function () {
                     $http.post('rest/graph/process-status', $scope.lastProcessing).success(function (r) {
@@ -548,7 +550,6 @@
                             Object.keys(r.result).forEach(function (key) {
                                 $scope.mapResult[key] = r.result[key];
                             });
-
                             $http.get('rest/graph/list-result').success(function (rs) {
                                 $scope.results = rs;
                             });
@@ -561,7 +562,6 @@
                 };
                 $scope.pollerConsoleOutput();
             });
-
             app.directive("ngFileSelect", function () {
                 return {
                     link: function ($scope, el) {

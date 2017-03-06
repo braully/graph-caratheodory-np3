@@ -11,9 +11,9 @@ import java.io.BufferedWriter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,16 +22,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author braully
  */
 public class DatabaseFacade {
 
-    private static final String DATABASE_DIRECTORY = System.getProperty("user.home") + File.separator + "." + "graph-problem";
-    private static final String DATABASE_URL = DATABASE_DIRECTORY + File.separator + "graph-problem-results.json";
-    private static final String DATABASE_DIRECTORY_GRAPH = DATABASE_DIRECTORY + File.separator + "graph";
-    private static final String DATABASE_DIRECTORY_CONSOLE = DATABASE_DIRECTORY + File.separator + "console";
+    public static final String DATABASE_DIRECTORY = System.getProperty("user.home") + File.separator + "." + "graph-problem";
+    public static final String DATABASE_URL = DATABASE_DIRECTORY + File.separator + "graph-problem-results.json";
+    public static final String DATABASE_DIRECTORY_GRAPH = DATABASE_DIRECTORY + File.separator + "graph";
+    public static final String DATABASE_DIRECTORY_CONSOLE = DATABASE_DIRECTORY + File.separator + "console";
 
     static {
         try {
@@ -296,5 +299,48 @@ public class DatabaseFacade {
             ret = obj.toString();
         }
         return ret;
+    }
+
+    public static void allResultsZiped(OutputStream out) throws IOException {
+        ZipArchiveOutputStream tOut = null;
+        try {
+            tOut = new ZipArchiveOutputStream(out);
+            addFileToZip(tOut, DATABASE_DIRECTORY, "");
+        } finally {
+            tOut.flush();
+            tOut.close();
+        }
+    }
+
+    /*
+    http://hubpages.com/technology/Zipping-and-Unzipping-Nested-Directories-in-Java-using-Apache-Commons-Compress
+     */
+    private static void addFileToZip(ZipArchiveOutputStream zOut, String path, String base) throws IOException {
+        File f = new File(path);
+        String entryName = base + f.getName();
+        ZipArchiveEntry zipEntry = new ZipArchiveEntry(f, entryName);
+
+        zOut.putArchiveEntry(zipEntry);
+
+        if (f.isFile()) {
+            FileInputStream fInputStream = null;
+            try {
+                fInputStream = new FileInputStream(f);
+                IOUtils.copy(fInputStream, zOut);
+                zOut.closeArchiveEntry();
+            } finally {
+                IOUtils.closeQuietly(fInputStream);
+            }
+
+        } else {
+            zOut.closeArchiveEntry();
+            File[] children = f.listFiles();
+
+            if (children != null) {
+                for (File child : children) {
+                    addFileToZip(zOut, child.getAbsolutePath(), entryName + "/");
+                }
+            }
+        }
     }
 }
