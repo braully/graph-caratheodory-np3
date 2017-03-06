@@ -74,12 +74,10 @@ public class GraphCaratheodoryHeuristic
             Integer v, Set<Integer> s, Set<Integer> hs,
             Set<Integer> partial) {
         int[] aux = new int[graph.getVertexCount()];
-        int[] auxc = new int[graph.getVertexCount()];
         Set<Integer> promotable = new HashSet<>();
 
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
-            auxc[i] = 0;
         }
 
         partial.add(v);
@@ -177,12 +175,6 @@ public class GraphCaratheodoryHeuristic
         System.out.print("Aux  = {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
             System.out.printf("%2d | ", aux[i]);
-        }
-        System.out.println("}");
-
-        System.out.print("Auxc = {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.printf("%2d | ", auxc[i]);
         }
         System.out.println("}");
 
