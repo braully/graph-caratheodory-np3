@@ -195,6 +195,9 @@ public class GraphCaratheodoryHeuristic
             int[] aux) {
         s.remove(verti);
         aux[verti] = aux[verti] - INCLUDED;
+        if (aux[verti] < 0) {
+            aux[verti] = 0;
+        }
 
         Collection<Integer> neighbors = graph.getNeighbors(verti);
         Queue<Integer> mustBeRemoved = new ArrayDeque<>();
@@ -210,6 +213,9 @@ public class GraphCaratheodoryHeuristic
                     if (aux[vertn] < INCLUDED) {
                         mustBeRemoved.add(vertn);
                     }
+                }
+                if (aux[vertn] < 0) {
+                    aux[vertn] = 0;
                 }
             }
 //            aux[verti] = PROCESSED;
@@ -273,7 +279,7 @@ public class GraphCaratheodoryHeuristic
             int[] aux) {
         s.add(verti);
         aux[verti] = INCLUDED;
-       
+
         Collection<Integer> neighbors = graph.getNeighbors(verti);
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         mustBeIncluded.add(verti);
