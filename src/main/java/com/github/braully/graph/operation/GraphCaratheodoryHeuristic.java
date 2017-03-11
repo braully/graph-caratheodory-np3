@@ -77,102 +77,109 @@ public class GraphCaratheodoryHeuristic
             Set<Integer> partial) {
         int[] aux = new int[graph.getVertexCount()];
         Set<Integer> promotable = new HashSet<>();
+        int[] auxBackup = new int[graph.getVertexCount()];
 
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
         }
 
         partial.add(v);
-        hs.add(v);
 
         if (verbose) {
             System.out.println("Adding vertice " + v + " to parcial");
         }
 
-        Integer nv0 = selectBestNeighbor(v, s, hs, partial, graph, aux);
-
+        Integer nv0 = selectBestNeighbor(v, graph, aux);
         if (verbose) {
             System.out.println("Adding vertice " + nv0 + " to S");
         }
 
-        addVertToS(nv0, s, hs, partial, graph, aux);
+        addVertToS(nv0, graph, aux);
         promotable.add(nv0);
 
-        Integer nv1 = selectBestNeighbor(v, s, hs, partial, graph, aux);
-
+        Integer nv1 = selectBestNeighbor(v, graph, aux);
         if (verbose) {
             System.out.println("Adding vertice " + nv1 + " to S");
         }
-
-        addVertToS(nv1, s, hs, partial, graph, aux);
+        addVertToS(nv1, graph, aux);
         promotable.add(nv1);
 
         if (verbose) {
-            printSituation(graph.getVertexCount(), partial, hs, s, aux);
+            printSituation(graph.getVertexCount(), partial, s, aux);
         }
 
         while (!promotable.isEmpty()) {
-            Integer vp = selectBestPromotableVertice(s, hs, partial,
+            Integer vp = selectBestPromotableVertice(s, partial,
                     promotable, graph, aux);
 
-            if (verbose) {
-                System.out.println("Selectd " + vp + " from priority list");
-            }
-
             if (vp != null) {
-                promotable.remove(vp);
-                removeVertFromS(vp, s, hs, partial, graph, aux);
-
                 if (verbose) {
-                    System.out.print("Aux  = {");
+                    System.out.println("Selectd " + vp + " from priority list");
+
+                    System.out.print("Auxi = {");
                     for (int i = 0; i < graph.getVertexCount(); i++) {
                         System.out.printf("%2d | ", aux[i]);
                     }
                     System.out.println("}");
-                    System.out.println("Trying promote " + vp + " From S to H(S)");
+//                    System.out.print("Trying promote " + vp + " From S to H(S) ... ");
                 }
 
-                nv0 = selectBestNeighbor(vp, s, hs, partial, graph, aux);
+                //Backup aux
+                for (int i = 0; i < graph.getVertexCount(); i++) {
+                    auxBackup[i] = aux[i];
+                }
+                promotable.remove(vp);
+                s.remove(vp);
+//                removeVertFromS(vp, s, hs, partial, graph, aux);
+
+                nv0 = selectBestNeighbor(vp, graph, aux);
                 if (nv0 != null) {
-                    addVertToS(nv0, s, hs, partial, graph, aux);
+                    addVertToS(nv0, graph, aux);
                 } else {
-                    addVertToS(vp, s, hs, partial, graph, aux);
+                    for (int i = 0; i < graph.getVertexCount(); i++) {
+                        aux[i] = auxBackup[i];
+                    }
+                    s.add(vp);
+                    if (verbose) {
+                        System.out.println("Not promotable");
+                    }
                     continue;
                 }
 
-                nv1 = selectBestNeighbor(vp, s, hs, partial, graph, aux);
+                nv1 = selectBestNeighbor(vp, graph, aux);
                 if (nv1 != null) {
-                    addVertToS(nv1, s, hs, partial, graph, aux);
+                    addVertToS(nv1, graph, aux);
                     promotable.add(nv0);
                     promotable.add(nv1);
+                    s.add(nv0);
+                    s.add(nv1);
                     if (verbose) {
-                        System.out.println("Promotable: " + vp);
+                        System.out.println("OK");
                         System.out.println("Adding vertice " + nv0 + " to S");
                         System.out.println("Adding vertice " + nv1 + " to S");
-                        printSituation(graph.getVertexCount(), partial, hs, s, aux);
+                        printSituation(graph.getVertexCount(), partial, s, aux);
 
                     }
                 } else {
-                    removeVertFromS(nv0, s, hs, partial, graph, aux);
-                    addVertToS(vp, s, hs, partial, graph, aux);
-                    if (verbose) {
-                        System.out.println("Not promotable: " + vp);
+                    for (int i = 0; i < graph.getVertexCount(); i++) {
+                        aux[i] = auxBackup[i];
                     }
+                    s.add(vp);
+                    if (verbose) {
+                        System.out.println("Not promotable");
+                    }
+                }
+                if (verbose) {
+                    System.out.print("Auxf = {");
+                    for (int i = 0; i < graph.getVertexCount(); i++) {
+                        System.out.printf("%2d | ", aux[i]);
+                    }
+                    System.out.println("}");
+//                    System.out.print("Trying promote " + vp + " From S to H(S) ... ");
                 }
             }
         }
 
-//        boolean checkDerivated = false;
-//        for (int i = 0; i < graph.getVertexCount(); i++) {
-//            if (auxc[i] >= s.size() && aux[i] == PROCESSED) {
-//                checkDerivated = true;
-//                break;
-//            }
-//        }
-//        if (checkDerivated) {
-//            partial = calcDerivatedPartial(graph,
-//                    hs, s);
-//        }
         int stmp[] = new int[s.size()];
         Integer cont = 0;
         for (Integer vs : s) {
@@ -182,7 +189,6 @@ public class GraphCaratheodoryHeuristic
         Set<Integer> derivatedPartialReal = hsp3.partial;
         int[] auxReal = hsp3.auxProcessor;
         Set<Integer> convexHullReal = hsp3.convexHull;
-//        Set<Integer> derivatedPartialReal = calcDerivatedPartial(graph, hs, s);
 
         if (verbose) {
             System.out.print("\n∂H(S)= {");
@@ -207,7 +213,7 @@ public class GraphCaratheodoryHeuristic
 
             System.out.print("H(S) = {");
             for (int i = 0; i < graph.getVertexCount(); i++) {
-                if (hs.contains(i)) {
+                if (aux[i] >= 2) {
                     System.out.printf("%2d | ", i);
                 } else {
                     System.out.print("   | ");
@@ -251,7 +257,7 @@ public class GraphCaratheodoryHeuristic
         return s;
     }
 
-    private void printSituation(int numVertices, Set<Integer> partial, Set<Integer> hs, Set<Integer> s, int[] aux) {
+    public void printSituation(int numVertices, Set<Integer> partial, Set<Integer> s, int[] aux) {
         System.out.print("\n∂H(S)= {");
         for (int i = 0; i < numVertices; i++) {
             if (partial != null && partial.contains(i)) {
@@ -264,7 +270,7 @@ public class GraphCaratheodoryHeuristic
 
         System.out.print("H(S) = {");
         for (int i = 0; i < numVertices; i++) {
-            if (hs.contains(i)) {
+            if (aux[i] >= 2) {
                 System.out.printf("%2d | ", i);
             } else {
                 System.out.print("   | ");
@@ -289,42 +295,57 @@ public class GraphCaratheodoryHeuristic
         System.out.println("}");
     }
 
-    private void removeVertFromS(Integer verti, Set<Integer> s,
-            Set<Integer> hs, Set<Integer> partial,
+    public void addVertToS(Integer verti,
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
-        if (!s.remove(verti)) {
-            return;
-        }
-        aux[verti] = aux[verti] - INCLUDED;
-        if (aux[verti] < 0) {
-            aux[verti] = 0;
-        }
+        aux[verti] = aux[verti] + INCLUDED;
 
-        Collection<Integer> neighbors = graph.getNeighbors(verti);
-        Queue<Integer> mustBeRemoved = new ArrayDeque<>();
-        mustBeRemoved.add(verti);
-        while (!mustBeRemoved.isEmpty()) {
-            verti = mustBeRemoved.remove();
-            hs.remove(verti);
+        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+        mustBeIncluded.add(verti);
+        while (!mustBeIncluded.isEmpty()) {
+            verti = mustBeIncluded.remove();
+            Collection<Integer> neighbors = graph.getNeighbors(verti);
             for (int vertn : neighbors) {
                 if (vertn == verti) {
                     continue;
                 }
-                if (aux[vertn]-- >= INCLUDED) {
-                    if (aux[vertn] < INCLUDED && !s.contains(vertn)) {
-                        mustBeRemoved.add(vertn);
-                    }
-                }
-                if (aux[vertn] < 0) {
-                    aux[vertn] = 0;
+                if (vertn != verti && ++aux[vertn] == INCLUDED) {
+                    mustBeIncluded.add(vertn);
                 }
             }
 //            aux[verti] = PROCESSED;
         }
     }
 
-    private Integer selectBestPromotableVertice(Set<Integer> s, Set<Integer> hs,
+    public void removeVertFromS(Integer verti, Set<Integer> s,
+            Set<Integer> partial,
+            UndirectedSparseGraphTO<Integer, Integer> graph,
+            int[] aux) {
+        if (!s.remove(verti)) {
+            return;
+        }
+        aux[verti] = aux[verti] - INCLUDED;
+        Queue<Integer> mustBeRemoved = new ArrayDeque<>();
+        mustBeRemoved.add(verti);
+        Set<Integer> removed = new HashSet<>();
+        while (!mustBeRemoved.isEmpty()) {
+            verti = mustBeRemoved.remove();
+            removed.add(verti);
+            Collection<Integer> neighbors = graph.getNeighbors(verti);
+            for (int vertn : neighbors) {
+                if (vertn == verti) {
+                    continue;
+                }
+                if (aux[vertn]-- >= INCLUDED && aux[vertn] < INCLUDED && !removed.contains(vertn)) {
+                    mustBeRemoved.add(vertn);
+                }
+            }
+            //            aux[verti] = PROCESSED;
+//            removed.add(verti);
+        }
+    }
+
+    public Integer selectBestPromotableVertice(Set<Integer> s,
             Set<Integer> partial, Set<Integer> promotable,
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
@@ -337,9 +358,14 @@ public class GraphCaratheodoryHeuristic
                 if (canBePromoted) {
 //                    Integer vtmpRanking = graph.degree(vtmp);
                     Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
-                    neighbors.remove(s);
-                    neighbors.remove(partial);
-                    neighbors.remove(hs);
+                    neighbors.removeAll(s);
+                    neighbors.removeAll(partial);
+//                    neighbors.removeAll(hs);
+                    for (int i = 0; i < aux.length; i++) {
+                        if (aux[i] >= 2) {
+                            neighbors.remove(i);
+                        }
+                    }
                     Integer vtmpRanking = neighbors.size();
                     if (vtmpRanking >= 2) {
                         if (bestVertex == null || vtmpRanking < bestRanking) {
@@ -356,14 +382,19 @@ public class GraphCaratheodoryHeuristic
         return bestVertex;
     }
 
-    private Integer selectBestNeighbor(Integer v, Set<Integer> s, Set<Integer> hs,
-            Set<Integer> partial, UndirectedSparseGraphTO<Integer, Integer> graph,
+    public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
         Integer ret = null;
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
-        neighbors.removeAll(s);
-        neighbors.removeAll(hs);
-        neighbors.removeAll(partial);
+//        neighbors.removeAll(s);
+//        neighbors.removeAll(hs);
+//        neighbors.removeAll(partial);
+        neighbors.remove(v);
+        for (int i = 0; i < aux.length; i++) {
+            if (aux[i] >= 2) {
+                neighbors.remove(i);
+            }
+        }
 
         for (Integer nei : neighbors) {
             if (ret == null || graph.degree(nei) < graph.degree(ret)) {
@@ -371,68 +402,6 @@ public class GraphCaratheodoryHeuristic
             }
         }
         return ret;
-    }
-
-    private void addVertToS(Integer verti,
-            Set<Integer> s,
-            Set<Integer> hs,
-            Set<Integer> partial,
-            UndirectedSparseGraphTO<Integer, Integer> graph,
-            int[] aux) {
-        s.add(verti);
-        aux[verti] = aux[verti] + INCLUDED;
-
-        Collection<Integer> neighbors = graph.getNeighbors(verti);
-        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
-        mustBeIncluded.add(verti);
-        while (!mustBeIncluded.isEmpty()) {
-            verti = mustBeIncluded.remove();
-            hs.add(verti);
-            for (int vertn : neighbors) {
-                if (vertn == verti) {
-                    continue;
-                }
-                if (vertn != verti && aux[vertn] < INCLUDED) {
-                    aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (aux[vertn] == INCLUDED) {
-                        mustBeIncluded.add(vertn);
-                    }
-                }
-            }
-//            aux[verti] = PROCESSED;
-        }
-    }
-
-    public Set<Integer> calcDerivatedPartial(UndirectedSparseGraphTO<Integer, Integer> graph,
-            Set<Integer> hsp3g, Set<Integer> currentSet) {
-        Set<Integer> partial = new HashSet<>();
-        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
-        partial.addAll(hsp3g);
-
-        for (Integer p : currentSet) {
-            int[] aux = new int[graph.getVertexCount()];
-            for (Integer v : currentSet) {
-                if (!v.equals(p)) {
-                    mustBeIncluded.add(v);
-                    aux[v] = INCLUDED;
-                }
-            }
-            while (!mustBeIncluded.isEmpty() && !partial.isEmpty()) {
-                Integer verti = mustBeIncluded.remove();
-                partial.remove(verti);
-                Collection<Integer> neighbors = graph.getNeighbors(verti);
-                for (int vertn : neighbors) {
-                    if (vertn != verti) {
-                        int previousValue = aux[vertn];
-                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                        if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
-                            mustBeIncluded.add(vertn);
-                        }
-                    }
-                }
-            }
-        }
-        return partial;
     }
 
 //    private void promoteVerticeToPartial(UndirectedSparseGraphTO<Integer, Integer> graphRead, Integer a, Integer v1a, Integer v2a, Set<Integer> partialElements, Set<Integer> convexHull, Set<Integer> maxCaratheodorySet) {

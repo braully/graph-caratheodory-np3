@@ -1,6 +1,8 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.INCLUDED;
+import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.NEIGHBOOR_COUNT_INCLUDED;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -177,6 +179,38 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
      */
     public Set<Integer> calcDerivatedPartial(UndirectedSparseGraphTO<Integer, Integer> graph,
             Set<Integer> hsp3g, int[] currentSet) {
+        Set<Integer> partial = new HashSet<>();
+        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+        partial.addAll(hsp3g);
+
+        for (Integer p : currentSet) {
+            int[] aux = new int[graph.getVertexCount()];
+            for (Integer v : currentSet) {
+                if (!v.equals(p)) {
+                    mustBeIncluded.add(v);
+                    aux[v] = INCLUDED;
+                }
+            }
+            while (!mustBeIncluded.isEmpty() && !partial.isEmpty()) {
+                Integer verti = mustBeIncluded.remove();
+                partial.remove(verti);
+                Collection<Integer> neighbors = graph.getNeighbors(verti);
+                for (int vertn : neighbors) {
+                    if (vertn != verti) {
+                        int previousValue = aux[vertn];
+                        aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                        if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
+                            mustBeIncluded.add(vertn);
+                        }
+                    }
+                }
+            }
+        }
+        return partial;
+    }
+
+    public Set<Integer> calcDerivatedPartial(UndirectedSparseGraphTO<Integer, Integer> graph,
+            Set<Integer> hsp3g, Set<Integer> currentSet) {
         Set<Integer> partial = new HashSet<>();
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         partial.addAll(hsp3g);

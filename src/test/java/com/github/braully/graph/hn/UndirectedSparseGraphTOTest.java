@@ -45,7 +45,6 @@ public class UndirectedSparseGraphTOTest extends TestCase {
                 + "\"edgeCount\":85,\"vertexCount\":25,\"defaultEdgeType\":\"UNDIRECTED\"}";
 
         ObjectMapper mapper = new ObjectMapper();
-        BeanDeserializer bd = null;
         UndirectedSparseGraphTO readValue = mapper.readValue(jsonRequest, UndirectedSparseGraphTO.class);
         assertNotNull(readValue);
     }
