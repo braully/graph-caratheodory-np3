@@ -89,7 +89,7 @@ public class GraphCaratheodoryHeuristic
             System.out.println("Adding vertice " + v + " to parcial");
         }
 
-        Integer nv0 = selectBestNeighbor(v, graph, aux);
+        Integer nv0 = selectBestNeighbor(v, graph, aux, partial);
         if (verbose) {
             System.out.println("Adding vertice " + nv0 + " to S");
         }
@@ -97,7 +97,7 @@ public class GraphCaratheodoryHeuristic
         addVertToS(nv0, graph, aux);
         promotable.add(nv0);
 
-        Integer nv1 = selectBestNeighbor(v, graph, aux);
+        Integer nv1 = selectBestNeighbor(v, graph, aux, partial);
         if (verbose) {
             System.out.println("Adding vertice " + nv1 + " to S");
         }
@@ -130,9 +130,9 @@ public class GraphCaratheodoryHeuristic
                 }
                 promotable.remove(vp);
                 s.remove(vp);
-//                removeVertFromS(vp, s, hs, partial, graph, aux);
+                removeVertFromS(vp, s, graph, aux);
 
-                nv0 = selectBestNeighbor(vp, graph, aux);
+                nv0 = selectBestNeighbor(vp, graph, aux, partial);
                 if (nv0 != null) {
                     addVertToS(nv0, graph, aux);
                 } else {
@@ -146,7 +146,7 @@ public class GraphCaratheodoryHeuristic
                     continue;
                 }
 
-                nv1 = selectBestNeighbor(vp, graph, aux);
+                nv1 = selectBestNeighbor(vp, graph, aux, partial);
                 if (nv1 != null) {
                     addVertToS(nv1, graph, aux);
                     promotable.add(nv0);
@@ -313,36 +313,41 @@ public class GraphCaratheodoryHeuristic
                     mustBeIncluded.add(vertn);
                 }
             }
-//            aux[verti] = PROCESSED;
         }
     }
 
     public void removeVertFromS(Integer verti, Set<Integer> s,
-            Set<Integer> partial,
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
-        if (!s.remove(verti)) {
-            return;
+
+        for (int i = 0; i < graph.getVertexCount(); i++) {
+            aux[i] = 0;
         }
-        aux[verti] = aux[verti] - INCLUDED;
-        Queue<Integer> mustBeRemoved = new ArrayDeque<>();
-        mustBeRemoved.add(verti);
-        Set<Integer> removed = new HashSet<>();
-        while (!mustBeRemoved.isEmpty()) {
-            verti = mustBeRemoved.remove();
-            removed.add(verti);
-            Collection<Integer> neighbors = graph.getNeighbors(verti);
-            for (int vertn : neighbors) {
-                if (vertn == verti) {
-                    continue;
-                }
-                if (aux[vertn]-- >= INCLUDED && aux[vertn] < INCLUDED && !removed.contains(vertn)) {
-                    mustBeRemoved.add(vertn);
-                }
-            }
-            //            aux[verti] = PROCESSED;
+        s.remove(verti);
+        for (Integer v : s) {
+            addVertToS(v, graph, aux);
+        }
+
+//        if (!s.remove(verti)) {
+//            return;
+//        }
+//        aux[verti] = aux[verti] - INCLUDED;
+//        Queue<Integer> mustBeRemoved = new ArrayDeque<>();
+//        mustBeRemoved.add(verti);
+//        Set<Integer> removed = new HashSet<>();
+//        while (!mustBeRemoved.isEmpty()) {
+//            verti = mustBeRemoved.remove();
 //            removed.add(verti);
-        }
+//            Collection<Integer> neighbors = graph.getNeighbors(verti);
+//            for (int vertn : neighbors) {
+//                if (vertn == verti) {
+//                    continue;
+//                }
+//                if (aux[vertn]-- >= INCLUDED && aux[vertn] < INCLUDED && !removed.contains(vertn)) {
+//                    mustBeRemoved.add(vertn);
+//                }
+//            }
+//        }
     }
 
     public Integer selectBestPromotableVertice(Set<Integer> s,
@@ -383,12 +388,12 @@ public class GraphCaratheodoryHeuristic
     }
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
-            int[] aux) {
+            int[] aux, Set<Integer> partial) {
         Integer ret = null;
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
 //        neighbors.removeAll(s);
 //        neighbors.removeAll(hs);
-//        neighbors.removeAll(partial);
+        neighbors.removeAll(partial);
         neighbors.remove(v);
         for (int i = 0; i < aux.length; i++) {
             if (aux[i] >= 2) {
