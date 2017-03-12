@@ -238,7 +238,9 @@ public class UtilGraph {
                 Integer verticeCount = 0;
                 ret = new UndirectedSparseGraphTO<>();
                 while ((readLine = r.readLine()) != null) {
-                    if (!readLine.trim().isEmpty() && !readLine.trim().startsWith("#")) {
+                    if (!readLine.trim().isEmpty()
+                            && !readLine.trim().startsWith("#")
+                            && !readLine.trim().matches("\\D+.*")) {
                         lines.add(readLine);
                         System.out.println(readLine);
                         ret.addVertex(verticeCount);
