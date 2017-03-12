@@ -193,7 +193,7 @@ public class GraphWS {
         }
         if (graph == null) {
             if (executeOperation != null && executeOperation.isProcessing()) {
-                graph = executeOperation.getGraph();
+                graph = executeOperation.getCurrentGraph();
             } else {
                 graph = GRAPH_GENERATOR_DEFAULT.generateGraph(params);
             }
@@ -300,11 +300,56 @@ public class GraphWS {
 
                     if (operation != null) {
                         executeOperation = new ExecuteOperation();
-                        executeOperation.setGraph(graph);
+                        executeOperation.addGraph(graph);
                         executeOperation.setGraphOperation(operation);
                         executeOperation.start();
 //                        result = executeOperation.getResult();
 
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(GraphWS.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("batch-operation")
+    public Map<String, Object> batchOperation(String jsonGraph) {
+        Map<String, Object> result = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            UndirectedSparseGraphTO graph
+                    = mapper.readValue(jsonGraph, UndirectedSparseGraphTO.class);
+            IGraphOperation operation = null;
+            if (graph != null && operators != null && graph.getOperation() != null) {
+                String strOperation = graph.getOperation();
+                for (IGraphOperation graphOperation : operators) {
+                    if (strOperation.equalsIgnoreCase(graphOperation.getName())) {
+                        operation = graphOperation;
+                        break;
+                    }
+                }
+
+                synchronized (executeOperation) {
+                    if (executeOperation.isProcessing()) {
+                        throw new IllegalArgumentException("Processor busy (1-operantion in progress)");
+                    }
+
+                    if (operation != null) {
+                        executeOperation = new ExecuteOperation();
+                        List<UndirectedSparseGraphTO> batchs = DatabaseFacade.getAllGraphsBatchDiretory();
+                        if (batchs != null && !batchs.isEmpty()) {
+                            for (UndirectedSparseGraphTO g : batchs) {
+                                executeOperation.addGraph(g);
+                            }
+                            executeOperation.setGraphOperation(operation);
+                            executeOperation.start();
+                        }
                     }
                 }
             }
