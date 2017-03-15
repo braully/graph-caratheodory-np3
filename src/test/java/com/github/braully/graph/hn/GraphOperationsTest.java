@@ -52,14 +52,14 @@ public class GraphOperationsTest extends TestCase {
 
         System.out.println("Adding vertice " + v + " to parcial");
 
-        Integer nv0 = heuristic.selectBestNeighbor(v, graph, aux, partial);
+        Integer nv0 = heuristic.selectBestNeighbor(v, graph, aux, partial, aux);
 
         System.out.println("Adding vertice " + nv0 + " to S");
 
-        heuristic.addVertToS(nv0, graph, aux);
+        heuristic.addVertToS(nv0, s, graph, aux);
         promotable.add(nv0);
 
-        Integer nv1 = heuristic.selectBestNeighbor(v, graph, aux, partial);
+        Integer nv1 = heuristic.selectBestNeighbor(v, graph, aux, partial, aux);
 
         System.out.print("Aux = {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
@@ -69,7 +69,7 @@ public class GraphOperationsTest extends TestCase {
 
         System.out.println("Adding vertice " + nv1 + " to S");
 
-        heuristic.addVertToS(nv1, graph, aux);
+        heuristic.addVertToS(nv1, s, graph, aux);
         promotable.add(nv1);
 
         System.out.print("Aux = {");
@@ -95,7 +95,7 @@ public class GraphOperationsTest extends TestCase {
 //        System.out.println("Adding vertice " + nv1 + " to S");
 //        heuristic.addVertToS(nv1, s, hs, partial, graph, aux);
         System.out.println("Add " + vp);
-        heuristic.addVertToS(vp, graph, aux);
+        heuristic.addVertToS(vp, s, graph, aux);
         System.out.print("Aux = {");
         for (int i = 0; i < graph.getVertexCount(); i++) {
             System.out.printf("%2d | ", aux[i]);
