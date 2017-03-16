@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -30,13 +31,13 @@ import org.apache.commons.io.IOUtils;
  * @author braully
  */
 public class DatabaseFacade {
-    
+
     public static final String DATABASE_DIRECTORY = System.getProperty("user.home") + File.separator + "." + "graph-problem";
     public static final String BATCH_DIRECTORY = DATABASE_DIRECTORY + File.separator + "batch";
     public static final String DATABASE_URL = DATABASE_DIRECTORY + File.separator + "graph-problem-results.json";
     public static final String DATABASE_DIRECTORY_GRAPH = DATABASE_DIRECTORY + File.separator + "graph";
     public static final String DATABASE_DIRECTORY_CONSOLE = DATABASE_DIRECTORY + File.separator + "console";
-    
+
     static {
         try {
             new File(DATABASE_DIRECTORY).mkdirs();
@@ -44,10 +45,10 @@ public class DatabaseFacade {
             new File(DATABASE_DIRECTORY_GRAPH).mkdirs();
             new File(DATABASE_DIRECTORY_CONSOLE).mkdirs();
         } catch (Exception e) {
-            
+
         }
     }
-    
+
     static List<UndirectedSparseGraphTO> getAllGraphsBatchDiretory() {
         List<UndirectedSparseGraphTO> graphTOs = new ArrayList<>();
         try {
@@ -70,7 +71,7 @@ public class DatabaseFacade {
         }
         return graphTOs;
     }
-    
+
     private static void removeBatchDiretoryIfExists(UndirectedSparseGraphTO graph) {
         try {
             String name = graph.getName();
@@ -82,17 +83,66 @@ public class DatabaseFacade {
                 }
             }
         } catch (Exception e) {
-            
+
         }
     }
-    
+
     static class RecordResultGraph implements java.lang.Comparable<RecordResultGraph> {
-        
+
         String id, status, type, operation, graph, name, vertices, edges, results, date, console;
-        
+
         public RecordResultGraph() {
         }
-        
+
+        public RecordResultGraph(Map param) {
+            if (param != null) {
+                try {
+                    this.id = param.get("id").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.status = param.get("status").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.type = param.get("type").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.operation = param.get("operation").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.graph = param.get("graph").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.name = param.get("name").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.vertices = param.get("vertices").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.edges = param.get("edges").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.results = param.get("results").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.date = param.get("date").toString();
+                } catch (Exception e) {
+                }
+                try {
+                    this.console = param.get("console").toString();
+                } catch (Exception e) {
+                }
+            }
+        }
+
         public RecordResultGraph(String status, String type,
                 String operation, String graph, String vertices,
                 String edges, String results, String date, String console) {
@@ -106,87 +156,87 @@ public class DatabaseFacade {
             this.date = date;
             this.console = console;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public void setName(String name) {
             this.name = name;
         }
-        
+
         public String getId() {
             return id;
         }
-        
+
         public void setId(String id) {
             this.id = id;
         }
-        
+
         public String getStatus() {
             return status;
         }
-        
+
         public void setStatus(String status) {
             this.status = status;
         }
-        
+
         public String getType() {
             return type;
         }
-        
+
         public void setType(String type) {
             this.type = type;
         }
-        
+
         public String getOperation() {
             return operation;
         }
-        
+
         public void setOperation(String operation) {
             this.operation = operation;
         }
-        
+
         public String getGraph() {
             return graph;
         }
-        
+
         public void setGraph(String graph) {
             this.graph = graph;
         }
-        
+
         public String getVertices() {
             return vertices;
         }
-        
+
         public void setVertices(String vertices) {
             this.vertices = vertices;
         }
-        
+
         public String getEdges() {
             return edges;
         }
-        
+
         public void setEdges(String edges) {
             this.edges = edges;
         }
-        
+
         public String getResults() {
             return results;
         }
-        
+
         public void setResults(String results) {
             this.results = results;
         }
-        
+
         public String getDate() {
             return date;
         }
-        
+
         public void setDate(String date) {
             this.date = date;
         }
-        
+
         @Override
         public int compareTo(RecordResultGraph t) {
             if (t != null && id != null) {
@@ -194,20 +244,27 @@ public class DatabaseFacade {
             }
             return 0;
         }
-        
+
     }
-    
+
     public synchronized static List<RecordResultGraph> getAllResults() {
+        return getAllResults(DATABASE_URL);
+    }
+
+    public synchronized static List<RecordResultGraph> getAllResults(String database) {
         List<RecordResultGraph> results = new ArrayList();
         ObjectMapper mapper = new ObjectMapper();
         try {
-            List<RecordResultGraph> tmp = results = mapper.readValue(new File(DATABASE_URL), List.class);
+            List<Map> tmp = mapper.readValue(new File(database), List.class);
             if (tmp != null) {
                 try {
-                    for (RecordResultGraph t : tmp) {
+                    Iterator<Map> iterator = tmp.iterator();
+                    while (iterator.hasNext()) {
+                        RecordResultGraph t = new RecordResultGraph(iterator.next());
                         results.add(t);
                     }
                 } catch (ClassCastException e) {
+                    e.printStackTrace();
                 }
             }
             Collections.reverse(results);
@@ -216,19 +273,19 @@ public class DatabaseFacade {
         }
         return results;
     }
-    
+
     public static synchronized void saveResult(UndirectedSparseGraphTO graph,
             IGraphOperation graphOperation,
             Map<String, Object> result, List<String> consoleOut) {
         if (result != null && graph != null && graphOperation != null) {
             try {
-                
+
                 List<RecordResultGraph> results = null;
                 ObjectMapper mapper = new ObjectMapper();
                 try {
                     results = mapper.readValue(new File(DATABASE_URL), List.class);
                 } catch (Exception e) {
-                    
+
                 }
                 if (results == null) {
                     results = new ArrayList<RecordResultGraph>();
@@ -255,13 +312,13 @@ public class DatabaseFacade {
             }
         }
     }
-    
+
     public static String saveGraph(UndirectedSparseGraphTO graph) {
         if (graph == null) {
             return null;
         }
         String fileName = graph.getName();
-        
+
         char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
         StringBuilder sb = new StringBuilder();
 //        try {
@@ -275,7 +332,7 @@ public class DatabaseFacade {
         }
 //        }
         fileName = fileName + "-" + sb.toString() + ".json";
-        
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(new File(DATABASE_DIRECTORY_GRAPH + File.separator + fileName), graph);
@@ -284,13 +341,13 @@ public class DatabaseFacade {
         }
         return fileName;
     }
-    
+
     private static String saveConsole(List<String> consoleOut, String fileGraphName) {
         if (consoleOut == null || consoleOut.isEmpty()) {
             return null;
         }
         String fileName = fileGraphName;
-        
+
         char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
@@ -298,7 +355,7 @@ public class DatabaseFacade {
             char c = chars[random.nextInt(chars.length)];
             sb.append(c);
         }
-        
+
         fileName = fileGraphName + ".log";
         File fileOut = new File(DATABASE_DIRECTORY_GRAPH + File.separator + fileName);
         try {
@@ -311,7 +368,7 @@ public class DatabaseFacade {
         }
         return fileName;
     }
-    
+
     public static UndirectedSparseGraphTO openGraph(String nameFile) throws IOException {
         if (nameFile == null) {
             return null;
@@ -321,7 +378,7 @@ public class DatabaseFacade {
         graph = mapper.readValue(new File(DATABASE_DIRECTORY_GRAPH + File.separator + nameFile), UndirectedSparseGraphTO.class);
         return graph;
     }
-    
+
     private static String resultMapToString(Map<String, Object> result) {
         StringBuilder strResult = new StringBuilder();
         if (result != null) {
@@ -338,7 +395,7 @@ public class DatabaseFacade {
         }
         return strResult.toString();
     }
-    
+
     private static String objectTosString(Object obj) {
         String ret = null;
         if (obj != null) {
@@ -346,7 +403,7 @@ public class DatabaseFacade {
         }
         return ret;
     }
-    
+
     public static void allResultsZiped(OutputStream out) throws IOException {
         ZipArchiveOutputStream tOut = null;
         try {
@@ -365,9 +422,9 @@ public class DatabaseFacade {
         File f = new File(path);
         String entryName = base + f.getName();
         ZipArchiveEntry zipEntry = new ZipArchiveEntry(f, entryName);
-        
+
         zOut.putArchiveEntry(zipEntry);
-        
+
         if (f.isFile()) {
             FileInputStream fInputStream = null;
             try {
@@ -377,11 +434,11 @@ public class DatabaseFacade {
             } finally {
                 IOUtils.closeQuietly(fInputStream);
             }
-            
+
         } else {
             zOut.closeArchiveEntry();
             File[] children = f.listFiles();
-            
+
             if (children != null) {
                 for (File child : children) {
                     addFileToZip(zOut, child.getAbsolutePath(), entryName + "/");
