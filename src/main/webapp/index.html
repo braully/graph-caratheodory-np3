@@ -191,6 +191,15 @@
                                 Cancel
                             </button>
                         </div>
+
+                        <div class="form-group pull-right">
+                            <button ng-click="batchExecuteOperation();" ng-disabled="processing"
+                                    class="btn btn-primary">
+                                <span class="glyphicon glyphicon-certificate"></span>
+                                Batch Execute
+                            </button>
+                        </div>
+
                     </fieldset>
                     <fieldset>
                         <legend>Result</legend>
@@ -508,6 +517,31 @@
                         window.alert('Error: ' + err);
                     });
                 };
+
+                $scope.batchExecuteOperation = function () {
+                    $scope.graph.inputData = $scope.inputData;
+                    if ($scope.inputData)
+                        $scope.graph.set = $scope.inputData.split(',').map(Number);
+                    $scope.outputConsole = ['Processing...'];
+                    $scope.graph.operation = $scope.operation;
+                    $scope.processing = true;
+                    $http.post('rest/graph/batch-operation', $scope.graph).success(function (caratheodorydata) {
+                        $scope.pollerConsoleOutput();
+                        $scope.caratheodory = caratheodorydata;
+                        $scope.processing = false;
+                        $scope.outputConsole = [''];
+                        if (caratheodorydata) {
+                            $scope.mapResult = new Map();
+                            Object.keys(caratheodorydata).forEach(function (key) {
+                                $scope.mapResult[key] = caratheodorydata[key];
+                            });
+                        }
+                    }).error(function (err) {
+                        $scope.processing = false;
+                        window.alert('Error: ' + err);
+                    });
+                };
+
                 $scope.cancelOperation = function () {
                     $http.post('rest/graph/process-cancel').success(function (result) {
                         $scope.processing = false;

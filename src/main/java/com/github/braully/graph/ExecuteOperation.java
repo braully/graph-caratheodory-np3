@@ -8,6 +8,8 @@ package com.github.braully.graph;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.Interruptible;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
@@ -21,7 +23,8 @@ public class ExecuteOperation extends Thread {
     private static final Logger log = Logger.getLogger("WEBCONSOLE");
     /* */
     private IGraphOperation graphOperation;
-    private UndirectedSparseGraphTO graph;
+    private List<UndirectedSparseGraphTO> graphs;
+    UndirectedSparseGraphTO graph = null;
     private Map<String, Object> result = null;
     private Long id;
 
@@ -30,32 +33,41 @@ public class ExecuteOperation extends Thread {
     public ExecuteOperation() {
         super();
         id = count++;
+        this.graphs = new ArrayList<>();
     }
 
     @Override
     public void run() {
         try {
             WebConsoleAppender.clear();
-            processing = true;
             log.info("[START]");
-            log.info(graphOperation.getTypeProblem() + ": " + graphOperation.getName());
-            log.info("Graph: " + graph.getName());
-            long currentTimeMillis = System.currentTimeMillis();
-            result = graphOperation.doOperation(graph);
-            currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
-            if (result != null) {
-                log.info(result.toString());
-                if (graph.getInputData() != null && !graph.getInputData().trim().isEmpty()) {
-                    result.put("Input", graph.getInputData());
+            for (int i = 0; i < graphs.size(); i++) {
+                try {
+                    processing = true;
+                    if (graphs.size() > 1) {
+                        log.info("Processing Graph " + i + " from " + graphs.size());
+                    }
+                    graph = graphs.get(i);
+                    log.info(graphOperation.getTypeProblem() + ": " + graphOperation.getName());
+                    log.info("Graph: " + graph.getName());
+                    long currentTimeMillis = System.currentTimeMillis();
+                    result = graphOperation.doOperation(graph);
+                    currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+                    if (result != null) {
+                        log.info(result.toString());
+                        if (graph.getInputData() != null && !graph.getInputData().trim().isEmpty()) {
+                            result.put("Input", graph.getInputData());
+                        }
+                        if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
+                            result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
+                        }
+                        DatabaseFacade.saveResult(graph, graphOperation, result,
+                                WebConsoleAppender.getLines());
+                    }
+                } catch (Exception e) {
+                    log.info("[FAILED]", e);
                 }
-                if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
-                    result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
-                }
-                DatabaseFacade.saveResult(graph, graphOperation, result, 
-                        WebConsoleAppender.getLines());
             }
-        } catch (Exception e) {
-            log.info("[FAILED]", e);
         } finally {
             log.info("[FINISH]");
             processing = false;
@@ -70,12 +82,12 @@ public class ExecuteOperation extends Thread {
         this.graphOperation = graphOperation;
     }
 
-    public UndirectedSparseGraphTO getGraph() {
+    public UndirectedSparseGraphTO getCurrentGraph() {
         return graph;
     }
 
-    public void setGraph(UndirectedSparseGraphTO graph) {
-        this.graph = graph;
+    public void addGraph(UndirectedSparseGraphTO graph) {
+        this.graphs.add(graph);
     }
 
     public Map<String, Object> getResult() {
