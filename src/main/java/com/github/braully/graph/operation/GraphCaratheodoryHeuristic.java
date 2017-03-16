@@ -159,11 +159,11 @@ public class GraphCaratheodoryHeuristic
 
                 System.out.print("Aux(-" + vp + "+" + nv0 + ")= {");
                 for (int i = 0; i < graph.getVertexCount(); i++) {
-                    System.out.printf("%2d | ", aux[i]);
+                    System.out.printf("%2d | ", auxNv0[i]);
                 }
                 System.out.println("}");
 
-                nv1 = selectBestNeighbor(vp, graph, auxNv1, partial, auxVp);
+                nv1 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
 
                 if (nv1 == null) {
                     for (int i = 0; i < graph.getVertexCount(); i++) {
@@ -177,10 +177,21 @@ public class GraphCaratheodoryHeuristic
                 }
 
                 addVertToS(nv1, s, graph, auxNv1);
+                System.out.print("Aux(-" + vp + "+" + nv1 + ")= {");
+                for (int i = 0; i < graph.getVertexCount(); i++) {
+                    System.out.printf("%2d | ", auxNv1[i]);
+                }
+                System.out.println("}");
+
                 promotable.add(nv0);
                 promotable.add(nv1);
-                s.add(nv0);
-                s.add(nv1);
+
+                addVertToS(nv1, s, graph, auxNv0);
+
+                for (int i = 0; i < graph.getVertexCount(); i++) {
+                    aux[i] = auxNv0[i];
+                }
+
                 if (verbose) {
                     System.out.println("OK");
                     System.out.println("Adding vertice " + nv0 + " to S");
