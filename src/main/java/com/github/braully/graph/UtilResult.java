@@ -53,9 +53,9 @@ public class UtilResult {
         }
 
         String inputFilePath = cmd.getOptionValue("input");
-//        if (inputFilePath == null) {
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/graph-problem-results.json";
-//        }
+        if (inputFilePath == null) {
+            inputFilePath = "/home/strike/Documentos/grafos-processados/mtf/resultado.txt";
+        }
         if (inputFilePath != null) {
             if (inputFilePath.toLowerCase().endsWith(".txt")) {
                 processFileTxt(inputFilePath);
@@ -77,8 +77,8 @@ public class UtilResult {
             String[] parts = readLine.split("\t");
             try {
                 if (parts != null && parts.length > 3) {
-//                    addResult(parts[0], Integer.parseInt(parts[1]), parts[2], Integer.parseInt(parts[3]));
-                    addResult(parts[1] + "_-order", Integer.parseInt(parts[1]), parts[2], Integer.parseInt(parts[3]));
+                    addResult(parts[0], Integer.parseInt(parts[1]), parts[2], Integer.parseInt(parts[3]));
+//                    addResult(parts[1] + "_-order", Integer.parseInt(parts[1]), parts[2], Integer.parseInt(parts[3]));
                 }
             } catch (Exception e) {
 
