@@ -20,13 +20,13 @@ public class GraphHullNumber implements IGraphOperation {
 
     private static final Logger log = Logger.getLogger(GraphWS.class);
 
-    private static final String PARAM_NAME_HULL_NUMBER = "number";
-    private static final String PARAM_NAME_HULL_SET = "set";
-    private static final String PARAM_NAME_SERIAL_TIME = "serial";
-    private static final String PARAM_NAME_PARALLEL_TIME = "parallel";
-    private static final String COMMAND_GRAPH_HN = "/home/strike/Workspace/pesquisa/graph-hull-number-parallel/graph-test/";
-    private final int INCLUDED = 2;
-    private final int NEIGHBOOR_COUNT_INCLUDED = 1;
+    public static final String PARAM_NAME_HULL_NUMBER = "number";
+    public static final String PARAM_NAME_HULL_SET = "set";
+    public static final String PARAM_NAME_SERIAL_TIME = "serial";
+    public static final String PARAM_NAME_PARALLEL_TIME = "parallel";
+    public static final String COMMAND_GRAPH_HN = "/home/strike/Workspace/pesquisa/graph-hull-number-parallel/graph-test/";
+    public final int INCLUDED = 2;
+    public final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {

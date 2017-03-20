@@ -54,7 +54,7 @@ public class UtilResult {
 
         String inputFilePath = cmd.getOptionValue("input");
         if (inputFilePath == null) {
-            inputFilePath = "/home/strike/Documentos/grafos-processados/mtf/resultado.txt";
+            inputFilePath = "/home/strike/grafos-para-processar/mft2/resultado.txt";
         }
         if (inputFilePath != null) {
             if (inputFilePath.toLowerCase().endsWith(".txt")) {
