@@ -39,13 +39,10 @@ public class GraphCaratheodoryHeuristic
             if (neighborCount >= 2) {
                 Set<Integer> s = new HashSet<>();
                 Set<Integer> hs = new HashSet<>();
-                Set<Integer> partial = new HashSet<>();
-                Set<Integer> tmp = buildCaratheodorySetFromPartialElement(graphRead, v, s, hs, partial);
+                Set<Integer> tmp = buildCaratheodorySetFromPartialElement(graphRead, v, s, hs);
                 if (tmp != null && tmp.size() > caratheodorySet.size()) {
                     caratheodorySet = tmp;
                     caratheodoryNumberGraph.caratheodorySet = caratheodorySet;
-                    caratheodoryNumberGraph.convexHull = hs;
-                    caratheodoryNumberGraph.partial = partial;
                     caratheodoryNumberGraph.caratheodoryNumber = caratheodorySet.size();
                 }
             }
@@ -73,10 +70,10 @@ public class GraphCaratheodoryHeuristic
     }
 
     private Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph,
-            Integer v, Set<Integer> s, Set<Integer> hs,
-            Set<Integer> partial) {
+            Integer v, Set<Integer> s, Set<Integer> hs) {
         int[] aux = new int[graph.getVertexCount()];
         Set<Integer> promotable = new HashSet<>();
+        Set<Integer> partial = new HashSet<>();
         int[] auxVp = new int[graph.getVertexCount()];
         int[] auxNv0 = new int[graph.getVertexCount()];
         int[] auxNv1 = new int[graph.getVertexCount()];
@@ -151,7 +148,7 @@ public class GraphCaratheodoryHeuristic
                     }
                     s.add(vp);
                     if (verbose) {
-                        System.out.println("Not promotable");
+                        System.out.println("Not promotable - nvo");
                     }
                     continue;
                 }
@@ -170,8 +167,9 @@ public class GraphCaratheodoryHeuristic
                         aux[i] = auxVp[i];
                     }
                     s.add(vp);
+                    s.remove(nv0);
                     if (verbose) {
-                        System.out.println("Not promotable");
+                        System.out.println("Not promotable - nv1");
                     }
                     continue;
                 }
@@ -182,6 +180,14 @@ public class GraphCaratheodoryHeuristic
                     System.out.printf("%2d | ", auxNv1[i]);
                 }
                 System.out.println("}");
+
+                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED) {
+                    //vertice nv0 include partial and vp
+                }
+
+                if (auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
+                    //vertice nv1 include partial and vp
+                }
 
                 promotable.add(nv0);
                 promotable.add(nv1);
@@ -405,7 +411,7 @@ public class GraphCaratheodoryHeuristic
                         }
                     }
                     Integer vtmpRanking = neighbors.size();
-                    if (vtmpRanking >= 2) {
+                    if (vtmpRanking > 0) {
                         if (bestVertex == null || vtmpRanking < bestRanking) {
                             bestRanking = vtmpRanking;
                             bestVertex = vtmp;
@@ -442,135 +448,4 @@ public class GraphCaratheodoryHeuristic
         }
         return ret;
     }
-
-//    private void promoteVerticeToPartial(UndirectedSparseGraphTO<Integer, Integer> graphRead, Integer a, Integer v1a, Integer v2a, Set<Integer> partialElements, Set<Integer> convexHull, Set<Integer> maxCaratheodorySet) {
-//
-////        partialElements.add(a);
-////        List<Integer> promote = new ArrayList<>();
-////        promote.add(v);
-////        Collection<Integer> neighbors = graphRead.getNeighbors(a);
-////        Iterator<Integer> iterator = neighbors.iterator();
-////        Integer v1a = iterator.next();
-////        Integer v2a = iterator.next();
-////        promoteVerticeToPartial(graphRead, a, v1a, v2a, partialElements, convexHull, maxCaratheodorySet);
-//        partialElements.add(a);
-//        convexHull.add(v1a);
-//        convexHull.add(v2a);
-//        maxCaratheodorySet.remove(a);
-//        Collection neighbors = graphRead.getNeighbors(v1a);
-//        Collection intersection = CollectionUtils.intersection(maxCaratheodorySet, neighbors);
-//        if (intersection.size() < 2) {
-//            maxCaratheodorySet.add(v1a);
-//        }
-//        neighbors = graphRead.getNeighbors(v2a);
-//        intersection = CollectionUtils.intersection(maxCaratheodorySet, neighbors);
-//        if (intersection.size() < 2) {
-//            maxCaratheodorySet.add(v2a);
-//        }
-//    }
-//    public OperationConvexityGraphResult
-//            hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
-//                    int[] currentSet) {
-//        int currentSetSize = 0;
-//        OperationConvexityGraphResult processedHullSet = null;
-//        Set<Integer> s = new HashSet<>();
-//        Set<Integer> hs = new HashSet<>();
-//        Set<Integer> partial = new HashSet<>();
-//
-//        int[] aux = new int[graph.getVertexCount()];
-//        int[] auxc = new int[graph.getVertexCount()];
-//
-//        for (int i = 0; i < aux.length; i++) {
-//            aux[i] = 0;
-//            auxc[i] = 0;
-//        }
-//
-//        for (Integer v : currentSet) {
-//            aux[v] = INCLUDED;
-//            auxc[v] = 1;
-//            currentSetSize++;
-//        }
-//
-//        for (Integer v : currentSet) {
-//            addVertToS(v, s, hs, partial, graph, aux, auxc);
-//        }
-//
-//        boolean checkDerivated = false;
-//
-//        for (int i = 0; i < graph.getVertexCount(); i++) {
-//            if (auxc[i] >= currentSet.length && aux[i] == PROCESSED) {
-//                checkDerivated = true;
-//                break;
-//            }
-//        }
-//
-//        if (checkDerivated) {
-//            Set<Integer> setCurrent = new HashSet<>();
-//            for (int i : currentSet) {
-//                setCurrent.add(i);
-//            }
-//            partial = calcDerivatedPartial(graph,
-//                    hs, setCurrent);
-//            if (partial != null && !partial.isEmpty()) {
-//
-//                processedHullSet = new OperationConvexityGraphResult();
-//                processedHullSet.caratheodoryNumber = currentSetSize;
-//                processedHullSet.auxProcessor = aux;
-//                processedHullSet.convexHull = hs;
-//                processedHullSet.caratheodorySet = setCurrent;
-//                processedHullSet.partial = partial;
-//            }
-//        }
-//
-//        if (true) {
-//            Set<Integer> curSet = new HashSet<>();
-//            for (int i = 0; i < currentSet.length; i++) {
-//                curSet.add(currentSet[i]);
-//            }
-//
-//            System.out.print("\n∂H(S)= {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (partial != null && partial.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("H(S) = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (hs.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("S    = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (curSet.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("Aux  = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                System.out.printf("%2d | ", aux[i]);
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("Auxc = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                System.out.printf("%2d | ", auxc[i]);
-//            }
-//            System.out.println("}");
-//        }
-//
-//        return processedHullSet;
-//    }
 }
