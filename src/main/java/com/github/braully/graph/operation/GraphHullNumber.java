@@ -73,14 +73,6 @@ public class GraphHullNumber implements IGraphOperation {
         Set<Integer> ceilling = new HashSet<>();
         if (graph != null) {
             Collection<Integer> vertices = graph.getVertices();
-//            int[] aux = new int[graph.getVertexCount()];
-//            for (Integer i : vertices) {
-//                int degree = graph.degree(i);
-//                aux[i] = degree;
-//                if (degree == 1) {
-//                    ceilling.add(i);
-//                }
-//            }
 
             if (vertices != null) {
                 ceilling.addAll(vertices);
@@ -135,16 +127,12 @@ public class GraphHullNumber implements IGraphOperation {
                     int previousValue = aux[vertn];
                     aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
                     if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
-//                        includeVertex(graph, fecho, aux, verti);
                         mustBeIncluded.add(vertn);
                     }
                 }
             }
         }
 
-//        for (int i : currentSet) {
-//            includeVertex(graph, fecho, aux, i);
-//        }
         return fecho.size() == graph.getVertexCount();
     }
 
