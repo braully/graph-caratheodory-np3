@@ -424,10 +424,9 @@ public class GraphCaratheodoryHeuristic
             int[] aux, Set<Integer> partial, int[] auxBackup) {
         Integer ret = null;
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
-//        neighbors.removeAll(s);
-//        neighbors.removeAll(hs);
         neighbors.removeAll(partial);
         neighbors.remove(v);
+        Integer ranking = null;
         for (int i = 0; i < aux.length; i++) {
             if (aux[i] >= 2 || auxBackup[i] >= 2) {
                 neighbors.remove(i);
@@ -435,8 +434,10 @@ public class GraphCaratheodoryHeuristic
         }
 
         for (Integer nei : neighbors) {
-            if (ret == null || graph.degree(nei) < graph.degree(ret)) {
+            int neiRanking = aux[nei] * 100 + graph.degree(nei);
+            if (ret == null || neiRanking < ranking) {
                 ret = nei;
+                ranking = neiRanking;
             }
         }
         return ret;
