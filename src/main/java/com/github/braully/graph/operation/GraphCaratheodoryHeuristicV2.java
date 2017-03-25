@@ -17,7 +17,7 @@ public class GraphCaratheodoryHeuristicV2
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = true;
+    static boolean verbose = false;
 
     @Override
     public String getName() {
@@ -84,8 +84,10 @@ public class GraphCaratheodoryHeuristicV2
                     auxNv1[i] = aux[i];
                 }
 
-                System.out.print("Aux(-" + vp + ") ");
-                printArrayAux(aux);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + ") ");
+                    printArrayAux(aux);
+                }
 
                 nv0 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
                 if (nv0 == null) {
@@ -98,13 +100,17 @@ public class GraphCaratheodoryHeuristicV2
                 }
                 addVertToS(nv0, s, graph, auxNv0);
 
-                System.out.print("Aux(-" + vp + "+" + nv0 + ")");
-                printArrayAux(auxNv0);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + "+" + nv0 + ")");
+                    printArrayAux(auxNv0);
+                }
 
                 if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED) {
                     //vertice nv0 include partial and vp
                     //best complementary
-                    System.out.println("Nv0 promotable vp and partial");
+                    if (verbose) {
+                        System.out.println("Nv0 promotable vp and partial");
+                    }
                     if (graph.getNeighborCount(nv0) >= 2) {
                         promotable.add(nv0);
                         copyArray(aux, auxNv0);
@@ -126,8 +132,10 @@ public class GraphCaratheodoryHeuristicV2
 
                 addVertToS(nv1, s, graph, auxNv1);
 
-                System.out.print("Aux(-" + vp + "+" + nv1 + ")");
-                printArrayAux(auxNv1);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + "+" + nv1 + ")");
+                    printArrayAux(auxNv1);
+                }
 
                 if (auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
                     //vertice nv1 include partial and vp

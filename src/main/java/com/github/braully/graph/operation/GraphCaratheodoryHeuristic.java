@@ -19,7 +19,7 @@ public class GraphCaratheodoryHeuristic
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = true;
+    static boolean verbose = false;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
@@ -129,8 +129,10 @@ public class GraphCaratheodoryHeuristic
                     auxNv1[i] = aux[i];
                 }
 
-                System.out.print("Aux(-" + vp + ") ");
-                printArrayAux(aux);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + ") ");
+                    printArrayAux(aux);
+                }
 
                 nv0 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
                 if (nv0 == null) {
@@ -143,8 +145,10 @@ public class GraphCaratheodoryHeuristic
                 }
                 addVertToS(nv0, s, graph, auxNv0);
 
-                System.out.print("Aux(-" + vp + "+" + nv0 + ")");
-                printArrayAux(auxNv0);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + "+" + nv0 + ")");
+                    printArrayAux(auxNv0);
+                }
 
                 nv1 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
 
@@ -174,8 +178,10 @@ public class GraphCaratheodoryHeuristic
 
                 addVertToS(nv1, s, graph, auxNv1);
 
-                System.out.print("Aux(-" + vp + "+" + nv1 + ")");
-                printArrayAux(auxNv1);
+                if (verbose) {
+                    System.out.print("Aux(-" + vp + "+" + nv1 + ")");
+                    printArrayAux(auxNv1);
+                }
 
                 promotable.add(nv0);
                 promotable.add(nv1);
