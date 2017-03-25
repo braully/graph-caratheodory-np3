@@ -9,60 +9,15 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class GraphCaratheodoryHeuristic
-        extends GraphCheckCaratheodorySet
-        implements IGraphOperation {
+public class GraphCaratheodoryHeuristicV2
+        extends GraphCaratheodoryHeuristic {
 
-    static final String type = "P3-Convexity";
-    static final String description = "Nº Caratheodory (Heuristic v1)";
+    static final String description = "Nº Caratheodory (Heuristic v2)";
 
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     static boolean verbose = true;
-
-    @Override
-    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-        long totalTimeMillis = -1;
-
-        totalTimeMillis = System.currentTimeMillis();
-        OperationConvexityGraphResult caratheodoryNumberGraph = new OperationConvexityGraphResult();
-
-        Collection<Integer> vertices = graphRead.getVertices();
-        Set<Integer> caratheodorySet = new HashSet<>();
-
-        for (Integer v : vertices) {
-            int neighborCount = graphRead.getNeighborCount(v);
-            if (graphRead.isNeighbor(v, v)) {
-                neighborCount--;
-            }
-            if (neighborCount >= 2) {
-                Set<Integer> s = new HashSet<>();
-                Set<Integer> hs = new HashSet<>();
-                Set<Integer> tmp = buildCaratheodorySetFromPartialElement(graphRead, v, s, hs);
-                if (tmp != null && tmp.size() > caratheodorySet.size()) {
-                    caratheodorySet = tmp;
-                    caratheodoryNumberGraph.caratheodorySet = caratheodorySet;
-                    caratheodoryNumberGraph.caratheodoryNumber = caratheodorySet.size();
-                }
-            }
-        }
-
-        totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
-
-        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
-        Map<String, Object> response = new HashMap<>();
-        if (!caratheodorySet.isEmpty()) {
-            graphRead.setSet(caratheodorySet);
-            response = super.doOperation(graphRead);
-        }
-        return response;
-    }
-
-    @Override
-    public String getTypeProblem() {
-        return type;
-    }
 
     @Override
     public String getName() {
@@ -72,10 +27,9 @@ public class GraphCaratheodoryHeuristic
     Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph,
             Integer v, Set<Integer> s, Set<Integer> hs) {
         int vertexCount = graph.getVertexCount();
-
+        int[] aux = new int[vertexCount];
         Set<Integer> promotable = new HashSet<>();
         Set<Integer> partial = new HashSet<>();
-        int[] aux = new int[vertexCount];
         int[] auxVp = new int[vertexCount];
         int[] auxNv0 = new int[vertexCount];
         int[] auxNv1 = new int[vertexCount];
@@ -206,124 +160,6 @@ public class GraphCaratheodoryHeuristic
         }
 
         return s;
-    }
-
-    void printFinalState(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> partial, Set<Integer> derivatedPartialReal, int[] aux, Set<Integer> convexHullReal, Set<Integer> s, int[] auxReal) {
-        int vertexCount = graph.getVertexCount();
-        System.out.print("\n∂H(S)= {");
-        for (int i = 0; i < vertexCount; i++) {
-            if (partial != null && partial.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("∂®Hs=  {");
-        for (int i = 0; i < vertexCount; i++) {
-            if (derivatedPartialReal != null && derivatedPartialReal.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("H(S) = {");
-        for (int i = 0; i < vertexCount; i++) {
-            if (aux[i] >= 2) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("H®s  = {");
-        for (int i = 0; i < vertexCount; i++) {
-            if (convexHullReal.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("S    = {");
-        for (int i = 0; i < vertexCount; i++) {
-            if (s.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("Aux  = {");
-        for (int i = 0; i < vertexCount; i++) {
-            System.out.printf("%2d | ", aux[i]);
-        }
-        System.out.println("}");
-
-        System.out.print("Aux® = {");
-        for (int i = 0; i < vertexCount; i++) {
-            System.out.printf("%2d | ", auxReal[i]);
-        }
-        System.out.println("}");
-    }
-
-    void printArrayAux(int[] aux) {
-        System.out.print(" = {");
-        for (int i = 0; i < aux.length; i++) {
-            System.out.printf("%2d | ", aux[i]);
-        }
-        System.out.println("}");
-    }
-
-    void copyArray(int[] auxtg, int[] auxsrc) {
-        //Backup aux
-        for (int i = 0; i < auxtg.length; i++) {
-            auxtg[i] = auxsrc[i];
-        }
-    }
-
-    public void printSituation(int numVertices, Set<Integer> partial, Set<Integer> s, int[] aux) {
-        System.out.print("\n∂H(S)= {");
-        for (int i = 0; i < numVertices; i++) {
-            if (partial != null && partial.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("H(S) = {");
-        for (int i = 0; i < numVertices; i++) {
-            if (aux[i] >= 2) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("S    = {");
-        for (int i = 0; i < numVertices; i++) {
-            if (s.contains(i)) {
-                System.out.printf("%2d | ", i);
-            } else {
-                System.out.print("   | ");
-            }
-        }
-        System.out.println("}");
-
-        System.out.print("Aux  = {");
-        for (int i = 0; i < numVertices; i++) {
-            System.out.printf("%2d | ", aux[i]);
-        }
-        System.out.println("}");
     }
 
     public void addVertToS(Integer verti, Set<Integer> s,
