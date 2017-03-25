@@ -2,6 +2,7 @@ package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.File;
@@ -18,7 +19,7 @@ import org.apache.commons.cli.*;
  *
  * @author strike
  */
-public class BatchExecuteHeuristic {
+public class BatchExecuteHeuristicV2 {
 
     public static void main(String... args) {
         Options options = new Options();
@@ -60,7 +61,7 @@ public class BatchExecuteHeuristic {
             try {
                 processFile(dir);
             } catch (IOException ex) {
-                Logger.getLogger(BatchExecuteHeuristic.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteHeuristicV2.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -89,7 +90,7 @@ public class BatchExecuteHeuristic {
 
     static void processFile(File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
-        IGraphOperation operationHeuristic = new GraphCaratheodoryHeuristic();
+        IGraphOperation operationHeuristic = new GraphCaratheodoryHeuristicV2();
         long currentTimeMillis = System.currentTimeMillis();
         Map result = operationHeuristic.doOperation(loadGraphAdjMatrix);
         currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
