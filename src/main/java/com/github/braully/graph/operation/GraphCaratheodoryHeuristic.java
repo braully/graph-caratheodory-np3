@@ -158,18 +158,24 @@ public class GraphCaratheodoryHeuristic
                     continue;
                 }
 
+                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED
+                        || auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
+                    //vertice nv1 include partial and vp
+                    //roll back
+                    copyArray(aux, auxVp);
+                    s.add(vp);
+                    s.remove(nv0);
+                    s.remove(nv1);
+                    if (verbose) {
+                        System.out.println("Roll back - nv0 OR nv1 included Partial or VP");
+                    }
+                    continue;
+                }
+
                 addVertToS(nv1, s, graph, auxNv1);
 
                 System.out.print("Aux(-" + vp + "+" + nv1 + ")");
                 printArrayAux(auxNv1);
-
-                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED) {
-                    //vertice nv0 include partial and vp
-                }
-
-                if (auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
-                    //vertice nv1 include partial and vp
-                }
 
                 promotable.add(nv0);
                 promotable.add(nv1);
