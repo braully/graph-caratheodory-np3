@@ -111,6 +111,8 @@ public class BatchExecuteHeuristic {
 
         System.out.print(name);
         System.out.print("\t");
+        System.out.print(id);
+        System.out.print("\t");
         System.out.print(loadGraphAdjMatrix.getVertexCount());
         System.out.print("\t");
         System.out.print(operationHeuristic.getName());

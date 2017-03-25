@@ -91,8 +91,11 @@ public class BatchExecuteHeuristicV2 {
     static void processFile(File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         IGraphOperation operationHeuristic = new GraphCaratheodoryHeuristicV2();
+
         long currentTimeMillis = System.currentTimeMillis();
+
         Map result = operationHeuristic.doOperation(loadGraphAdjMatrix);
+
         currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
         if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
             result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
@@ -111,6 +114,8 @@ public class BatchExecuteHeuristicV2 {
         }
 
         System.out.print(name);
+        System.out.print("\t");
+        System.out.print(id);
         System.out.print("\t");
         System.out.print(loadGraphAdjMatrix.getVertexCount());
         System.out.print("\t");
