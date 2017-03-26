@@ -190,11 +190,14 @@ public class GraphCaratheodoryHeuristic
 
                 addVertToS(nv1, s, graph, auxNv0);
 
+                boolean checkIfCaratheodory = checkIfCaratheodrySet(auxVp, auxNv0, s, v, vp, nv0, nv1, graph);
+
                 if (verbose) {
                     System.out.print("Auxf       ");
                     printArrayAux(auxNv0);
                     printSatusVS(auxNv0, partial, nv0, nv1, vp, s, graph);
-                    printDifference(aux, auxNv0);
+                    printDifference(auxVp, auxNv0, graph);
+                    System.out.println("=========> Check Caratheodory Available: " + (checkIfCaratheodory ? "Ok" : "Erro"));
                 }
 
                 copyArray(aux, auxNv0);
@@ -219,6 +222,11 @@ public class GraphCaratheodoryHeuristic
         Set<Integer> convexHullReal = hsp3.convexHull;
 
         if (verbose) {
+            if (derivatedPartialReal == null || derivatedPartialReal.isEmpty()) {
+                System.out.println("============== ERRO ==================");
+            } else {
+                System.out.println("-------------- OK --------------------");
+            }
             printFinalState(graph, partial, derivatedPartialReal, aux, convexHullReal, s, auxReal);
         }
 
@@ -471,12 +479,48 @@ public class GraphCaratheodoryHeuristic
         return ret;
     }
 
-    private void printDifference(int[] aux, int[] auxNv0) {
+    private void printDifference(int[] aux, int[] auxNv0, UndirectedSparseGraphTO graph) {
         System.out.print("F-I        ");
         System.out.print(" = {");
         for (int i = 0; i < aux.length; i++) {
             System.out.printf("%2d | ", (auxNv0[i] - aux[i]));
         }
         System.out.println("}");
+
+        System.out.print("F-D        ");
+        System.out.print(" = {");
+        for (int i = 0; i < aux.length; i++) {
+            System.out.printf("%2d | ", (auxNv0[i] - graph.getNeighborCount(i)));
+        }
+        System.out.println("}");
+
+        System.out.print("D-F-I      ");
+        System.out.print(" = {");
+        for (int i = 0; i < aux.length; i++) {
+            System.out.printf("%2d | ", (graph.getNeighborCount(i) - (auxNv0[i] - aux[i])));
+        }
+        System.out.println("}");
+    }
+
+    private boolean checkIfCaratheodrySet(int[] auxi, int[] auxf, Set<Integer> s,
+            Integer v, Integer vp, Integer nv0,
+            Integer nv1, UndirectedSparseGraphTO<Integer, Integer> graph) {
+        boolean ret = true;
+        int[] auxbackp = new int[auxf.length];
+
+        for (Integer i : s) {
+//            for (int ia = 0; ia < auxf.length; ia++) {
+//                auxbackp[ia] = auxf[ia];
+//            }
+            Set<Integer> sbackup = new HashSet<>(s);
+            if ((auxf[i] - auxi[i]) >= INCLUDED) {
+                removeVertFromS(i, sbackup, graph, auxbackp);
+                if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
+                    ret = false;
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 }
