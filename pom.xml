@@ -124,6 +124,9 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+            <resource>
+                <directory>graph</directory>
+            </resource>
         </resources>
         <plugins>  
             <plugin>  

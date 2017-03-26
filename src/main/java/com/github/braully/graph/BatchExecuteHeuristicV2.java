@@ -47,12 +47,12 @@ public class BatchExecuteHeuristicV2 {
         }
 
         String inputFilePath = cmd.getOptionValue("input");
-        if (inputFilePath == null) {
-            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
-        }
-        String outputFilePath = cmd.getOptionValue("output");
-        System.out.println(inputFilePath);
-        System.out.println(outputFilePath);
+//        if (inputFilePath == null) {
+//            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
+//        }
+//        String outputFilePath = cmd.getOptionValue("output");
+//        System.out.println(inputFilePath);
+//        System.out.println(outputFilePath);
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(inputFilePath);

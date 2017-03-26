@@ -17,7 +17,7 @@ public class GraphCaratheodoryHeuristicV2
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = false;
+    static boolean verbose = true;
 
     @Override
     public String getName() {
@@ -163,14 +163,18 @@ public class GraphCaratheodoryHeuristicV2
                 copyArray(aux, auxNv0);
 
                 if (verbose) {
+                    System.out.print("Aux f");
+                    printArrayAux(aux);
+                }
+
+                if (verbose) {
                     System.out.println("OK");
                     System.out.println("Adding vertice " + nv0 + " to S");
                     System.out.println("Adding vertice " + nv1 + " to S");
                     printSituation(vertexCount, partial, s, aux);
 
-                    System.out.print("Auxf ");
-                    printArrayAux(aux);
-
+//                    System.out.print("Auxf ");
+//                    printArrayAux(aux);
                 }
             }
         }

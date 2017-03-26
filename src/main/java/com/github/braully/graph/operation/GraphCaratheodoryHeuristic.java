@@ -19,7 +19,7 @@ public class GraphCaratheodoryHeuristic
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = false;
+    static boolean verbose = true;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
@@ -87,12 +87,12 @@ public class GraphCaratheodoryHeuristic
         partial.add(v);
 
         if (verbose) {
-            System.out.println("Adding vertice " + v + " to parcial");
+            System.out.println("\n\t* Adding vertice " + v + " to parcial");
         }
 
         Integer nv0 = selectBestNeighbor(v, graph, aux, partial, auxVp);
         if (verbose) {
-            System.out.println("Adding vertice " + nv0 + " to S");
+            System.out.println("\t* Adding vertice " + nv0 + " to S");
         }
 
         addVertToS(nv0, s, graph, aux);
@@ -100,7 +100,7 @@ public class GraphCaratheodoryHeuristic
 
         Integer nv1 = selectBestNeighbor(v, graph, aux, partial, auxVp);
         if (verbose) {
-            System.out.println("Adding vertice " + nv1 + " to S");
+            System.out.println("\t* Adding vertice " + nv1 + " to S");
         }
         addVertToS(nv1, s, graph, aux);
         promotable.add(nv1);
@@ -115,8 +115,8 @@ public class GraphCaratheodoryHeuristic
 
             if (vp != null) {
                 if (verbose) {
-                    System.out.println("Selectd " + vp + " from priority list");
-                    System.out.print("Aux(" + vp + ")  ");
+                    System.out.println("\n\t* Selectd " + vp + " from priority list");
+                    System.out.print(String.format("Aux(%2d)    ", vp));
                     printArrayAux(aux);
                 }
 
@@ -130,7 +130,7 @@ public class GraphCaratheodoryHeuristic
                 }
 
                 if (verbose) {
-                    System.out.print("Aux(-" + vp + ") ");
+                    System.out.print(String.format("Aux(-%2d)   ", vp));
                     printArrayAux(aux);
                 }
 
@@ -139,14 +139,14 @@ public class GraphCaratheodoryHeuristic
                     copyArray(aux, auxVp);
                     s.add(vp);
                     if (verbose) {
-                        System.out.println("Not promotable - nvo");
+                        System.out.println("\t* Not promotable - nvo");
                     }
                     continue;
                 }
                 addVertToS(nv0, s, graph, auxNv0);
 
                 if (verbose) {
-                    System.out.print("Aux(-" + vp + "+" + nv0 + ")");
+                    System.out.print(String.format("Aux(-%2d+%2d)", vp, nv0));
                     printArrayAux(auxNv0);
                 }
 
@@ -157,30 +157,32 @@ public class GraphCaratheodoryHeuristic
                     s.add(vp);
                     s.remove(nv0);
                     if (verbose) {
-                        System.out.println("Not promotable - nv1");
+                        System.out.println("\t * Not promotable - nv1");
                     }
-                    continue;
-                }
-
-                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED
-                        || auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
-                    //vertice nv1 include partial and vp
-                    //roll back
-                    copyArray(aux, auxVp);
-                    s.add(vp);
-                    s.remove(nv0);
-                    s.remove(nv1);
-                    if (verbose) {
-                        System.out.println("Roll back - nv0 OR nv1 included Partial or VP");
-                    }
+                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     continue;
                 }
 
                 addVertToS(nv1, s, graph, auxNv1);
 
                 if (verbose) {
-                    System.out.print("Aux(-" + vp + "+" + nv1 + ")");
+                    System.out.print(String.format("Aux(-%2d+%2d)", vp, nv1));
                     printArrayAux(auxNv1);
+                }
+
+                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED
+                        || auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
+                    //vertice nv1 include partial and vp
+                    //roll back
+                    if (verbose) {
+                        System.out.println("\t* Roll back - nv0 OR nv1 included Partial or VP");
+                    }
+                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
+                    copyArray(aux, auxVp);
+                    s.add(vp);
+                    s.remove(nv0);
+                    s.remove(nv1);
+                    continue;
                 }
 
                 promotable.add(nv0);
@@ -188,17 +190,20 @@ public class GraphCaratheodoryHeuristic
 
                 addVertToS(nv1, s, graph, auxNv0);
 
+                if (verbose) {
+                    System.out.print("Auxf       ");
+                    printArrayAux(auxNv0);
+                    printSatusVS(auxNv0, partial, nv0, nv1, vp, s, graph);
+                    printDifference(aux, auxNv0);
+                }
+
                 copyArray(aux, auxNv0);
 
                 if (verbose) {
-                    System.out.println("OK");
-                    System.out.println("Adding vertice " + nv0 + " to S");
-                    System.out.println("Adding vertice " + nv1 + " to S");
+                    System.out.println("\t-- OK");
+                    System.out.println("\t* Adding vertice " + nv0 + " to S");
+                    System.out.println("\t* Adding vertice " + nv1 + " to S");
                     printSituation(vertexCount, partial, s, aux);
-
-                    System.out.print("Auxf ");
-                    printArrayAux(aux);
-
                 }
             }
         }
@@ -220,9 +225,37 @@ public class GraphCaratheodoryHeuristic
         return s;
     }
 
+    private void printSatusVS(int[] aux, Set<Integer> partial, Integer nv0, Integer nv1, Integer vp, Set<Integer> s, UndirectedSparseGraphTO<Integer, Integer> graph) {
+        System.out.print("V(S)       ");
+        System.out.print(" = {");
+        for (int i = 0; i < aux.length; i++) {
+            if (partial.contains(i)) {
+                System.out.printf(" P | ", i);
+            } else if (nv0 != null && nv0.equals(i)) {
+                System.out.print(" 0 | ");
+            } else if (nv1 != null && nv1.equals(i)) {
+                System.out.print(" 1 | ");
+            } else if (vp.equals(i)) {
+                System.out.print(" V | ");
+            } else if (s.contains(i)) {
+                System.out.print(" S | ");
+            } else {
+                System.out.print("   | ");
+            }
+        }
+        System.out.println("}");
+
+        System.out.print("D(V)       ");
+        System.out.print(" = {");
+        for (int i = 0; i < aux.length; i++) {
+            System.out.printf("%2d | ", graph.getNeighborCount(i));
+        }
+        System.out.println("}");
+    }
+
     void printFinalState(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> partial, Set<Integer> derivatedPartialReal, int[] aux, Set<Integer> convexHullReal, Set<Integer> s, int[] auxReal) {
         int vertexCount = graph.getVertexCount();
-        System.out.print("\n∂H(S)= {");
+        System.out.print("∂H(S)       = {");
         for (int i = 0; i < vertexCount; i++) {
             if (partial != null && partial.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -232,7 +265,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("∂®Hs=  {");
+        System.out.print("∂®Hs        = {");
         for (int i = 0; i < vertexCount; i++) {
             if (derivatedPartialReal != null && derivatedPartialReal.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -242,7 +275,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("H(S) = {");
+        System.out.print("H(S)        = {");
         for (int i = 0; i < vertexCount; i++) {
             if (aux[i] >= 2) {
                 System.out.printf("%2d | ", i);
@@ -252,7 +285,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("H®s  = {");
+        System.out.print("H®s         = {");
         for (int i = 0; i < vertexCount; i++) {
             if (convexHullReal.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -262,7 +295,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("S    = {");
+        System.out.print("S           = {");
         for (int i = 0; i < vertexCount; i++) {
             if (s.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -272,13 +305,13 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("Aux  = {");
+        System.out.print("Aux         = {");
         for (int i = 0; i < vertexCount; i++) {
             System.out.printf("%2d | ", aux[i]);
         }
         System.out.println("}");
 
-        System.out.print("Aux® = {");
+        System.out.print("Aux®        = {");
         for (int i = 0; i < vertexCount; i++) {
             System.out.printf("%2d | ", auxReal[i]);
         }
@@ -301,7 +334,7 @@ public class GraphCaratheodoryHeuristic
     }
 
     public void printSituation(int numVertices, Set<Integer> partial, Set<Integer> s, int[] aux) {
-        System.out.print("\n∂H(S)= {");
+        System.out.print("\n∂H(S)       = {");
         for (int i = 0; i < numVertices; i++) {
             if (partial != null && partial.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -311,7 +344,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("H(S) = {");
+        System.out.print("H(S)        = {");
         for (int i = 0; i < numVertices; i++) {
             if (aux[i] >= 2) {
                 System.out.printf("%2d | ", i);
@@ -321,7 +354,7 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("S    = {");
+        System.out.print("S           = {");
         for (int i = 0; i < numVertices; i++) {
             if (s.contains(i)) {
                 System.out.printf("%2d | ", i);
@@ -331,11 +364,11 @@ public class GraphCaratheodoryHeuristic
         }
         System.out.println("}");
 
-        System.out.print("Aux  = {");
-        for (int i = 0; i < numVertices; i++) {
-            System.out.printf("%2d | ", aux[i]);
-        }
-        System.out.println("}");
+//        System.out.print("Aux  = {");
+//        for (int i = 0; i < numVertices; i++) {
+//            System.out.printf("%2d | ", aux[i]);
+//        }
+//        System.out.println("}");
     }
 
     public void addVertToS(Integer verti, Set<Integer> s,
@@ -436,5 +469,14 @@ public class GraphCaratheodoryHeuristic
             }
         }
         return ret;
+    }
+
+    private void printDifference(int[] aux, int[] auxNv0) {
+        System.out.print("F-I        ");
+        System.out.print(" = {");
+        for (int i = 0; i < aux.length; i++) {
+            System.out.printf("%2d | ", (auxNv0[i] - aux[i]));
+        }
+        System.out.println("}");
     }
 }
