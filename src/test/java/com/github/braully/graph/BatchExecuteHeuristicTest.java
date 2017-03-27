@@ -17,7 +17,10 @@ public class BatchExecuteHeuristicTest extends TestCase {
     public void testProcessFile() throws Exception {
         System.out.println("processFile");
 //        File file = new File("graph" + File.separator + "mft", "MTF_17-order-17-9999019890.mat");
-        File file = new File("graph" + File.separator + "mft", "MTF_15-order-15-9720.mat");
+//        File file = new File("graph" + File.separator + "mft", "MTF_15-order-15-9720.mat");
+//        File file = new File("graph" + File.separator + "mft", "MTF_17-order-17-9999043451.mat");
+//        File file = new File("graph" + File.separator + "mft", "MTF_14-order-14-21.mat");
+        File file = new File("graph" + File.separator + "mft", "MTF_7-order-7-04.mat");
         BatchExecuteHeuristic.processFile(file);
     }
 }

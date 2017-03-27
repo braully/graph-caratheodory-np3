@@ -19,7 +19,8 @@ public class GraphCaratheodoryHeuristic
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = true;
+//    static boolean verbose = true;
+    static boolean verbose = false;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
@@ -158,8 +159,8 @@ public class GraphCaratheodoryHeuristic
                     s.remove(nv0);
                     if (verbose) {
                         System.out.println("\t * Not promotable - nv1");
+                        printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     }
-                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     continue;
                 }
 
@@ -176,17 +177,14 @@ public class GraphCaratheodoryHeuristic
                     //roll back
                     if (verbose) {
                         System.out.println("\t* Roll back - nv0 OR nv1 included Partial or VP");
+                        printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     }
-                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     copyArray(aux, auxVp);
                     s.add(vp);
                     s.remove(nv0);
                     s.remove(nv1);
                     continue;
                 }
-
-                promotable.add(nv0);
-                promotable.add(nv1);
 
                 addVertToS(nv1, s, graph, auxNv0);
 
@@ -200,6 +198,22 @@ public class GraphCaratheodoryHeuristic
                     System.out.println("=========> Check Caratheodory Available: " + (checkIfCaratheodory ? "Ok" : "Erro"));
                 }
 
+                if (!checkIfCaratheodory) {
+                    //vertice nv1 include partial and vp
+                    //roll back
+                    if (verbose) {
+                        System.out.println("\t* Roll back checkIfCaratheodory=false");
+                    }
+//                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
+                    copyArray(aux, auxVp);
+                    s.add(vp);
+                    s.remove(nv0);
+                    s.remove(nv1);
+                    continue;
+                }
+
+                promotable.add(nv0);
+                promotable.add(nv1);
                 copyArray(aux, auxNv0);
 
                 if (verbose) {
@@ -507,13 +521,16 @@ public class GraphCaratheodoryHeuristic
             Integer nv1, UndirectedSparseGraphTO<Integer, Integer> graph) {
         boolean ret = true;
         int[] auxbackp = new int[auxf.length];
+        int deltaParcial = auxf[v] - auxi[v];
+        int deltaVp = auxf[vp] - auxi[vp];
 
         for (Integer i : s) {
 //            for (int ia = 0; ia < auxf.length; ia++) {
 //                auxbackp[ia] = auxf[ia];
 //            }
-            Set<Integer> sbackup = new HashSet<>(s);
-            if ((auxf[i] - auxi[i]) >= INCLUDED) {
+            int deltaSi = auxf[i] - auxi[i];
+            if (deltaSi >= INCLUDED || deltaParcial >= 1 || deltaVp >= INCLUDED) {
+                Set<Integer> sbackup = new HashSet<>(s);
                 removeVertFromS(i, sbackup, graph, auxbackp);
                 if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
                     ret = false;
