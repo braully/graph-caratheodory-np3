@@ -94,7 +94,14 @@ public class BatchExecuteG6 {
     static void processFile(File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         GraphCalcCaratheodoryNumberBinaryStrategy operation = new GraphCalcCaratheodoryNumberBinaryStrategy();
+
+        long currentTimeMillis = System.currentTimeMillis();
         Map result = operation.doOperation(loadGraphAdjMatrix);
+        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+        if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
+            result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
+        }
+
         String name = file.getName();
         String id = name.replaceAll(".mat", "");
         try {
