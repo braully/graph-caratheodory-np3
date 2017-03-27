@@ -1,11 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
+import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +18,7 @@ import org.apache.commons.cli.*;
  *
  * @author strike
  */
-public class BatchExecuteG6 {
+public class BatchExecuteHeuristicCompare {
 
     public static void main(String... args) {
         Options options = new Options();
@@ -50,10 +47,9 @@ public class BatchExecuteG6 {
 
         String inputFilePath = cmd.getOptionValue("input");
 //        if (inputFilePath == null) {
-////            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
+//            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
 //        }
 //        String outputFilePath = cmd.getOptionValue("output");
-
 //        System.out.println(inputFilePath);
 //        System.out.println(outputFilePath);
         File dir = new File(inputFilePath);
@@ -63,13 +59,12 @@ public class BatchExecuteG6 {
             try {
                 processFile(dir);
             } catch (IOException ex) {
-                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteHeuristicCompare.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 
     static void processDirectory(String directory) {
-
 //        System.out.println("Processing directory: " + directory);
         try {
             File dir = new File(directory);
@@ -92,31 +87,8 @@ public class BatchExecuteG6 {
     }
 
     static void processFile(File file) throws IOException {
-        UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
-        GraphCalcCaratheodoryNumberBinaryStrategy operation = new GraphCalcCaratheodoryNumberBinaryStrategy();
-        Map result = operation.doOperation(loadGraphAdjMatrix);
-        String name = file.getName();
-        String id = name.replaceAll(".mat", "");
-        try {
-
-            int indexOf = indexOf(name, "\\d");
-            if (indexOf > 0) {
-                name = name.substring(0, indexOf);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.print(name);
-        System.out.print("\t");
-        System.out.print(id);
-        System.out.print("\t");
-        System.out.print(loadGraphAdjMatrix.getVertexCount());
-        System.out.print("\t");
-        System.out.print(operation.getName());
-        System.out.print("\t");
-        System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER));
-        System.out.print("\t");
-        System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
+        BatchExecuteHeuristic.processFile(file);
+        BatchExecuteG6.processFile(file);
     }
 
     static int indexOf(String str, String patern) {
