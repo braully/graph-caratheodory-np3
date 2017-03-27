@@ -19,8 +19,8 @@ public class GraphCaratheodoryHeuristic
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    static boolean verbose = true;
-//    static boolean verbose = false;
+//    static boolean verbose = true;
+    static boolean verbose = false;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
