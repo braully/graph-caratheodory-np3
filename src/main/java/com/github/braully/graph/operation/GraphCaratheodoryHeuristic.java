@@ -13,6 +13,60 @@ public class GraphCaratheodoryHeuristic
         extends GraphCheckCaratheodorySet
         implements IGraphOperation {
 
+    /* 
+    
+    verticesCandidatos <- veticesComPeloMenosDoisVizinhos(G)
+
+melhorConjuntoCarat <- vazio
+
+Para cada v em verticesCandidatos faça
+       S    <- vazio
+       aux  <- vazio
+       auxP <- vazio
+       promoviveis <- vazio
+       
+       Para i de 1 até |V| faça
+           aux[i] <- 0
+       Fim Para
+
+       nv0 <- melhorVizinho(v, G, aux)       
+       adicionaVerticeEmS(nv0, s, G, aux)
+       promoviveis <- promoviveis U nv0
+     
+       nv1 <- melhorVizinho(v, G, aux)       
+       adicionaVerticeEmS(nv1, s, G, aux)
+       promoviveis <- promoviveis U nv1
+       
+       Enquanto |promovivies| > 0 faça
+            p <- melhorVerticePossivelPromocao(s, v, promovivies, G, aux)
+            promovivies <- promovivies - {p}
+            
+            excludentes <- {p, v}
+            auxp <- aux
+            removeVerticeDeS(p, s, G, aux)
+          
+            nvp0 <- melhorVizinho(p, G, aux, excludentes)
+            excludentes <- excludentes U nvp0
+            nvp1 <- melhorVizinho(p, G, aux, excludentes)
+            
+            adicionaVerticeEmS(nvp0, s, G, aux)
+            adicionaVerticeEmS(nvp1, s, G, aux)
+            
+            Se permaneceConjuntoCaratheodory(G, s, aux, auxp) Então
+               promovivies <- promovivies + {nvp0, nvp1}
+            Se Não
+               aux <- auxp
+               S <- S - {nvp0, nvp1}
+               S <- S + {p}
+            Fim Se
+       Fim enquanto
+
+       Se |S| > |melhorConjuntoCarat| Então
+            melhorConjuntoCarat <- S
+       Fim Se
+fim para
+    
+     */
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (Heuristic v1)";
 
