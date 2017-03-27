@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class GraphCaratheodoryHeuristic
+public class GraphCaratheodoryHeuristicV1Bkp
         extends GraphCheckCaratheodorySet
         implements IGraphOperation {
 
     static final String type = "P3-Convexity";
-    static final String description = "Nº Caratheodory (Heuristic v1)";
+    static final String description = "Nº Caratheodory (Heuristic v1 bkp)";
 
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
@@ -27,7 +27,28 @@ public class GraphCaratheodoryHeuristic
         long totalTimeMillis = -1;
 
         totalTimeMillis = System.currentTimeMillis();
-        Set<Integer> caratheodorySet = buildMaxCaratheodorySet(graphRead);
+        OperationConvexityGraphResult caratheodoryNumberGraph = new OperationConvexityGraphResult();
+
+        Collection<Integer> vertices = graphRead.getVertices();
+        Set<Integer> caratheodorySet = new HashSet<>();
+
+        for (Integer v : vertices) {
+            int neighborCount = graphRead.getNeighborCount(v);
+            if (graphRead.isNeighbor(v, v)) {
+                neighborCount--;
+            }
+            if (neighborCount >= 2) {
+                Set<Integer> s = new HashSet<>();
+                Set<Integer> hs = new HashSet<>();
+                Set<Integer> tmp = buildCaratheodorySetFromPartialElement(graphRead, v, s, hs);
+                if (tmp != null && tmp.size() > caratheodorySet.size()) {
+                    caratheodorySet = tmp;
+                    caratheodoryNumberGraph.caratheodorySet = caratheodorySet;
+                    caratheodoryNumberGraph.caratheodoryNumber = caratheodorySet.size();
+                }
+            }
+        }
+
         totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
 
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
@@ -57,6 +78,8 @@ public class GraphCaratheodoryHeuristic
         Set<Integer> partial = new HashSet<>();
         int[] aux = new int[vertexCount];
         int[] auxVp = new int[vertexCount];
+        int[] auxNv0 = new int[vertexCount];
+        int[] auxNv1 = new int[vertexCount];
 
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
@@ -102,7 +125,17 @@ public class GraphCaratheodoryHeuristic
                 promotable.remove(vp);
                 removeVertFromS(vp, s, graph, aux);
 
-                nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+                for (int i = 0; i < vertexCount; i++) {
+                    auxNv0[i] = aux[i];
+                    auxNv1[i] = aux[i];
+                }
+
+                if (verbose) {
+                    System.out.print(String.format("Aux(-%2d)   ", vp));
+                    printArrayAux(aux);
+                }
+
+                nv0 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
                 if (nv0 == null) {
                     copyArray(aux, auxVp);
                     s.add(vp);
@@ -111,33 +144,67 @@ public class GraphCaratheodoryHeuristic
                     }
                     continue;
                 }
-                addVertToS(nv0, s, graph, aux);
-                nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+                addVertToS(nv0, s, graph, auxNv0);
+
+                if (verbose) {
+                    System.out.print(String.format("Aux(-%2d+%2d)", vp, nv0));
+                    printArrayAux(auxNv0);
+                }
+
+                nv1 = selectBestNeighbor(vp, graph, auxNv0, partial, auxVp);
 
                 if (nv1 == null) {
                     copyArray(aux, auxVp);
                     s.add(vp);
                     s.remove(nv0);
+                    if (verbose) {
+                        System.out.println("\t * Not promotable - nv1");
+                        printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
+                    }
                     continue;
                 }
 
-                addVertToS(nv1, s, graph, aux);
+                addVertToS(nv1, s, graph, auxNv1);
 
-                boolean checkIfCaratheodory = checkIfCaratheodrySet(auxVp, aux, s, v, vp, nv0, nv1, graph);
+                if (verbose) {
+                    System.out.print(String.format("Aux(-%2d+%2d)", vp, nv1));
+                    printArrayAux(auxNv1);
+                }
+
+                if (auxNv0[vp] >= INCLUDED || auxNv0[v] >= INCLUDED
+                        || auxNv1[vp] >= INCLUDED || auxNv1[v] >= INCLUDED) {
+                    //vertice nv1 include partial and vp
+                    //roll back
+                    if (verbose) {
+                        System.out.println("\t* Roll back - nv0 OR nv1 included Partial or VP");
+                        printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
+                    }
+                    copyArray(aux, auxVp);
+                    s.add(vp);
+                    s.remove(nv0);
+                    s.remove(nv1);
+                    continue;
+                }
+
+                addVertToS(nv1, s, graph, auxNv0);
+
+                boolean checkIfCaratheodory = checkIfCaratheodrySet(auxVp, auxNv0, s, v, vp, nv0, nv1, graph);
 
                 if (verbose) {
                     System.out.print("Auxf       ");
-                    printArrayAux(aux);
-                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
-                    printDifference(auxVp, aux, graph);
+                    printArrayAux(auxNv0);
+                    printSatusVS(auxNv0, partial, nv0, nv1, vp, s, graph);
+                    printDifference(auxVp, auxNv0, graph);
                     System.out.println("=========> Check Caratheodory Available: " + (checkIfCaratheodory ? "Ok" : "Erro"));
                 }
 
                 if (!checkIfCaratheodory) {
+                    //vertice nv1 include partial and vp
                     //roll back
                     if (verbose) {
                         System.out.println("\t* Roll back checkIfCaratheodory=false");
                     }
+//                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
                     copyArray(aux, auxVp);
                     s.add(vp);
                     s.remove(nv0);
@@ -147,6 +214,7 @@ public class GraphCaratheodoryHeuristic
 
                 promotable.add(nv0);
                 promotable.add(nv1);
+                copyArray(aux, auxNv0);
 
                 if (verbose) {
                     System.out.println("\t-- OK");
@@ -472,26 +540,4 @@ public class GraphCaratheodoryHeuristic
         }
         return ret;
     }
-
-    public Set<Integer> buildMaxCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-        Set<Integer> caratheodorySet = new HashSet<>();
-        Collection<Integer> vertices = graphRead.getVertices();
-        for (Integer v : vertices) {
-            int neighborCount = graphRead.getNeighborCount(v);
-            if (graphRead.isNeighbor(v, v)) {
-                neighborCount--;
-            }
-            if (neighborCount >= 2) {
-                Set<Integer> s = new HashSet<>();
-                Set<Integer> hs = new HashSet<>();
-                Set<Integer> tmp = buildCaratheodorySetFromPartialElement(graphRead, v, s, hs);
-                if (tmp != null && tmp.size() > caratheodorySet.size()) {
-                    caratheodorySet = tmp;
-                }
-            }
-        }
-        return caratheodorySet;
-    }
-
-
 }

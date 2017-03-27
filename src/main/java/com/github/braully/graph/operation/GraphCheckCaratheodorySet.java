@@ -23,16 +23,11 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         long totalTimeMillis = -1;
         Collection<Integer> set = graphRead.getSet();
-        int[] arr = new int[set.size()];
-        int i = 0;
-        for (Integer v : set) {
-            arr[i] = v;
-            i++;
-        }
+
         totalTimeMillis = System.currentTimeMillis();
         OperationConvexityGraphResult caratheodoryNumberGraph = null;
         if (set.size() >= 2) {
-            caratheodoryNumberGraph = hsp3(graphRead, arr);
+            caratheodoryNumberGraph = hsp3(graphRead, set);
         }
         totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
 
@@ -241,6 +236,22 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         return partial;
     }
 
+    private OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
+        int[] arr = new int[set.size()];
+        int i = 0;
+        for (Integer v : set) {
+            arr[i] = v;
+            i++;
+        }
+        return hsp3(graphRead, arr);
+    }
+
+    public boolean isCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graphRead,
+            Set<Integer> buildMaxCaratheodorySet) {
+        OperationConvexityGraphResult processedHullSet = hsp3(graphRead, buildMaxCaratheodorySet);
+        return processedHullSet != null && processedHullSet.partial != null && !processedHullSet.partial.isEmpty();
+    }
+
     @Override
     public String getTypeProblem() {
         return type;
@@ -250,4 +261,5 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     public String getName() {
         return description;
     }
+
 }

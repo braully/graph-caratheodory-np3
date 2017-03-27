@@ -228,7 +228,7 @@ public class UtilGraph {
         return ret;
     }
 
-    static UndirectedSparseGraphTO<Integer, Integer> loadGraphAdjMatrix(InputStream uploadedInputStream) throws IOException {
+    public static UndirectedSparseGraphTO<Integer, Integer> loadGraphAdjMatrix(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO<Integer, Integer> ret = null;
         try {
             if (uploadedInputStream != null) {
