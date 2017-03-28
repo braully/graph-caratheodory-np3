@@ -73,8 +73,8 @@ fim para
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-//    static boolean verbose = true;
-    static boolean verbose = false;
+    static boolean verbose = true;
+//    static boolean verbose = false;
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
@@ -112,30 +112,9 @@ fim para
         int[] aux = new int[vertexCount];
         int[] auxVp = new int[vertexCount];
 
-        for (int i = 0; i < aux.length; i++) {
-            aux[i] = 0;
-        }
+        buildInitialCaratheodorySet(v, graph, s, aux);
 
-        partial.add(v);
-
-        if (verbose) {
-            System.out.println("\n\t* Adding vertice " + v + " to parcial");
-        }
-
-        Integer nv0 = selectBestNeighbor(v, graph, aux, partial, auxVp);
-        if (verbose) {
-            System.out.println("\t* Adding vertice " + nv0 + " to S");
-        }
-
-        addVertToS(nv0, s, graph, aux);
-        promotable.add(nv0);
-
-        Integer nv1 = selectBestNeighbor(v, graph, aux, partial, auxVp);
-        if (verbose) {
-            System.out.println("\t* Adding vertice " + nv1 + " to S");
-        }
-        addVertToS(nv1, s, graph, aux);
-        promotable.add(nv1);
+        promotable.addAll(s);
 
         if (verbose) {
             printSituation(vertexCount, partial, s, aux);
@@ -156,7 +135,7 @@ fim para
                 promotable.remove(vp);
                 removeVertFromS(vp, s, graph, aux);
 
-                nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+                Integer nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
                 if (nv0 == null) {
                     copyArray(aux, auxVp);
                     s.add(vp);
@@ -166,7 +145,7 @@ fim para
                     continue;
                 }
                 addVertToS(nv0, s, graph, aux);
-                nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+                Integer nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
 
                 if (nv1 == null) {
                     copyArray(aux, auxVp);
@@ -231,6 +210,33 @@ fim para
         }
 
         return s;
+    }
+
+    public void buildInitialCaratheodorySet(Integer v,
+            UndirectedSparseGraphTO<Integer, Integer> graph,
+            Set<Integer> s, int[] aux) {
+        int vertexCount = graph.getVertexCount();
+
+        for (int i = 0; i < aux.length; i++) {
+            aux[i] = 0;
+        }
+
+        if (verbose) {
+            System.out.println("\n\t* Adding vertice " + v + " to parcial");
+        }
+
+        Integer nv0 = selectBestNeighbor(v, graph, aux);
+        if (verbose) {
+            System.out.println("\t* Adding vertice " + nv0 + " to S");
+        }
+
+        addVertToS(nv0, s, graph, aux);
+
+        Integer nv1 = selectBestNeighbor(v, graph, aux);
+        if (verbose) {
+            System.out.println("\t* Adding vertice " + nv1 + " to S");
+        }
+        addVertToS(nv1, s, graph, aux);
     }
 
     private void printSatusVS(int[] aux, Set<Integer> partial, Integer nv0, Integer nv1, Integer vp, Set<Integer> s, UndirectedSparseGraphTO<Integer, Integer> graph) {
@@ -371,12 +377,6 @@ fim para
             }
         }
         System.out.println("}");
-
-//        System.out.print("Aux  = {");
-//        for (int i = 0; i < numVertices; i++) {
-//            System.out.printf("%2d | ", aux[i]);
-//        }
-//        System.out.println("}");
     }
 
     public void addVertToS(Integer verti, Set<Integer> s,
@@ -457,14 +457,21 @@ fim para
     }
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
+            int[] aux) {
+        return selectBestNeighbor(v, graph, aux, null, null);
+    }
+
+    public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux, Set<Integer> partial, int[] auxBackup) {
         Integer ret = null;
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
-        neighbors.removeAll(partial);
+        if (partial != null) {
+            neighbors.removeAll(partial);
+        }
         neighbors.remove(v);
         Integer ranking = null;
         for (int i = 0; i < aux.length; i++) {
-            if (aux[i] >= 2 || auxBackup[i] >= 2) {
+            if (aux[i] >= 2 || (auxBackup != null && auxBackup[i] >= 2)) {
                 neighbors.remove(i);
             }
         }
@@ -511,9 +518,6 @@ fim para
         int deltaVp = auxf[vp] - auxi[vp];
 
         for (Integer i : s) {
-//            for (int ia = 0; ia < auxf.length; ia++) {
-//                auxbackp[ia] = auxf[ia];
-//            }
             int deltaSi = auxf[i] - auxi[i];
             if (deltaSi >= INCLUDED || deltaParcial >= 1 || deltaVp >= INCLUDED) {
                 Set<Integer> sbackup = new HashSet<>(s);
@@ -547,4 +551,13 @@ fim para
         return caratheodorySet;
     }
 
+    public void rollback(int[] aux, int[] auxVp, Set<Integer> s, Set<Integer> promotable, Integer vp, Integer nv0, Integer nv1) {
+        copyArray(aux, auxVp);
+        s.add(vp);
+        s.remove(nv0);
+        s.remove(nv1);
+        promotable.remove(nv0);
+        promotable.remove(nv1);
+
+    }
 }

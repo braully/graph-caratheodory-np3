@@ -1,12 +1,8 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 public class GraphCaratheodoryHeuristicV2
@@ -194,16 +190,6 @@ public class GraphCaratheodoryHeuristicV2
         }
 
         return s;
-    }
-
-    private void rollback(int[] aux, int[] auxVp, Set<Integer> s, Set<Integer> promotable, Integer vp, Integer nv0, Integer nv1) {
-        copyArray(aux, auxVp);
-        s.add(vp);
-        s.remove(nv0);
-        s.remove(nv1);
-        promotable.remove(nv0);
-        promotable.remove(nv1);
-
     }
 
     public Integer selectBestPromotableVertice(Set<Integer> s,
