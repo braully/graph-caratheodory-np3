@@ -138,23 +138,8 @@ fim para
             removeVertFromS(vp, s, graph, aux);
 
             Integer nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
-            if (nv0 == null) {
-                copyArray(aux, auxVp);
-                s.add(vp);
-                if (verbose) {
-                    System.out.println("\t* Not promotable - nvo");
-                }
-                continue;
-            }
             addVertToS(nv0, s, graph, aux);
             Integer nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
-
-            if (nv1 == null) {
-                copyArray(aux, auxVp);
-                s.add(vp);
-                s.remove(nv0);
-                continue;
-            }
 
             addVertToS(nv1, s, graph, aux);
 
@@ -169,8 +154,12 @@ fim para
             }
 
             if (checkIfCaratheodory) {
-                promotable.add(nv0);
-                promotable.add(nv1);
+                if (nv0 != null) {
+                    promotable.add(nv0);
+                }
+                if (nv1 != null) {
+                    promotable.add(nv1);
+                }
 
                 if (verbose) {
                     System.out.println("\t-- OK");
@@ -384,7 +373,7 @@ fim para
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
 
-        if (aux[verti] >= INCLUDED) {
+        if (verti == null || aux[verti] >= INCLUDED) {
             return;
         }
 
@@ -518,14 +507,18 @@ fim para
         int deltaParcial = auxf[v] - auxi[v];
         int deltaVp = auxf[vp] - auxi[vp];
 
-        for (Integer i : s) {
-            int deltaSi = auxf[i] - auxi[i];
-            if (deltaSi >= INCLUDED || deltaParcial >= 1 || deltaVp >= INCLUDED) {
-                Set<Integer> sbackup = new HashSet<>(s);
-                removeVertFromS(i, sbackup, graph, auxbackp);
-                if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
-                    ret = false;
-                    break;
+        if (auxf[v] < INCLUDED || auxf[vp] < INCLUDED) {
+            ret = false;
+        } else {
+            for (Integer i : s) {
+                int deltaSi = auxf[i] - auxi[i];
+                if (deltaSi >= INCLUDED || deltaParcial >= 1 || deltaVp >= INCLUDED) {
+                    Set<Integer> sbackup = new HashSet<>(s);
+                    removeVertFromS(i, sbackup, graph, auxbackp);
+                    if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
+                        ret = false;
+                        break;
+                    }
                 }
             }
         }
