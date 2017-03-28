@@ -124,60 +124,51 @@ fim para
             Integer vp = selectBestPromotableVertice(s, partial,
                     promotable, graph, aux);
 
-            if (vp != null) {
+            if (vp == null) {
+                continue;
+            }
+            if (verbose) {
+                System.out.println("\n\t* Selectd " + vp + " from priority list");
+                System.out.print(String.format("Aux(%2d)    ", vp));
+                printArrayAux(aux);
+            }
+
+            copyArray(auxVp, aux);
+            promotable.remove(vp);
+            removeVertFromS(vp, s, graph, aux);
+
+            Integer nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+            if (nv0 == null) {
+                copyArray(aux, auxVp);
+                s.add(vp);
                 if (verbose) {
-                    System.out.println("\n\t* Selectd " + vp + " from priority list");
-                    System.out.print(String.format("Aux(%2d)    ", vp));
-                    printArrayAux(aux);
+                    System.out.println("\t* Not promotable - nvo");
                 }
+                continue;
+            }
+            addVertToS(nv0, s, graph, aux);
+            Integer nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
 
-                copyArray(auxVp, aux);
-                promotable.remove(vp);
-                removeVertFromS(vp, s, graph, aux);
+            if (nv1 == null) {
+                copyArray(aux, auxVp);
+                s.add(vp);
+                s.remove(nv0);
+                continue;
+            }
 
-                Integer nv0 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
-                if (nv0 == null) {
-                    copyArray(aux, auxVp);
-                    s.add(vp);
-                    if (verbose) {
-                        System.out.println("\t* Not promotable - nvo");
-                    }
-                    continue;
-                }
-                addVertToS(nv0, s, graph, aux);
-                Integer nv1 = selectBestNeighbor(vp, graph, aux, partial, auxVp);
+            addVertToS(nv1, s, graph, aux);
 
-                if (nv1 == null) {
-                    copyArray(aux, auxVp);
-                    s.add(vp);
-                    s.remove(nv0);
-                    continue;
-                }
+            boolean checkIfCaratheodory = checkIfCaratheodrySet(auxVp, aux, s, v, vp, nv0, nv1, graph);
 
-                addVertToS(nv1, s, graph, aux);
+            if (verbose) {
+                System.out.print("Auxf       ");
+                printArrayAux(aux);
+                printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
+                printDifference(auxVp, aux, graph);
+                System.out.println("=========> Check Caratheodory Available: " + (checkIfCaratheodory ? "Ok" : "Erro"));
+            }
 
-                boolean checkIfCaratheodory = checkIfCaratheodrySet(auxVp, aux, s, v, vp, nv0, nv1, graph);
-
-                if (verbose) {
-                    System.out.print("Auxf       ");
-                    printArrayAux(aux);
-                    printSatusVS(aux, partial, nv0, nv1, vp, s, graph);
-                    printDifference(auxVp, aux, graph);
-                    System.out.println("=========> Check Caratheodory Available: " + (checkIfCaratheodory ? "Ok" : "Erro"));
-                }
-
-                if (!checkIfCaratheodory) {
-                    //roll back
-                    if (verbose) {
-                        System.out.println("\t* Roll back checkIfCaratheodory=false");
-                    }
-                    copyArray(aux, auxVp);
-                    s.add(vp);
-                    s.remove(nv0);
-                    s.remove(nv1);
-                    continue;
-                }
-
+            if (checkIfCaratheodory) {
                 promotable.add(nv0);
                 promotable.add(nv1);
 
@@ -187,6 +178,16 @@ fim para
                     System.out.println("\t* Adding vertice " + nv1 + " to S");
                     printSituation(vertexCount, partial, s, aux);
                 }
+            } else {
+                //roll back
+                if (verbose) {
+                    System.out.println("\t* Roll back checkIfCaratheodory=false");
+                }
+                rollback(aux, auxVp, s, promotable, vp, nv0, nv1);
+//                copyArray(aux, auxVp);
+//                s.add(vp);
+//                s.remove(nv0);
+//                s.remove(nv1);
             }
         }
 
