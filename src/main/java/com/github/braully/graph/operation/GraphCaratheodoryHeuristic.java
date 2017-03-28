@@ -510,7 +510,7 @@ fim para
         System.out.println("}");
     }
 
-    private boolean checkIfCaratheodrySet(int[] auxi, int[] auxf, Set<Integer> s,
+    public boolean checkIfCaratheodrySet(int[] auxi, int[] auxf, Set<Integer> s,
             Integer v, Integer vp, Integer nv0,
             Integer nv1, UndirectedSparseGraphTO<Integer, Integer> graph) {
         boolean ret = true;
