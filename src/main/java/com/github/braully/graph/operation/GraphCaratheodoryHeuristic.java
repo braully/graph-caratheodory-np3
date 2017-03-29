@@ -123,11 +123,12 @@ fim para
         while (!promotable.isEmpty()) {
             Integer vp = selectBestPromotableVertice(s, partial,
                     promotable, graph, aux);
-
             if (vp == null) {
                 continue;
             }
+
             if (verbose) {
+                System.out.println("\n\tPromotable: " + promotable);
                 System.out.println("\n\t* Selectd " + vp + " from priority list");
                 System.out.print(String.format("Aux(%2d)    ", vp));
                 printArrayAux(aux);
@@ -419,27 +420,24 @@ fim para
         if (promotable != null) {
             Set<Integer> removable = new HashSet<>();
             for (Integer vtmp : promotable) {
-                boolean canBePromoted = true;
-                if (canBePromoted) {
-                    Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
-                    neighbors.removeAll(s);
-                    neighbors.remove(partial);
+                Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
+                neighbors.removeAll(s);
+                neighbors.remove(partial);
 
-                    for (int i = 0; i < aux.length; i++) {
-                        if (aux[i] >= 2) {
-                            neighbors.remove(i);
-                        }
+                for (int i = 0; i < aux.length; i++) {
+                    if (aux[i] >= 2) {
+                        neighbors.remove(i);
                     }
-
-                    Integer vtmpRanking = neighbors.size();
-                    if (vtmpRanking >= 2) {
-                        if (bestVertex == null || vtmpRanking < bestRanking) {
-                            bestRanking = vtmpRanking;
-                            bestVertex = vtmp;
-                        }
-                    } else {
-                        removable.add(vtmp);
+                }
+                
+                Integer vtmpRanking = neighbors.size();
+                if (vtmpRanking >= 2) {
+                    if (bestVertex == null || vtmpRanking < bestRanking) {
+                        bestRanking = vtmpRanking;
+                        bestVertex = vtmp;
                     }
+                } else {
+                    removable.add(vtmp);
                 }
             }
             promotable.removeAll(removable);
