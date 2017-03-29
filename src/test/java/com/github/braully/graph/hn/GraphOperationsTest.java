@@ -38,7 +38,6 @@ public class GraphOperationsTest extends TestCase {
 
         Set<Integer> s = new HashSet<>();
         Set<Integer> hs = new HashSet<>();
-        Set<Integer> partial = new HashSet<>();
         Set<Integer> promotable = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
 
@@ -47,7 +46,7 @@ public class GraphOperationsTest extends TestCase {
         }
 
         Integer v = 6;
-        partial.add(v);
+        Integer partial = v;
         hs.add(v);
 
         System.out.println("Adding vertice " + v + " to parcial");
