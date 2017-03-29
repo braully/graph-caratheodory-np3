@@ -417,30 +417,25 @@ fim para
             int[] aux) {
         Integer bestVertex = null;
         Integer bestRanking = null;
-        if (promotable != null) {
-            Set<Integer> removable = new HashSet<>();
-            for (Integer vtmp : promotable) {
-                Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
-                neighbors.removeAll(s);
-                neighbors.remove(partial);
+//        if (promotable != null) {
+//            Set<Integer> removable = new HashSet<>();
+        for (Integer vtmp : promotable) {
+            Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
+            neighbors.removeAll(s);
+            neighbors.remove(partial);
 
-                for (int i = 0; i < aux.length; i++) {
-                    if (aux[i] >= 2) {
-                        neighbors.remove(i);
-                    }
-                }
-                
-                Integer vtmpRanking = neighbors.size();
-                if (vtmpRanking >= 2) {
-                    if (bestVertex == null || vtmpRanking < bestRanking) {
-                        bestRanking = vtmpRanking;
-                        bestVertex = vtmp;
-                    }
-                } else {
-                    removable.add(vtmp);
+            for (int i = 0; i < aux.length; i++) {
+                if (aux[i] >= 2) {
+                    neighbors.remove(i);
                 }
             }
-            promotable.removeAll(removable);
+            Integer vtmpRanking = neighbors.size();
+            if (bestVertex == null || (vtmpRanking >= 2 && vtmpRanking < bestRanking)) {
+                bestRanking = vtmpRanking;
+                bestVertex = vtmp;
+            }
+//            }
+//            promotable.removeAll(removable);
         }
         return bestVertex;
     }
