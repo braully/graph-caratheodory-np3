@@ -51,55 +51,6 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         if (processedHullSet == null || processedHullSet.partial == null || processedHullSet.partial.isEmpty()) {
             processedHullSet = null;
         }
-
-//        if (false) {
-//            Set<Integer> curSet = new HashSet<>();
-//            for (int i = 0; i < currentSet.length; i++) {
-//                curSet.add(currentSet[i]);
-//            }
-//
-//            System.out.print("\n∂H(S)= {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (partial != null && partial.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("H(S) = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (hsp3g.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("S    = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                if (curSet.contains(i)) {
-//                    System.out.printf("%2d | ", i);
-//                } else {
-//                    System.out.print("   | ");
-//                }
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("Aux  = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                System.out.printf("%2d | ", aux[i]);
-//            }
-//            System.out.println("}");
-//
-//            System.out.print("Auxc = {");
-//            for (int i = 0; i < graph.getVertexCount(); i++) {
-//                System.out.printf("%2d | ", auxc[i]);
-//            }
-//            System.out.println("}");
-//        }
         return processedHullSet;
     }
 

@@ -25,7 +25,7 @@ public class GraphCaratheodoryHeuristicV2
         int vertexCount = graph.getVertexCount();
         int[] aux = new int[vertexCount];
         Set<Integer> promotable = new HashSet<>();
-        Set<Integer> partial = new HashSet<>();
+        Integer partial = v;
         int[] auxVp = new int[vertexCount];
         int[] auxNv0 = new int[vertexCount];
         int[] auxNv1 = new int[vertexCount];
@@ -33,8 +33,6 @@ public class GraphCaratheodoryHeuristicV2
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
         }
-
-        partial.add(v);
 
         if (verbose) {
             System.out.println("Adding vertice " + v + " to parcial");

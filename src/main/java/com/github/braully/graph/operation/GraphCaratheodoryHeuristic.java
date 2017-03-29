@@ -108,9 +108,9 @@ fim para
         int vertexCount = graph.getVertexCount();
 
         Set<Integer> promotable = new HashSet<>();
-        Set<Integer> partial = new HashSet<>();
         int[] aux = new int[vertexCount];
         int[] auxVp = new int[vertexCount];
+        Integer partial = v;
 
         buildInitialCaratheodorySet(v, graph, s, aux);
 
@@ -229,11 +229,12 @@ fim para
         addVertToS(nv1, s, graph, aux);
     }
 
-    private void printSatusVS(int[] aux, Set<Integer> partial, Integer nv0, Integer nv1, Integer vp, Set<Integer> s, UndirectedSparseGraphTO<Integer, Integer> graph) {
+    private void printSatusVS(int[] aux, Integer partial, Integer nv0, Integer nv1,
+            Integer vp, Set<Integer> s, UndirectedSparseGraphTO<Integer, Integer> graph) {
         System.out.print("V(S)       ");
         System.out.print(" = {");
         for (int i = 0; i < aux.length; i++) {
-            if (partial.contains(i)) {
+            if (partial.equals(i)) {
                 System.out.printf(" P | ", i);
             } else if (nv0 != null && nv0.equals(i)) {
                 System.out.print(" 0 | ");
@@ -257,11 +258,11 @@ fim para
         System.out.println("}");
     }
 
-    void printFinalState(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> partial, Set<Integer> derivatedPartialReal, int[] aux, Set<Integer> convexHullReal, Set<Integer> s, int[] auxReal) {
+    void printFinalState(UndirectedSparseGraphTO<Integer, Integer> graph, Integer partial, Set<Integer> derivatedPartialReal, int[] aux, Set<Integer> convexHullReal, Set<Integer> s, int[] auxReal) {
         int vertexCount = graph.getVertexCount();
         System.out.print("∂H(S)       = {");
         for (int i = 0; i < vertexCount; i++) {
-            if (partial != null && partial.contains(i)) {
+            if (partial != null && partial.equals(i)) {
                 System.out.printf("%2d | ", i);
             } else {
                 System.out.print("   | ");
@@ -337,10 +338,10 @@ fim para
         }
     }
 
-    public void printSituation(int numVertices, Set<Integer> partial, Set<Integer> s, int[] aux) {
+    public void printSituation(int numVertices, Integer partial, Set<Integer> s, int[] aux) {
         System.out.print("\n∂H(S)       = {");
         for (int i = 0; i < numVertices; i++) {
-            if (partial != null && partial.contains(i)) {
+            if (partial != null && partial.equals(i)) {
                 System.out.printf("%2d | ", i);
             } else {
                 System.out.print("   | ");
@@ -410,7 +411,7 @@ fim para
     }
 
     public Integer selectBestPromotableVertice(Set<Integer> s,
-            Set<Integer> partial, Set<Integer> promotable,
+            Integer partial, Set<Integer> promotable,
             UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
         Integer bestVertex = null;
@@ -422,7 +423,7 @@ fim para
                 if (canBePromoted) {
                     Collection neighbors = new HashSet(graph.getNeighbors(vtmp));
                     neighbors.removeAll(s);
-                    neighbors.removeAll(partial);
+                    neighbors.remove(partial);
 
                     for (int i = 0; i < aux.length; i++) {
                         if (aux[i] >= 2) {
@@ -452,11 +453,11 @@ fim para
     }
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
-            int[] aux, Set<Integer> partial, int[] auxBackup) {
+            int[] aux, Integer partial, int[] auxBackup) {
         Integer ret = null;
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
         if (partial != null) {
-            neighbors.removeAll(partial);
+            neighbors.remove(partial);
         }
         neighbors.remove(v);
         Integer ranking = null;
