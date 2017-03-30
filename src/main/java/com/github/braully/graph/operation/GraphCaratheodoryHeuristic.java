@@ -1,6 +1,7 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,8 +75,9 @@ fim para
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     public static boolean verbose = true;
-//    public static boolean verbose = false;
+    BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
 
+//    public static boolean verbose = false;
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         long totalTimeMillis = -1;
@@ -106,6 +108,9 @@ fim para
     Set<Integer> buildCaratheodorySetFromPartialElement(UndirectedSparseGraphTO<Integer, Integer> graph,
             Integer v, Set<Integer> s, Set<Integer> hs) {
         int vertexCount = graph.getVertexCount();
+
+//        BFSDistanceLabeler bfs = new BFSDistanceLabeler
+        bdl.labelDistances(graph, v);
 
         Set<Integer> promotable = new HashSet<>();
         int[] aux = new int[vertexCount];
