@@ -45,6 +45,8 @@ public class BatchExecuteHeuristic {
             return;
         }
 
+        GraphCaratheodoryHeuristic.verbose = false;
+
         String inputFilePath = cmd.getOptionValue("input");
 //        if (inputFilePath == null) {
 //            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
