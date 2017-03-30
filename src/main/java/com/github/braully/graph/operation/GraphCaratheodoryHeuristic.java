@@ -496,24 +496,31 @@ fim para
     public boolean checkIfCaratheodrySet(int[] auxi, int[] auxf, Set<Integer> s,
             Integer v, Integer vp, Integer nv0,
             Integer nv1, UndirectedSparseGraphTO<Integer, Integer> graph) {
+        if (auxf[v] < INCLUDED || auxf[vp] < INCLUDED) {
+            return false;
+        }
         boolean ret = true;
         int[] auxbackp = new int[auxf.length];
-        int deltaParcial = auxf[v] - auxi[v];
-        int deltaVp = auxf[vp] - auxi[vp];
 
-        if (auxf[v] < INCLUDED || auxf[vp] < INCLUDED) {
-            ret = false;
-        } else {
-            for (Integer i : s) {
-                int deltaSi = auxf[i] - auxi[i];
-                if (deltaSi >= INCLUDED || deltaParcial >= 1 || deltaVp >= INCLUDED) {
-                    Set<Integer> sbackup = new HashSet<>(s);
-                    removeVertFromS(i, sbackup, graph, auxbackp);
-                    if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
-                        ret = false;
-                        break;
-                    }
-                }
+        Set<Integer> sv = new HashSet<>();
+        Set<Integer> neighbors = new HashSet<>();
+
+        for (int i = 0; i < auxf.length; i++) {
+            int deltav = auxf[i] - auxi[i];
+            if (deltav >= INCLUDED) {
+                neighbors.addAll(graph.getNeighbors(i));
+                neighbors.add(i);
+            }
+        }
+        neighbors.retainAll(s);
+        sv.addAll(neighbors);
+
+        for (Integer i : sv) {
+            Set<Integer> sbackup = new HashSet<>(s);
+            removeVertFromS(i, sbackup, graph, auxbackp);
+            if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
+                ret = false;
+                break;
             }
         }
         return ret;

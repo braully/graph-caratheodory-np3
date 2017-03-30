@@ -25,7 +25,8 @@ public class GraphCaratheodoryHeuristicTest extends TestCase {
         new File("graph" + File.separator + "mft", "MTF_14-order-14-21.mat"),
         new File("graph" + File.separator + "mft", "MTF_15-order-15-9720.mat"),
         new File("graph" + File.separator + "mft", "MTF_17-order-17-9999043451.mat"),
-        new File("graph" + File.separator + "mft", "MTF_17-order-17-9999019890.mat")
+        new File("graph" + File.separator + "mft", "MTF_17-order-17-9999019890.mat"),
+        new File("graph" + File.separator + "mft", "almhypo340.mat")
     };
 
     public GraphCaratheodoryHeuristicTest(String testName) {
