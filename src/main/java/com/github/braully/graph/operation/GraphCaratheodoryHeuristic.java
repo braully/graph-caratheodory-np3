@@ -380,7 +380,9 @@ fim para
         }
 
         aux[verti] = aux[verti] + INCLUDED;
-        s.add(verti);
+        if (s != null) {
+            s.add(verti);
+        }
 
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         mustBeIncluded.add(verti);
@@ -500,30 +502,48 @@ fim para
             return false;
         }
         boolean ret = true;
-        int[] auxbackp = new int[auxf.length];
+        int vertexCount = graph.getVertexCount();
+        int[] auxc = new int[auxf.length];
 
-        Set<Integer> sv = new HashSet<>();
-        Set<Integer> neighbors = new HashSet<>();
-
-        for (int i = 0; i < auxf.length; i++) {
-            int deltav = auxf[i] - auxi[i];
-            if (deltav >= INCLUDED) {
-                neighbors.addAll(graph.getNeighbors(i));
-                neighbors.add(i);
+        for (Integer p : s) {
+            for (int j = 0; j < vertexCount; j++) {
+                auxc[j] = 0;
             }
-        }
-        neighbors.retainAll(s);
-        sv.addAll(neighbors);
-
-        for (Integer i : sv) {
-            Set<Integer> sbackup = new HashSet<>(s);
-            removeVertFromS(i, sbackup, graph, auxbackp);
-            if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
-                ret = false;
-                break;
+            for (Integer i : s) {
+                if (!i.equals(p)) {
+                    addVertToS(i, s, graph, auxc);
+                }
+            }
+            if (auxc[v] >= INCLUDED) {
+                return false;
             }
         }
         return ret;
+
+//        int[] auxbackp = new int[auxf.length];
+//
+//        Set<Integer> sv = new HashSet<>();
+//        Set<Integer> neighbors = new HashSet<>();
+//
+//        for (int i = 0; i < auxf.length; i++) {
+//            int deltav = auxf[i] - auxi[i];
+//            if (deltav >= INCLUDED) {
+//                neighbors.addAll(graph.getNeighbors(i));
+//                neighbors.add(i);
+//            }
+//        }
+//        neighbors.retainAll(s);
+//        sv.addAll(neighbors);
+//
+//        for (Integer i : sv) {
+//            Set<Integer> sbackup = new HashSet<>(s);
+//            removeVertFromS(i, sbackup, graph, auxbackp);
+//            if (auxbackp[i] >= INCLUDED || auxbackp[v] >= INCLUDED) {
+//                ret = false;
+//                break;
+//            }
+//        }
+//        return ret;
     }
 
     public Set<Integer> buildMaxCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
