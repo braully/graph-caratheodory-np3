@@ -2,6 +2,8 @@ package com.github.braully.graph.operation;
 
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.INCLUDED;
+import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.PROCESSED;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -116,23 +118,25 @@ public class GraphHullNumber implements IGraphOperation {
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         for (Integer v : currentSet) {
             mustBeIncluded.add(v);
+            aux[v] = INCLUDED;
         }
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
             fecho.add(verti);
-            aux[verti] = INCLUDED;
             Collection<Integer> neighbors = graph.getNeighbors(verti);
             for (int vertn : neighbors) {
-                if (vertn != verti) {
-                    int previousValue = aux[vertn];
+                if (vertn == verti) {
+                    continue;
+                }
+                if (vertn != verti && aux[vertn] < INCLUDED) {
                     aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
-                    if (previousValue < INCLUDED && aux[vertn] >= INCLUDED) {
+                    if (aux[vertn] == INCLUDED) {
                         mustBeIncluded.add(vertn);
                     }
                 }
             }
+            aux[verti] = PROCESSED;
         }
-
         return fecho.size() == graph.getVertexCount();
     }
 
