@@ -58,6 +58,7 @@ public class GraphAllCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNu
 
         result.put("Nº Caratheodory Set of Size(" + size + ")", countNCarat);
         result.put("Menor |H(S)", menorhsize);
+        log.info("Menor |H(S): " + menorhsize);
         log.info("Nº Caratheodory Set of Size(" + size + "): " + countNCarat);
         return result;
     }
