@@ -37,6 +37,7 @@ public class GraphAllCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNu
         }
 
         int countNCarat = 0;
+        int menorhsize = 0;
 
         if (size >= 2) {
             Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graph.getVertexCount(), size);
@@ -44,7 +45,11 @@ public class GraphAllCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNu
                 int[] currentSet = combinationsIterator.next();
                 OperationConvexityGraphResult hsp3g = hsp3(graph, currentSet);
                 if (hsp3g != null) {
-                    String key = "Caratheodory Set-" + (countNCarat++) + " |HS|=" + hsp3g.convexHull.size();
+                    int chsize = hsp3g.convexHull.size();
+                    if (menorhsize == 0 || chsize < menorhsize) {
+                        menorhsize = chsize;
+                    }
+                    String key = "Caratheodory Set-" + (countNCarat++) + " |HS|=" + chsize;
                     result.put(key, hsp3g.caratheodorySet);
                     log.info(key + ": " + hsp3g.caratheodorySet);
                 }
@@ -52,6 +57,7 @@ public class GraphAllCaratheodoryExistsSetOfSize extends GraphCalcCaratheodoryNu
         }
 
         result.put("Nº Caratheodory Set of Size(" + size + ")", countNCarat);
+        result.put("Menor |H(S)", menorhsize);
         log.info("Nº Caratheodory Set of Size(" + size + "): " + countNCarat);
         return result;
     }
