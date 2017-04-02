@@ -109,13 +109,12 @@ fim para
             Integer v, Set<Integer> s, Set<Integer> hs) {
         int vertexCount = graph.getVertexCount();
 
-//        BFSDistanceLabeler bfs = new BFSDistanceLabeler
-        bdl.labelDistances(graph, v);
-
         Set<Integer> promotable = new HashSet<>();
         int[] aux = new int[vertexCount];
         int[] auxVp = new int[vertexCount];
         Integer partial = v;
+
+        beforeVerticePromotion(graph, v, v, aux);
 
         buildInitialCaratheodorySet(v, graph, s, aux);
 
@@ -132,9 +131,16 @@ fim para
                 continue;
             }
 
+//            beforeVerticePromotion(graph, vp, v, aux);
             if (verbose) {
                 System.out.println("\n\tPromotable: " + promotable);
                 System.out.println("\n\t* Selectd " + vp + " from priority list");
+                System.out.print("V(S)        = {");
+                for (int i = 0; i < aux.length; i++) {
+                    System.out.printf("%2d | ", i);
+                }
+                System.out.println("}");
+
                 System.out.print(String.format("Aux(%2d)    ", vp));
                 printArrayAux(aux);
             }
@@ -449,7 +455,7 @@ fim para
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
-        return selectBestNeighbor(v, graph, aux, null, null);
+        return selectBestNeighbor(v, graph, aux, v, null);
     }
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
@@ -579,5 +585,9 @@ fim para
         promotable.remove(nv0);
         promotable.remove(nv1);
 
+    }
+
+    void beforeVerticePromotion(UndirectedSparseGraphTO<Integer, Integer> graph, Integer vp, Integer v, int[] aux) {
+//        bdl.labelDistances(graph, vp);
     }
 }

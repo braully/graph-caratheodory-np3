@@ -85,6 +85,11 @@ public class GraphCaratheodoryHeuristicV2
         }
 
         Set<Integer> neighbors = new HashSet<>(graph.getNeighbors(v));
+
+        if (verbose) {
+            System.out.println("\t* Vertices Neibhbors from " + v + " " + neighbors);
+        }
+
         neighbors.remove(partial);
         neighbors.remove(v);
         Integer ranking = null;
@@ -94,13 +99,55 @@ public class GraphCaratheodoryHeuristicV2
             }
         }
 
+        if (verbose) {
+            System.out.println("\t* Vertices Elegibles Neibhbors from " + v + " " + neighbors);
+        }
+
         for (Integer nei : neighbors) {
-            int neiRanking = aux[nei] * 100 + graph.degree(nei);
+            int bfsP = bdl.getDistance(graph, nei);
+            int neighborCount = graph.getNeighborCount(nei);
+            int auxv = aux[nei];
+            int deltaHs = deltaHs(nei, v, partial, graph, aux);
+            if (verbose) {
+                System.out.print("\t\t- Vertice " + nei);
+                System.out.print(" bfsFrom(" + partial + ")=" + bfsP);
+                System.out.print(" d(" + nei + ")=" + neighborCount);
+                System.out.print(" aux[" + nei + "]=" + auxv);
+                System.out.println(" deltaHs=" + deltaHs);
+            }
+
+//            int neiRanking = aux[nei] * 100 + graph.degree(nei);
+            int neiRanking = calcRanking(deltaHs, neighborCount, bfsP, auxv);
             if (ret == null || neiRanking < ranking) {
                 ret = nei;
                 ranking = neiRanking;
             }
         }
         return ret;
+    }
+
+    @Override
+    void beforeVerticePromotion(UndirectedSparseGraphTO<Integer, Integer> graph, Integer vp, Integer v, int[] aux) {
+        bdl.labelDistances(graph, vp);
+    }
+
+    int deltaHs(Integer nei, Integer v, Integer parcial,
+            UndirectedSparseGraphTO<Integer, Integer> graph, int[] aux) {
+        int ret = 0;
+        int[] auxbackup = new int[aux.length];
+        copyArray(auxbackup, aux);
+        addVertToS(nei, null, graph, auxbackup);
+        for (int i = 0; i < auxbackup.length; i++) {
+            if (!v.equals(i) && !parcial.equals(i)) {
+                ret += auxbackup[i] - aux[i];
+            }
+        }
+        return ret;
+    }
+
+    int calcRanking(int deltaHs, int neighborCount, int bfsP, int auxv) {
+        int ranking = 0;
+        ranking = deltaHs * 1 + neighborCount * 0 + bfsP * 0 + auxv * 0;
+        return ranking;
     }
 }
