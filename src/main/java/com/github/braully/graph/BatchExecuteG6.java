@@ -23,6 +23,8 @@ import org.apache.commons.cli.*;
  */
 public class BatchExecuteG6 {
 
+    public static final int TRESHOLD_PRINT_SET = 30;
+
     public static void main(String... args) {
         Options options = new Options();
 
@@ -124,6 +126,10 @@ public class BatchExecuteG6 {
         System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER));
         System.out.print("\t");
         System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
+        if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
+            System.out.print("\t");
+            System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET));
+        }
     }
 
     static int indexOf(String str, String patern) {

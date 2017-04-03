@@ -55,9 +55,10 @@ public class UtilResultMerge {
             return;
         }
 
-        String inputFilePath = cmd.getOptionValue("input");
-        if (inputFilePath == null) {
-            inputFilePath = "/home/strike/Workspace/mestrado/graph-caratheodory-np3/graph/almhypo/resultado-ht3.txt";
+        String[] inputs = cmd.getOptionValues("input");
+        if (inputs == null) {
+            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mft/resultado-ht.txt",
+                "/media/dados/documentos/grafos-processamento/mft/resultado-ht4.txt"};
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-mft-parcial-ht.txt";
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-highlyirregular-ht.txt";
 //            inputFilePath = "/home/strike/Documentos/grafos-processados/mtf/resultado-ht.txt";
@@ -66,44 +67,40 @@ public class UtilResultMerge {
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-almhypo-ht.txt";
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-Almost_hypohamiltonian_graphs_cubic-parcial-ht.txt";
         }
-        if (inputFilePath != null) {
-            if (inputFilePath.toLowerCase().endsWith(".txt")) {
-                processFileTxt(inputFilePath);
-            } else if (inputFilePath.toLowerCase().endsWith(".json")) {
-                processFileJson(inputFilePath);
-            }
+        if (inputs != null) {
+            processFileTxt(inputs);
         }
     }
 
-    private static void processFileTxt(String inputFilePath) throws FileNotFoundException, IOException {
-        File file = null;
-        if (inputFilePath == null || !(file = new File(inputFilePath)).isFile()) {
-            System.err.println("File is invalid: " + inputFilePath);
+    private static void processFileTxt(String[] inputs) throws FileNotFoundException, IOException {
+        if (inputs == null || inputs.length == 0) {
             return;
         }
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-        String readLine = null;
-        while ((readLine = r.readLine()) != null) {
-            String[] parts1 = readLine.split("\t");
-            try {
-                if (parts1 != null && parts1.length >= 6) {
-                    String grupo1 = parts1[0];
-                    String idgrafo1 = parts1[1];
-                    String nverticestr1 = parts1[2];
-                    String operacao1 = parts1[3];
-                    String resultao1 = parts1[4];
-                    String tempo1 = parts1[5];
-                    double tdouble1 = Double.parseDouble(tempo1);
-                    Integer resultado1 = null;
-                    try {
-                        resultado1 = Integer.parseInt(resultao1);
-                    } catch (Exception e) {
+        File file = null;
+        for (String inputFilePath : inputs) {
+            if (inputFilePath.toLowerCase().endsWith(".txt") && (file = new File(inputFilePath)).isFile()) {
+                BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                String readLine = null;
+                while ((readLine = r.readLine()) != null) {
+                    String[] parts1 = readLine.split("\t");
+                    if (parts1 != null && parts1.length >= 6) {
+                        String grupo1 = parts1[0];
+                        String idgrafo1 = parts1[1];
+                        String nverticestr1 = parts1[2];
+                        String operacao1 = parts1[3];
+                        String resultao1 = parts1[4];
+                        String tempo1 = parts1[5];
+                        double tdouble1 = Double.parseDouble(tempo1);
+                        Integer resultado1 = null;
+                        try {
+                            resultado1 = Integer.parseInt(resultao1);
+                        } catch (Exception e) {
 
+                        }
+                        addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
+                                operacao1, resultado1, tdouble1);
                     }
-                    addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-                            operacao1, resultado1, tdouble1);
                 }
-            } catch (Exception e) {
             }
         }
         printResultadoConsolidado();
@@ -169,12 +166,14 @@ public class UtilResultMerge {
         System.out.println("");
 
         for (String key : listKeys) {
-            resultados.get(key).printResultado();
+            ResultadoLinha result = resultados.get(key);
+            if (result != null && result.isValido()) {
+                result.printResultado();
+            }
         }
     }
 
     private static void processFileJson(String inputFilePath) {
-
         Pattern pattern = Pattern.compile("^Caratheodroy number.*?: (\\d+)");
         System.out.println("Opening Results");
         List<DatabaseFacade.RecordResultGraph> allResults = DatabaseFacade.getAllResults(inputFilePath);
@@ -206,7 +205,6 @@ public class UtilResultMerge {
 
     static class ResultadoColuna {
 
-        static Map<String, Integer> resultadoReferencia = new HashMap<>();
         Map<Integer, Integer> totalPorNum = new HashMap<>();
         double totalTime;
         int max;
@@ -223,7 +221,7 @@ public class UtilResultMerge {
             if (ncarat == 0) {
                 erros++;
             }
-            resultadoReferencia.put(id, ncarat);
+
             cont++;
             if (ncarat > max) {
                 max = ncarat;
@@ -243,30 +241,27 @@ public class UtilResultMerge {
             }
         }
 
-        private void addResultado(String id, Integer ncarat, double tempo) {
-            totalTime += tempo;
-            if (ncarat == 0) {
+        private void addResultado(String id, Integer ncarat, double tempo, Integer ref) {
+            if (ncarat == null || ncarat == 0) {
                 erros++;
             } else {
+                totalTime += tempo;
                 if (ncarat > max) {
                     max = ncarat;
                 }
                 if (min == 0 || ncarat < min) {
                     min = ncarat;
                 }
+                Integer tparcial = totalPorNum.get(ncarat);
+                if (tparcial == null) {
+                    tparcial = 0;
+                }
+                if (ncarat > 0) {
+                    totalPorNum.put(ncarat, (tparcial + 1));
+                }
+
+                addDiference(ncarat, ref);
             }
-            Integer tparcial = totalPorNum.get(ncarat);
-            if (tparcial == null) {
-                tparcial = 0;
-            }
-            if (ncarat > 0) {
-                totalPorNum.put(ncarat, (tparcial + 1));
-            }
-            Integer ref = resultadoReferencia.get(id);
-            if (ref == null) {
-                throw new IllegalStateException("Not ref result to graph: " + id);
-            }
-            addDiference(ncarat, ref);
         }
 
         public void addDiference(int r1, int r2) {
@@ -312,6 +307,8 @@ public class UtilResultMerge {
 
     static class ResultadoLinha {
 
+        static Map<String, Integer> resultadoReferencia = new HashMap<>();
+
         String nome;
         int numvertices;
         long diffAc;
@@ -327,6 +324,7 @@ public class UtilResultMerge {
             System.out.print(numvertices);
             System.out.print("\t");
             List<String> opers = getOperationsSorted();
+//            ResultadoColuna ref = resultados.get(opers.get(0));
 
             for (int i = 0; i < opers.size(); i++) {
                 String str = opers.get(i);
@@ -334,7 +332,9 @@ public class UtilResultMerge {
                 if (i == 0) {
                     res.printResultadoReference();
                 } else {
-                    res.printResultado(resultados.get(0));
+
+                    ResultadoColuna ref = resultados.get(opers.get(0));
+                    res.printResultado(ref);
                 }
             }
 
@@ -371,9 +371,16 @@ public class UtilResultMerge {
                 maxCarat = resultado;
             }
             if (OPERACAO_REFERENCIA.equals(operacao)) {
+                resultadoReferencia.put(id, resultado);
                 r.addResultadoReferencia(id, resultado, tempo);
             } else {
-                r.addResultado(id, resultado, tempo);
+                Integer ref = resultadoReferencia.get(id);
+                if (ref != null) {
+                    r.addResultado(id, resultado, tempo, ref);
+                } else {
+                    //will be ignored, not result reference
+                    //throw new IllegalStateException("Not ref result to graph: " + id);
+                }
             }
         }
 
@@ -433,5 +440,10 @@ public class UtilResultMerge {
 //            diffAc += tmpdiff;
 //            diff++;
 //        }
+        private boolean isValido() {
+            List<String> opers = getOperationsSorted();
+            ResultadoColuna ref = resultados.get(opers.get(0));
+            return ref != null;
+        }
     };
 }

@@ -1,11 +1,3 @@
-[INFO] Error stacktraces are turned on.
-[INFO] Scanning for projects...
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building graph-caratheodory-np3 1.0-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-[INFO] 
-[INFO] --- exec-maven-plugin:1.2.1:exec (default-cli) @ graph-caratheodory-np3 ---
 almhypo	almhypo23_g5-order-23-9014	23	Nº Caratheodory (Heuristic v1)	null	0.009
 almhypo	almhypo23_g5-order-23-9014	23	Nº Caratheodory (Binary Java)	6	3.871
 almhypo	almhypo23_g5-order-23-37	23	Nº Caratheodory (Heuristic v1)	5	0.002
@@ -1382,10 +1374,3 @@ almhypo	almhypo23_g5-order-23-9247	23	Nº Caratheodory (Heuristic v1)	5	0.001
 almhypo	almhypo23_g5-order-23-9247	23	Nº Caratheodory (Binary Java)	6	7.033
 almhypo	almhypo23_g5-order-23-9251	23	Nº Caratheodory (Heuristic v1)	5	0.001
 almhypo	almhypo23_g5-order-23-9251	23	Nº Caratheodory (Binary Java)	7	8.31
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 01:16 h
-[INFO] Finished at: 2017-03-27T01:24:10-03:00
-[INFO] Final Memory: 8M/212M
-[INFO] ------------------------------------------------------------------------

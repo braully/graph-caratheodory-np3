@@ -1,5 +1,6 @@
 package com.github.braully.graph;
 
+import static com.github.braully.graph.BatchExecuteG6.TRESHOLD_PRINT_SET;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
@@ -20,6 +21,8 @@ import org.apache.commons.cli.*;
  * @author strike
  */
 public class BatchExecuteHeuristic {
+
+    public static final int TRESHOLD_PRINT_SET = 30;
 
     public static void main(String... args) {
         Options options = new Options();
@@ -128,6 +131,10 @@ public class BatchExecuteHeuristic {
         System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER));
         System.out.print("\t");
         System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
+        if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
+            System.out.print("\t");
+            System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET));
+        }
     }
 
     static int indexOf(String str, String patern) {

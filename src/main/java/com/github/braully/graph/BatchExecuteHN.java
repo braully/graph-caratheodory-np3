@@ -5,6 +5,7 @@
  */
 package com.github.braully.graph;
 
+import static com.github.braully.graph.BatchExecuteG6.TRESHOLD_PRINT_SET;
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphHullNumber;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
@@ -23,6 +24,8 @@ import org.apache.commons.cli.*;
  * @author strike
  */
 public class BatchExecuteHN {
+
+    public static final int TRESHOLD_PRINT_SET = 30;
 
     public static void main(String... args) {
         Options options = new Options();
@@ -114,6 +117,10 @@ public class BatchExecuteHN {
         System.out.print(id);
         System.out.print("\t");
         System.out.println(result.get(GraphHullNumber.PARAM_NAME_HULL_NUMBER));
+        if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
+            System.out.print("\t");
+            System.out.println(result.get(GraphHullNumber.PARAM_NAME_HULL_SET));
+        }
     }
 
     static int indexOf(String str, String patern) {

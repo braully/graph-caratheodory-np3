@@ -1,13 +1,7 @@
 package com.github.braully.graph;
 
-import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
-import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
-import com.github.braully.graph.operation.IGraphOperation;
-import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -19,6 +13,8 @@ import org.apache.commons.cli.*;
  * @author strike
  */
 public class BatchExecuteHeuristicCompare {
+
+    public static final int TRESHOLD_PRINT_SET = 30;
 
     public static void main(String... args) {
         Options options = new Options();
@@ -87,8 +83,8 @@ public class BatchExecuteHeuristicCompare {
     }
 
     static void processFile(File file) throws IOException {
-        BatchExecuteHeuristic.processFile(file);
         BatchExecuteG6.processFile(file);
+        BatchExecuteHeuristic.processFile(file);
     }
 
     static int indexOf(String str, String patern) {

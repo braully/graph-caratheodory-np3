@@ -1,11 +1,3 @@
-[INFO] Error stacktraces are turned on.
-[INFO] Scanning for projects...
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building graph-caratheodory-np3 1.0-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-[INFO] 
-[INFO] --- exec-maven-plugin:1.2.1:exec (default-cli) @ graph-caratheodory-np3 ---
 almhypo	almhypo386	23	Nº Caratheodory (Heuristic v1)	5	0.013
 almhypo	almhypo386	23	Nº Caratheodory (Heuristic v2)	5	0.009
 almhypo	almhypo386	23	Nº Caratheodory (Heuristic v3)	5	0.006
@@ -1047,9 +1039,6 @@ almhypo	almhypo221	23	Nº Caratheodory (Heuristic v3)	5	0.001
 almhypo	almhypo212	23	Nº Caratheodory (Heuristic v1)	5	0.001
 almhypo	almhypo212	23	Nº Caratheodory (Heuristic v2)	5	0.001
 almhypo	almhypo212	23	Nº Caratheodory (Heuristic v3)	5	0.002
-almhypo	almhypo0	0	Nº Caratheodory (Heuristic v1)	null	0.0
-almhypo	almhypo0	0	Nº Caratheodory (Heuristic v2)	null	0.0
-almhypo	almhypo0	0	Nº Caratheodory (Heuristic v3)	null	0.0
 almhypo	almhypo82	23	Nº Caratheodory (Heuristic v1)	5	0.001
 almhypo	almhypo82	23	Nº Caratheodory (Heuristic v2)	5	0.001
 almhypo	almhypo82	23	Nº Caratheodory (Heuristic v3)	5	0.002
@@ -1221,10 +1210,3 @@ almhypo	almhypo233	23	Nº Caratheodory (Heuristic v3)	5	0.001
 almhypo	almhypo180	23	Nº Caratheodory (Heuristic v1)	5	0.001
 almhypo	almhypo180	23	Nº Caratheodory (Heuristic v2)	5	0.001
 almhypo	almhypo180	23	Nº Caratheodory (Heuristic v3)	5	0.001
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 7.571 s
-[INFO] Finished at: 2017-04-02T22:04:10-03:00
-[INFO] Final Memory: 7M/119M
-[INFO] ------------------------------------------------------------------------
