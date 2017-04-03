@@ -1,5 +1,6 @@
 package com.github.braully.graph;
 
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -84,6 +85,7 @@ public class BatchExecuteHeuristicCompare {
 
     static void processFile(File file) throws IOException {
         BatchExecuteG6.processFile(file);
+        GraphCaratheodoryHeuristic.verbose = false;
         BatchExecuteHeuristic.processFile(file);
     }
 

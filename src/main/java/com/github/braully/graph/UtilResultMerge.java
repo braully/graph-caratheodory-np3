@@ -57,15 +57,10 @@ public class UtilResultMerge {
 
         String[] inputs = cmd.getOptionValues("input");
         if (inputs == null) {
-            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mft/resultado-ht.txt",
-                "/media/dados/documentos/grafos-processamento/mft/resultado-ht4.txt"};
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-mft-parcial-ht.txt";
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-highlyirregular-ht.txt";
-//            inputFilePath = "/home/strike/Documentos/grafos-processados/mtf/resultado-ht.txt";
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-hypo-parcial-ht.txt";
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-eul-ht.txt";
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-almhypo-ht.txt";
-//            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-Almost_hypohamiltonian_graphs_cubic-parcial-ht.txt";
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mtf/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht-1.txt",
+//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4.txt"};
+            inputs = new String[]{"/media/dados/documentos/grafos-processamento/almhypo/resultado-compare-total.txt"};
         }
         if (inputs != null) {
             processFileTxt(inputs);
