@@ -59,8 +59,20 @@ public class UtilResultMerge {
         if (inputs == null) {
 //            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mtf/resultado-ht.txt",
 //                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht-1.txt",
-//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4.txt"};
+//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4.txt",
+//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4-1.txt"};
             inputs = new String[]{"/media/dados/documentos/grafos-processamento/almhypo/resultado-compare-total.txt"};
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht4.txt"};
+
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht4.txt"};
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/hypo/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/hypo/resultado-ht4.txt"};
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/quartic/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/quartic/resultado-ht4.txt"};
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/snarks/resultado-ht.txt",
+//                "/media/dados/documentos/grafos-processamento/snarks/resultado-ht4.txt"};
         }
         if (inputs != null) {
             processFileTxt(inputs);
@@ -216,7 +228,6 @@ public class UtilResultMerge {
             if (ncarat == 0) {
                 erros++;
             }
-
             cont++;
             if (ncarat > max) {
                 max = ncarat;
@@ -273,7 +284,6 @@ public class UtilResultMerge {
 
         public void printResultado(ResultadoColuna ref) {
             double media = ((double) diffAc / (double) diff);
-            System.out.print("\t");
             System.out.print(String.format("%.2f", totalTime));
             System.out.print("\t");
             System.out.print(worst);
@@ -327,7 +337,6 @@ public class UtilResultMerge {
                 if (i == 0) {
                     res.printResultadoReference();
                 } else {
-
                     ResultadoColuna ref = resultados.get(opers.get(0));
                     res.printResultado(ref);
                 }
@@ -366,8 +375,10 @@ public class UtilResultMerge {
                 maxCarat = resultado;
             }
             if (OPERACAO_REFERENCIA.equals(operacao)) {
-                resultadoReferencia.put(id, resultado);
-                r.addResultadoReferencia(id, resultado, tempo);
+                if (resultado != null) {
+                    resultadoReferencia.put(id, resultado);
+                    r.addResultadoReferencia(id, resultado, tempo);
+                }
             } else {
                 Integer ref = resultadoReferencia.get(id);
                 if (ref != null) {
