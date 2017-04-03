@@ -10,11 +10,6 @@ public class GraphCaratheodoryHeuristicV2
 
     static final String description = "Nº Caratheodory (Heuristic v2)";
 
-    public static final int INCLUDED = 2;
-    public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
-
-    static boolean verbose = true;
-
     @Override
     public String getName() {
         return description;

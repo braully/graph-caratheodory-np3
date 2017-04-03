@@ -2,6 +2,8 @@ package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.File;
@@ -48,9 +50,9 @@ public class BatchExecuteHeuristic {
         GraphCaratheodoryHeuristic.verbose = false;
 
         String inputFilePath = cmd.getOptionValue("input");
-//        if (inputFilePath == null) {
-//            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
-//        }
+        if (inputFilePath == null) {
+            inputFilePath = "/home/strike/Workspace/mestrado/graph-caratheodory-np3/graph/heuristic";
+        }
 //        String outputFilePath = cmd.getOptionValue("output");
 //        System.out.println(inputFilePath);
 //        System.out.println(outputFilePath);
@@ -90,7 +92,14 @@ public class BatchExecuteHeuristic {
 
     static void processFile(File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
-        IGraphOperation operationHeuristic = new GraphCaratheodoryHeuristic();
+        String name = file.getName();
+        IGraphOperation[] operations = {new GraphCaratheodoryHeuristic(), new GraphCaratheodoryHeuristicV2(), new GraphCaratheodoryHeuristicV3()};
+        for (IGraphOperation operationHeuristic : operations) {
+            processHeuristic(operationHeuristic, loadGraphAdjMatrix, name);
+        }
+    }
+
+    public static void processHeuristic(IGraphOperation operationHeuristic, UndirectedSparseGraphTO loadGraphAdjMatrix, String name) {
         long currentTimeMillis = System.currentTimeMillis();
         Map result = operationHeuristic.doOperation(loadGraphAdjMatrix);
         currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
@@ -98,7 +107,6 @@ public class BatchExecuteHeuristic {
             result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
         }
 
-        String name = file.getName();
         String id = name.replaceAll(".mat", "");
         try {
 

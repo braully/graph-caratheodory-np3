@@ -11,4 +11,9 @@ public class GraphCaratheodoryHeuristicV3
         ranking = (int) (deltaHs * 1 + neighborCount * 0.5 + bfsP * 0.3 + auxv * 0.2);
         return ranking;
     }
+
+    @Override
+    public String getName() {
+        return description;
+    }
 }
