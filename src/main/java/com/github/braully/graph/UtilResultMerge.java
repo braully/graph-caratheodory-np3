@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,8 @@ import org.apache.commons.cli.*;
  * @author strike
  */
 public class UtilResultMerge {
+
+    public static String OPERACAO_REFERENCIA = "Nº Caratheodory (Binary Java)";
 
     public static void main(String... args) throws Exception {
         Options options = new Options();
@@ -54,8 +57,7 @@ public class UtilResultMerge {
 
         String inputFilePath = cmd.getOptionValue("input");
         if (inputFilePath == null) {
-            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-quartic-ht.txt";
-
+            inputFilePath = "/home/strike/Workspace/mestrado/graph-caratheodory-np3/graph/almhypo/resultado-ht3.txt";
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-mft-parcial-ht.txt";
 //            inputFilePath = "/home/strike/Dropbox/documentos/mestrado/resultado-processamento-grafos/resultado-highlyirregular-ht.txt";
 //            inputFilePath = "/home/strike/Documentos/grafos-processados/mtf/resultado-ht.txt";
@@ -83,13 +85,8 @@ public class UtilResultMerge {
         String readLine = null;
         while ((readLine = r.readLine()) != null) {
             String[] parts1 = readLine.split("\t");
-            String[] parts2 = null;
-            if ((readLine = r.readLine()) != null) {
-                parts2 = readLine.split("\t");
-            }
             try {
-                if (parts1 != null && parts1.length >= 6
-                        && parts2 != null && parts2.length >= 6) {
+                if (parts1 != null && parts1.length >= 6) {
                     String grupo1 = parts1[0];
                     String idgrafo1 = parts1[1];
                     String nverticestr1 = parts1[2];
@@ -97,34 +94,14 @@ public class UtilResultMerge {
                     String resultao1 = parts1[4];
                     String tempo1 = parts1[5];
                     double tdouble1 = Double.parseDouble(tempo1);
+                    Integer resultado1 = null;
+                    try {
+                        resultado1 = Integer.parseInt(resultao1);
+                    } catch (Exception e) {
 
-                    String grupo2 = parts2[0];
-                    String idgrafo2 = parts2[1];
-                    String nverticestr2 = parts2[2];
-                    String operacao2 = parts2[3];
-                    String resultao2 = parts2[4];
-                    String tempo2 = parts2[5];
-                    double tdouble2 = Double.parseDouble(tempo2);
-
-                    if (grupo1.equals(grupo2) && idgrafo1.equals(idgrafo2)
-                            && operacao1.equals("Nº Caratheodory (Heuristic v1)")
-                            && operacao2.equals("Nº Caratheodory (Binary Java)")) {
-                        Integer resultado1 = null;
-                        Integer resultado2 = null;
-                        try {
-                            resultado2 = Integer.parseInt(resultao2);
-                            resultado1 = Integer.parseInt(resultao1);
-                        } catch (Exception e) {
-                        }
-
-//                        addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-//                                resultado1, resultado2, tdouble1, tdouble2);
-                        addResult(nverticestr1 + "_-order", idgrafo1, Integer.parseInt(nverticestr1),
-                                resultado1, resultado2, tdouble1, tdouble2);
                     }
-
-//                    addResult(, Integer.parseInt(nverticestr), parts[2], tdouble);
-//                    addResult(parts[1] + "_-order", Integer.parseInt(parts[1]), parts[2], Integer.parseInt(parts[3]));
+                    addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
+                            operacao1, resultado1, tdouble1);
                 }
             } catch (Exception e) {
             }
@@ -132,8 +109,9 @@ public class UtilResultMerge {
         printResultadoConsolidado();
     }
 
-    private static void addResult(String grafo, String id, int nvertices, Integer ncarat,
-            Integer resultado2, double tdouble1, double tdouble2) {
+    private static void addResult(String grafo, String id,
+            int nvertices, String operacao,
+            Integer resultado, double tempo) {
         String key = grafo.trim() + "-" + nvertices;
         ResultadoLinha r = resultados.get(key);
         if (r == null) {
@@ -142,17 +120,18 @@ public class UtilResultMerge {
             r.numvertices = nvertices;
             resultados.put(key, r);
         }
-        if (ncarat == null) {
-            ncarat = 0;
-        } else {
-            r.addDiference(ncarat, resultado2);
-        }
-        r.addResultado1(ncarat, tdouble1);
-        r.addResultado2(resultado2, tdouble2);
+        r.addResultado(id, operacao, resultado, tempo);
     }
 
-    public static Map<String, ResultadoLinha> resultados = new HashMap<String, ResultadoLinha>();
+    static Map<String, ResultadoLinha> resultados = new HashMap<>();
     static int maxCarat = 0;
+    static Set<String> operations = new HashSet<>();
+
+    static List<String> getOperationsSorted() {
+        List<String> opers = new ArrayList<>(operations);
+        Collections.sort(opers);
+        return opers;
+    }
 
     private static void printResultadoConsolidado() {
         Set<String> keys = resultados.keySet();
@@ -165,22 +144,24 @@ public class UtilResultMerge {
         System.out.print("\t");
         System.out.print("Quantidade");
         System.out.print("\t");
-        System.out.print("T Normal(s)");
-        System.out.print("\t");
-        System.out.print("T Heuristic(s)");
-        System.out.print("\t");
-        System.out.print("Pior");
-        System.out.print("\t");
-        System.out.print("Media");
-        System.out.print("\t");
-        System.out.print("Melhor");
-        System.out.print("\t");
-        System.out.print("Min");
-        System.out.print("\t");
-        System.out.print("Max");
-        System.out.print("\t");
-        System.out.print("Erro");
-        System.out.print("\t");
+
+        List<String> opers = getOperationsSorted();
+
+        for (String str : opers) {
+            System.out.print(str + " - T(s)");
+            System.out.print("\t");
+            System.out.print(str + " - Media");
+            System.out.print("\t");
+            System.out.print(str + " - Pior");
+            System.out.print("\t");
+            System.out.print(str + " - Melhor");
+            System.out.print("\t");
+            System.out.print(str + " - Max");
+            System.out.print("\t");
+            System.out.print(str + " - Erro");
+            System.out.print("\t");
+        }
+
         for (int i = 2; i <= maxCarat; i++) {
             System.out.print("QNC" + i);
             System.out.print("\t");
@@ -223,78 +204,32 @@ public class UtilResultMerge {
         printResultadoConsolidado();
     }
 
-    static class ResultadoLinha {
+    static class ResultadoColuna {
 
-        String nome;
-        int numvertices;
-        long cont;
+        static Map<String, Integer> resultadoReferencia = new HashMap<>();
+        Map<Integer, Integer> totalPorNum = new HashMap<>();
+        double totalTime;
+        int max;
+        int min;
         long erros;
-        int max1;
-        int min1;
-        int max2;
-        int min2;
-        double totalTime1;
-        double totalTime2;
+        long cont;
         long diffAc;
         long diff;
         long worst;
         long best;
-        Map<Integer, Integer> totalPorNum = new HashMap<>();
 
-        public void printResultado() {
-            double media = ((double) diffAc / (double) diff);
-            System.out.print(nome);
-            System.out.print("\t");
-            System.out.print(numvertices);
-            System.out.print("\t");
-            System.out.print(cont);
-            System.out.print("\t");
-            System.out.print(String.format("%.2f", totalTime2));
-            System.out.print("\t");
-            System.out.print(String.format("%.2f", totalTime1));
-            System.out.print("\t");
-            System.out.print(worst);
-            System.out.print("\t");
-            System.out.print(String.format("%.2f", media));
-            System.out.print("\t");
-            System.out.print(best);
-            System.out.print("\t");
-            System.out.print(min2 - min1);
-            System.out.print("\t");
-            System.out.print(max2 - max1);
-            System.out.print("\t");
-
-            Integer tmp = totalPorNum.get(0);
-            if (tmp != null) {
-                System.out.print(tmp);
-            } else {
-                System.out.print("0");
-            }
-            System.out.print("\t");
-
-            for (int i = 2; i <= maxCarat; i++) {
-                tmp = totalPorNum.get(i);
-                if (tmp != null) {
-                    System.out.print(tmp);
-                } else {
-                    System.out.print("0");
-                }
-                System.out.print("\t");
-            }
-            System.out.println("");
-        }
-
-        public void addResultado1(int ncarat, double t1) {
-            totalTime1 += t1;
+        private void addResultadoReferencia(String id, Integer ncarat, double tempo) {
+            totalTime += tempo;
             if (ncarat == 0) {
                 erros++;
-            } else {
-                if (ncarat > max1) {
-                    max1 = ncarat;
-                }
-                if (min1 == 0 || ncarat < min1) {
-                    min1 = ncarat;
-                }
+            }
+            resultadoReferencia.put(id, ncarat);
+            cont++;
+            if (ncarat > max) {
+                max = ncarat;
+            }
+            if (min == 0 || ncarat < min) {
+                min = ncarat;
             }
             Integer tparcial = totalPorNum.get(ncarat);
             if (tparcial == null) {
@@ -304,29 +239,34 @@ public class UtilResultMerge {
                 maxCarat = ncarat;
             }
             if (ncarat > 0) {
-                totalPorNum.put(ncarat, (tparcial - 1));
-            } else {
                 totalPorNum.put(ncarat, (tparcial + 1));
             }
         }
 
-        public void addResultado2(int ncarat, double t2) {
-            totalTime2 += t2;
-            cont++;
-            if (ncarat > max2) {
-                max2 = ncarat;
-            }
-            if (min2 == 0 || ncarat < min2) {
-                min2 = ncarat;
+        private void addResultado(String id, Integer ncarat, double tempo) {
+            totalTime += tempo;
+            if (ncarat == 0) {
+                erros++;
+            } else {
+                if (ncarat > max) {
+                    max = ncarat;
+                }
+                if (min == 0 || ncarat < min) {
+                    min = ncarat;
+                }
             }
             Integer tparcial = totalPorNum.get(ncarat);
             if (tparcial == null) {
                 tparcial = 0;
             }
-            if (ncarat > maxCarat) {
-                maxCarat = ncarat;
+            if (ncarat > 0) {
+                totalPorNum.put(ncarat, (tparcial + 1));
             }
-            totalPorNum.put(ncarat, (tparcial + 1));
+            Integer ref = resultadoReferencia.get(id);
+            if (ref == null) {
+                throw new IllegalStateException("Not ref result to graph: " + id);
+            }
+            addDiference(ncarat, ref);
         }
 
         public void addDiference(int r1, int r2) {
@@ -340,5 +280,158 @@ public class UtilResultMerge {
             diffAc += tmpdiff;
             diff++;
         }
+
+        public void printResultado(ResultadoColuna ref) {
+            double media = ((double) diffAc / (double) diff);
+            System.out.print("\t");
+            System.out.print(String.format("%.2f", totalTime));
+            System.out.print("\t");
+            System.out.print(worst);
+            System.out.print("\t");
+            System.out.print(best);
+            System.out.print("\t");
+            System.out.print(String.format("%.2f", media));
+            System.out.print("\t");
+            System.out.print(ref.max - max);
+            System.out.print("\t");
+            System.out.print(erros);
+            System.out.print("\t");
+        }
+
+        public void printResultadoReference() {
+            System.out.print(cont);
+            System.out.print("\t");
+            System.out.print(String.format("%.2f", totalTime));
+            System.out.print("\t");
+            System.out.print(min);
+            System.out.print("\t");
+            System.out.print(max);
+            System.out.print("\t");
+        }
+    }
+
+    static class ResultadoLinha {
+
+        String nome;
+        int numvertices;
+        long diffAc;
+        long diff;
+        long worst;
+        long best;
+
+        Map<String, ResultadoColuna> resultados = new HashMap<>();
+
+        public void printResultado() {
+            System.out.print(nome);
+            System.out.print("\t");
+            System.out.print(numvertices);
+            System.out.print("\t");
+            List<String> opers = getOperationsSorted();
+
+            for (int i = 0; i < opers.size(); i++) {
+                String str = opers.get(i);
+                ResultadoColuna res = resultados.get(str);
+                if (i == 0) {
+                    res.printResultadoReference();
+                } else {
+                    res.printResultado(resultados.get(0));
+                }
+            }
+
+            for (int i = 2; i <= maxCarat; i++) {
+                StringBuilder tmp = new StringBuilder();
+                int cont = 0;
+                for (String str : opers) {
+                    ResultadoColuna res = resultados.get(str);
+                    Integer tcont = res.totalPorNum.get(i);
+                    if (tcont == null) {
+                        tcont = 0;
+                    }
+                    tmp.append(cont++).append(":").append(tcont);
+                    if (cont <= opers.size() - 1) {
+                        tmp.append("|");
+                    }
+                }
+                System.out.print(tmp);
+                System.out.print("\t");
+            }
+
+            System.out.println("");
+        }
+
+        public void addResultado(String id, String operacao,
+                Integer resultado, double tempo) {
+            ResultadoColuna r = resultados.get(operacao);
+            if (r == null) {
+                r = new ResultadoColuna();
+                resultados.put(operacao, r);
+                operations.add(operacao);
+            }
+            if (resultado != null && resultado > maxCarat) {
+                maxCarat = resultado;
+            }
+            if (OPERACAO_REFERENCIA.equals(operacao)) {
+                r.addResultadoReferencia(id, resultado, tempo);
+            } else {
+                r.addResultado(id, resultado, tempo);
+            }
+        }
+
+//        public void addResultado1(int ncarat, double t1) {
+//            totalTime1 += t1;
+//            if (ncarat == 0) {
+//                erros++;
+//            } else {
+//                if (ncarat > max1) {
+//                    max1 = ncarat;
+//                }
+//                if (min1 == 0 || ncarat < min1) {
+//                    min1 = ncarat;
+//                }
+//            }
+//            Integer tparcial = totalPorNum.get(ncarat);
+//            if (tparcial == null) {
+//                tparcial = 0;
+//            }
+//            if (ncarat > maxCarat) {
+//                maxCarat = ncarat;
+//            }
+//            if (ncarat > 0) {
+//                totalPorNum.put(ncarat, (tparcial - 1));
+//            } else {
+//                totalPorNum.put(ncarat, (tparcial + 1));
+//            }
+//        }
+//
+//        public void addResultado2(int ncarat, double t2) {
+//            totalTime2 += t2;
+//            cont++;
+//            if (ncarat > max2) {
+//                max2 = ncarat;
+//            }
+//            if (min2 == 0 || ncarat < min2) {
+//                min2 = ncarat;
+//            }
+//            Integer tparcial = totalPorNum.get(ncarat);
+//            if (tparcial == null) {
+//                tparcial = 0;
+//            }
+//            if (ncarat > maxCarat) {
+//                maxCarat = ncarat;
+//            }
+//            totalPorNum.put(ncarat, (tparcial + 1));
+//        }
+//
+//        public void addDiference(int r1, int r2) {
+//            long tmpdiff = (r2 - r1);
+//            if (tmpdiff > worst) {
+//                worst = tmpdiff;
+//            }
+//            if (best == 0 || tmpdiff < best) {
+//                best = tmpdiff;
+//            }
+//            diffAc += tmpdiff;
+//            diff++;
+//        }
     };
 }

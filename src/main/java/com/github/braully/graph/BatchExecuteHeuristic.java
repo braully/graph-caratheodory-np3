@@ -1,6 +1,5 @@
 package com.github.braully.graph;
 
-import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
