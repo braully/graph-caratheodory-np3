@@ -65,7 +65,7 @@ public class GraphCaratheodoryHeuristicV3
                     int sizeHs = countSizeHs(s, auxb);
                     int neighborCount = graph.getNeighborCount(i);
                     if (GraphCaratheodoryHeuristic.verbose) {
-                        log.info("\t" + s + " + " + i + " = Charatheodory |H(S)=" + sizeHs + " d=" + neighborCount);
+                        log.info("\t" + s + " = Charatheodory |H(S)|=" + sizeHs + " d=" + neighborCount);
                     }
                     if (bv == -1 || (sizeHs <= menorHs && neighborCount < menorGrau)) {
                         menorHs = sizeHs;
