@@ -597,7 +597,7 @@ fim para
             return 0;
         }
         for (int i = 0; i < aux.length; i++) {
-            if (aux[i] >= INCLUDED && !s.contains(i)) {
+            if (aux[i] >= INCLUDED) {
                 cont++;
             }
         }
