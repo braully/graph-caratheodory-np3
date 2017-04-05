@@ -514,7 +514,7 @@ fim para
         }
         boolean ret = true;
         int vertexCount = graph.getVertexCount();
-        int[] auxc = new int[auxf.length];
+        int[] auxc = new int[vertexCount];
 
         for (Integer p : s) {
             for (int j = 0; j < vertexCount; j++) {
@@ -589,5 +589,18 @@ fim para
 
     void beforeVerticePromotion(UndirectedSparseGraphTO<Integer, Integer> graph, Integer vp, Integer v, int[] aux) {
 //        bdl.labelDistances(graph, vp);
+    }
+
+    public int countSizeHs(Set<Integer> s, int[] aux) {
+        int cont = 0;
+        if (aux == null) {
+            return 0;
+        }
+        for (int i = 0; i < aux.length; i++) {
+            if (aux[i] >= INCLUDED && !s.contains(i)) {
+                cont++;
+            }
+        }
+        return cont;
     }
 }

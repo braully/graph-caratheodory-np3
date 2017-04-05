@@ -145,4 +145,12 @@ public class GraphCaratheodoryHeuristicV2
         ranking = deltaHs * 1 + neighborCount * 0 + bfsP * 0 + auxv * 0;
         return ranking;
     }
+
+//    @Override
+//    int calcRanking(int deltaHs, int neighborCount, int bfsP, int auxv) {
+//        int ranking = 0;
+//        ranking = (int) (deltaHs * 1 + neighborCount * 0.5 + bfsP * 0.3 + auxv * 0.2);
+//        return ranking;
+//    }
+
 }
