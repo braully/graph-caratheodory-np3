@@ -77,7 +77,6 @@ public class BatchExecuteG6 implements IBatchExecute {
             return;
         }
 
-        IBatchExecute executor = this;
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(inputFilePath);
