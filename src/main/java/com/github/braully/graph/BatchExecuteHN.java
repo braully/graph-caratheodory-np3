@@ -5,137 +5,29 @@
  */
 package com.github.braully.graph;
 
-import static com.github.braully.graph.BatchExecuteG6.TRESHOLD_PRINT_SET;
-import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphHullNumber;
-import com.github.braully.graph.operation.OperationConvexityGraphResult;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.cli.*;
+import com.github.braully.graph.operation.IGraphOperation;
 
 /**
  *
  * @author strike
  */
-public class BatchExecuteHN {
+public class BatchExecuteHN extends BatchExecuteG6 {
 
-    public static final int TRESHOLD_PRINT_SET = 30;
+    static final IGraphOperation[] operations = new IGraphOperation[]{new GraphHullNumber()};
+
+    @Override
+    public String getDefaultInput() {
+        return "/home/strike/grafos-para-processar/almhypo";
+    }
 
     public static void main(String... args) {
-        Options options = new Options();
-
-        Option input = new Option("i", "input", true, "input file path");
-        input.setRequired(false);
-        options.addOption(input);
-
-        Option output = new Option("o", "output", true, "output file");
-        output.setRequired(false);
-        options.addOption(output);
-
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-        CommandLine cmd;
-
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("BatchExecuteG6", options);
-
-            System.exit(1);
-            return;
-        }
-
-        String inputFilePath = cmd.getOptionValue("input");
-//        if (inputFilePath == null) {
-////            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
-//        }
-//        String outputFilePath = cmd.getOptionValue("output");
-
-//        System.out.println(inputFilePath);
-//        System.out.println(outputFilePath);
-        File dir = new File(inputFilePath);
-        if (dir.isDirectory()) {
-            processDirectory(inputFilePath);
-        } else if (inputFilePath.toLowerCase().endsWith(".mat")) {
-            try {
-                processFile(dir);
-            } catch (IOException ex) {
-                Logger.getLogger(BatchExecuteHN.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        BatchExecuteHN executor = new BatchExecuteHN();
+        executor.processMain(args);
     }
 
-    static void processDirectory(String directory) {
-
-//        System.out.println("Processing directory: " + directory);
-        try {
-            File dir = new File(directory);
-            File[] filesList = dir.listFiles();
-            for (File file : filesList) {
-                String name = null;
-                try {
-                    name = file.getName();
-//                    System.out.println("Processing file: " + name);
-                    if (name.toLowerCase().endsWith(".mat")) {
-                        processFile(file);
-                    }
-                } catch (Exception e) {
-                    System.err.println("Fail in process: " + name);
-                }
-            }
-        } catch (Exception e) {
-//            e.printStackTrace();
-        }
-    }
-
-    static void processFile(File file) throws IOException {
-        UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
-        GraphHullNumber operation = new GraphHullNumber();
-        Map result = operation.doOperation(loadGraphAdjMatrix);
-        String name = file.getName();
-        String id = name.replaceAll(".mat", "");
-        try {
-
-            int indexOf = indexOf(name, "\\d");
-            if (indexOf > 0) {
-                name = name.substring(0, indexOf);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.print(name);
-        System.out.print("\t");
-        System.out.print(loadGraphAdjMatrix.getVertexCount());
-        System.out.print("\t");
-        System.out.print(id);
-        System.out.print("\t");
-        System.out.println(result.get(GraphHullNumber.PARAM_NAME_HULL_NUMBER));
-        if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
-            System.out.print("\t");
-            System.out.println(result.get(GraphHullNumber.PARAM_NAME_HULL_SET));
-        }
-    }
-
-    static int indexOf(String str, String patern) {
-        int ret = 0;
-        try {
-
-            Pattern pattern = Pattern.compile(patern);
-            Matcher matcher = pattern.matcher(str);
-            if (matcher.find()) {
-                ret = matcher.start();
-//                System.out.println(matcher.start());//this will give you index
-            }
-        } catch (Exception e) {
-
-        }
-        return ret;
+    @Override
+    public IGraphOperation[] getOperations() {
+        return operations;
     }
 }

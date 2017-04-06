@@ -6,10 +6,13 @@
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
+import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,11 +24,28 @@ import org.apache.commons.cli.*;
  *
  * @author strike
  */
-public class BatchExecuteG6 {
+public class BatchExecuteG6 implements IBatchExecute {
 
     public static final int TRESHOLD_PRINT_SET = 30;
 
+    static final IGraphOperation[] operations = new IGraphOperation[]{new GraphCalcCaratheodoryNumberBinaryStrategy()};
+
+    @Override
+    public String getDefaultInput() {
+        return "/home/strike/grafos-para-processar/almhypo";
+    }
+
     public static void main(String... args) {
+        BatchExecuteG6 executor = new BatchExecuteG6();
+        executor.processMain(args);
+    }
+
+    @Override
+    public IGraphOperation[] getOperations() {
+        return operations;
+    }
+
+    void processMain(String... args) {
         Options options = new Options();
 
         Option input = new Option("i", "input", true, "input file path");
@@ -45,34 +65,38 @@ public class BatchExecuteG6 {
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("BatchExecuteG6", options);
-
             System.exit(1);
             return;
         }
 
         String inputFilePath = cmd.getOptionValue("input");
-//        if (inputFilePath == null) {
-////            inputFilePath = "/home/strike/grafos-para-processar/almhypo";
-//        }
-//        String outputFilePath = cmd.getOptionValue("output");
+        if (inputFilePath == null) {
+            inputFilePath = getDefaultInput();
+        }
+        if (inputFilePath == null) {
+            return;
+        }
 
-//        System.out.println(inputFilePath);
-//        System.out.println(outputFilePath);
+        IBatchExecute executor = this;
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
-            processDirectory(inputFilePath);
+            processDirectory(executor, inputFilePath);
         } else if (inputFilePath.toLowerCase().endsWith(".mat")) {
             try {
-                processFile(dir);
+                processFileMat(executor, dir);
+            } catch (IOException ex) {
+                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if (inputFilePath.toLowerCase().endsWith(".g6")) {
+            try {
+                processFileG6(executor, dir);
             } catch (IOException ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 
-    static void processDirectory(String directory) {
-
-//        System.out.println("Processing directory: " + directory);
+    void processDirectory(IBatchExecute executor, String directory) {
         try {
             File dir = new File(directory);
             File[] filesList = dir.listFiles();
@@ -80,41 +104,71 @@ public class BatchExecuteG6 {
                 String name = null;
                 try {
                     name = file.getName();
-//                    System.out.println("Processing file: " + name);
                     if (name.toLowerCase().endsWith(".mat")) {
-                        processFile(file);
+                        processFileMat(executor, file);
+                    } else if (name.toLowerCase().endsWith(".g6")) {
+                        processFileG6(executor, dir);
                     }
                 } catch (Exception e) {
                     System.err.println("Fail in process: " + name);
                 }
             }
         } catch (Exception e) {
-//            e.printStackTrace();
         }
     }
 
-    static void processFile(File file) throws IOException {
+    void processFileMat(IBatchExecute executor, File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
-        GraphCalcCaratheodoryNumberBinaryStrategy operation = new GraphCalcCaratheodoryNumberBinaryStrategy();
+        loadGraphAdjMatrix.setName(file.getName());
+        processGraph(executor, loadGraphAdjMatrix);
+    }
+
+    void processFileG6(IBatchExecute executor, File file) throws IOException {
+        if (file != null) {
+            long graphcount = 0;
+            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            String readLine = null;
+            while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
+                UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
+                if (ret != null) {
+                    processGraph(executor, ret);
+                    ret.setName(file.getName() + "-" + graphcount);
+                    graphcount++;
+                }
+            }
+        }
+    }
+
+    public void processGraph(IBatchExecute executor, UndirectedSparseGraphTO loadGraphAdjMatrix) {
+        if (loadGraphAdjMatrix == null || loadGraphAdjMatrix.getVertexCount() == 0) {
+            return;
+        }
 
         long currentTimeMillis = System.currentTimeMillis();
-        Map result = operation.doOperation(loadGraphAdjMatrix);
-        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
-        if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
-            result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
-        }
-
-        String name = file.getName();
-        String id = name.replaceAll(".mat", "");
-        try {
-
-            int indexOf = indexOf(name, "\\d");
-            if (indexOf > 0) {
-                name = name.substring(0, indexOf);
+        IGraphOperation[] operations = executor.getOperations();
+        for (IGraphOperation operation : operations) {
+            Map result = operation.doOperation(loadGraphAdjMatrix);
+            currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+            if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
+                result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS, (double) ((double) currentTimeMillis / 1000));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            String name = loadGraphAdjMatrix.getName();
+            String id = name.replaceAll(".mat", "").replaceAll(".g6", "").replaceAll(".json", "");
+            try {
+                int indexOf = indexOf(name, "\\d");
+                if (indexOf > 0) {
+                    name = name.substring(0, indexOf);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            printResult(name, id, loadGraphAdjMatrix, operation, result);
         }
+    }
+
+    public void printResult(String name, String id, UndirectedSparseGraphTO loadGraphAdjMatrix,
+            IGraphOperation operation, Map result) {
         System.out.print(name);
         System.out.print("\t");
         System.out.print(id);
@@ -123,6 +177,10 @@ public class BatchExecuteG6 {
         System.out.print("\t");
         System.out.print(operation.getName());
         System.out.print("\t");
+        printResultMap(result, loadGraphAdjMatrix);
+    }
+
+    public void printResultMap(Map result, UndirectedSparseGraphTO loadGraphAdjMatrix) {
         System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER));
         System.out.print("\t");
         System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
@@ -132,7 +190,7 @@ public class BatchExecuteG6 {
         }
     }
 
-    static int indexOf(String str, String patern) {
+    int indexOf(String str, String patern) {
         int ret = 0;
         try {
 
