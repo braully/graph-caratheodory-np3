@@ -269,4 +269,148 @@ public class UtilGraph {
         }
         return ret;
     }
+
+    /*
+     Code from:  https://github.com/bingmann/BispanningGame/blob/master/src/net/panthema/BispanningGame/Graph6.java
+     */
+    static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(String strGraph) throws IOException {
+        if (strGraph == null || strGraph.isEmpty()) {
+            return null;
+        }
+        UndirectedSparseGraphTO graph = null;
+        if (strGraph.charAt(0) == ':') {
+            return loadGraphS6(strGraph.substring(1));
+        }
+
+        ByteReader6 br6 = new ByteReader6(strGraph);
+        int n = br6.get_number();
+
+        int numEdge = 0;
+
+        graph = new UndirectedSparseGraphTO();
+
+        for (int j = 1; j < n; ++j) {
+            for (int i = 0; i < j; ++i) {
+                int e = br6.get_bit();
+                if (e != 0) {
+                    graph.addEdge(numEdge++, i, j);
+                }
+            }
+        }
+        return graph;
+    }
+
+    static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(InputStream uploadedInputStream) throws IOException {
+        UndirectedSparseGraphTO ret = null;
+        if (uploadedInputStream != null) {
+            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+            String readLine = null;
+            while ((readLine = r.readLine()) == null || readLine.isEmpty()) {
+            }
+            ret = loadGraphG6(readLine);
+        }
+        return ret;
+    }
+
+    static class ByteReader6 {
+
+        private byte[] mBytes;
+        private int mSize, mPos, mBit;
+
+        public ByteReader6(String s6) {
+            mBytes = s6.getBytes();
+            mSize = s6.length();
+            mPos = mBit = 0;
+        }
+
+        // ! whether k bits are available
+        boolean have_bits(int k) {
+            return (mPos + (mBit + k - 1) / 6) < mSize;
+        }
+
+        // ! return the next integer encoded in graph6
+        int get_number() {
+            assert (mPos < mSize);
+
+            byte c = mBytes[mPos];
+            assert (c >= 63);
+            c -= 63;
+            ++mPos;
+
+            if (c < 126) {
+                return c;
+            }
+
+            assert (false);
+            return 0;
+        }
+
+        // ! return the next bit encoded in graph6
+        int get_bit() {
+            assert (mPos < mSize);
+
+            byte c = mBytes[mPos];
+            assert (c >= 63);
+            c -= 63;
+            c >>= (5 - mBit);
+
+            mBit++;
+            if (mBit == 6) {
+                mPos++;
+                mBit = 0;
+            }
+
+            return (c & 0x01);
+        }
+
+        // ! return the next bits as an integer
+        int get_bits(int k) {
+            int v = 0;
+
+            for (int i = 0; i < k; ++i) {
+                v *= 2;
+                v += get_bit();
+            }
+
+            return v;
+        }
+    }
+
+    static UndirectedSparseGraphTO<Integer, Integer> loadGraphS6(String str) {
+        ByteReader6 br6 = new ByteReader6(str);
+
+        int numVertex = br6.get_number();
+        int k = (int) Math.ceil(Math.log(numVertex) / Math.log(2));
+
+        UndirectedSparseGraphTO g = new UndirectedSparseGraphTO();
+
+        for (int i = 0; i < numVertex; ++i) {
+            g.addVertex(i);
+        }
+
+        int v = 0, numEdge = 0;
+
+        while (br6.have_bits(1 + k)) {
+            int b = br6.get_bit();
+            int x = br6.get_bits(k);
+
+            if (x >= numVertex) {
+                break;
+            }
+
+            if (b != 0) {
+                v = v + 1;
+            }
+            if (v >= numVertex) {
+                break;
+            }
+
+            if (x > v) {
+                v = x;
+            } else {
+                g.addEdge(numEdge++, x, v);
+            }
+        }
+        return g;
+    }
 }

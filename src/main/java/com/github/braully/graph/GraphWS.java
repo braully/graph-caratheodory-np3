@@ -7,12 +7,8 @@ import com.github.braully.graph.operation.IGraphOperation;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import edu.uci.ics.jung.graph.AbstractGraph;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -437,6 +431,8 @@ public class GraphWS {
                     ret = UtilGraph.loadGraphCsr(uploadedInputStream);
                 } else if (tmpFileName.endsWith("mat")) {
                     ret = UtilGraph.loadGraphAdjMatrix(uploadedInputStream);
+                } else if (tmpFileName.endsWith("g6")) {
+                    ret = UtilGraph.loadGraphG6(uploadedInputStream);
                 }
                 if (ret != null) {
                     ret.setName(fileName);
