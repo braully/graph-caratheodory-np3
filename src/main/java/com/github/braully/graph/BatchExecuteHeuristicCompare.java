@@ -20,7 +20,7 @@ public class BatchExecuteHeuristicCompare extends BatchExecuteG6 {
 
     @Override
     public String getDefaultInput() {
-        return "/home/strike/grafos-para-processar/almhypo";
+        return "/home/strike/Documentos/grafos-processamento/Highly_irregular/highlyirregular/";
     }
 
     public static void main(String... args) {

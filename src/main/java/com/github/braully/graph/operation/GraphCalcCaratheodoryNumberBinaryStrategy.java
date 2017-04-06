@@ -61,7 +61,6 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
         while (combinationsIterator.hasNext()) {
             int[] currentSet = combinationsIterator.next();
             OperationConvexityGraphResult hsp3g = hsp3(graph, currentSet);
-
             if (hsp3g != null) {
                 processedHullSet = hsp3g;
                 break;

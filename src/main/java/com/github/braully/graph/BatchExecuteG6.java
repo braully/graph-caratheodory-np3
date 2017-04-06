@@ -6,6 +6,7 @@
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.BufferedReader;
@@ -30,6 +31,8 @@ public class BatchExecuteG6 implements IBatchExecute {
 
     static final IGraphOperation[] operations = new IGraphOperation[]{new GraphCalcCaratheodoryNumberBinaryStrategy()};
 
+//    static {
+//    }
     @Override
     public String getDefaultInput() {
         return "/home/strike/grafos-para-processar/almhypo";
@@ -46,6 +49,8 @@ public class BatchExecuteG6 implements IBatchExecute {
     }
 
     void processMain(String... args) {
+        GraphCaratheodoryHeuristic.verbose = false;
+
         Options options = new Options();
 
         Option input = new Option("i", "input", true, "input file path");
@@ -106,10 +111,11 @@ public class BatchExecuteG6 implements IBatchExecute {
                     if (name.toLowerCase().endsWith(".mat")) {
                         processFileMat(file);
                     } else if (name.toLowerCase().endsWith(".g6")) {
-                        processFileG6(dir);
+                        processFileG6(file);
                     }
                 } catch (Exception e) {
                     System.err.println("Fail in process: " + name);
+                    e.printStackTrace();
                 }
             }
         } catch (Exception e) {
@@ -130,8 +136,8 @@ public class BatchExecuteG6 implements IBatchExecute {
             while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
                 UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
                 if (ret != null) {
-                    processGraph(ret);
                     ret.setName(file.getName() + "-" + graphcount);
+                    processGraph(ret);
                     graphcount++;
                 }
             }
@@ -143,9 +149,9 @@ public class BatchExecuteG6 implements IBatchExecute {
             return;
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        IGraphOperation[] operations = this.getOperations();
-        for (IGraphOperation operation : operations) {
+        IGraphOperation[] opers = this.getOperations();
+        for (IGraphOperation operation : opers) {
+            long currentTimeMillis = System.currentTimeMillis();
             Map result = operation.doOperation(loadGraphAdjMatrix);
             currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
             if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {

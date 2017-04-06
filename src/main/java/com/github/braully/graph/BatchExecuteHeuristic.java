@@ -18,7 +18,7 @@ public class BatchExecuteHeuristic extends BatchExecuteG6 {
 
     @Override
     public String getDefaultInput() {
-        return "/home/strike/grafos-para-processar/almhypo";
+        return "/home/strike/Workspace/mestrado/graph-caratheodory-np3/graph/almhypo";
     }
 
     public static void main(String... args) {
