@@ -22,7 +22,7 @@ public class BatchExecuteHeuristicTest extends TestCase {
 //        File file = new File("graph" + File.separator + "mft", "MTF_14-order-14-21.mat");
 //        File file = new File("graph" + File.separator + "mft", "MTF_7-order-7-04.mat");
         File file = new File("graph" + File.separator + "almhypo", "almhypo20_g5-order-20-08.mat");
-
-        BatchExecuteHeuristic.processFile(file);
+        BatchExecuteHeuristic bach = new BatchExecuteHeuristic();
+        bach.processFileMat(file);
     }
 }

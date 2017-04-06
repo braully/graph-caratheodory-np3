@@ -80,23 +80,23 @@ public class BatchExecuteG6 implements IBatchExecute {
         IBatchExecute executor = this;
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
-            processDirectory(executor, inputFilePath);
+            processDirectory(inputFilePath);
         } else if (inputFilePath.toLowerCase().endsWith(".mat")) {
             try {
-                processFileMat(executor, dir);
+                processFileMat(dir);
             } catch (IOException ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (inputFilePath.toLowerCase().endsWith(".g6")) {
             try {
-                processFileG6(executor, dir);
+                processFileG6(dir);
             } catch (IOException ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 
-    void processDirectory(IBatchExecute executor, String directory) {
+    void processDirectory(String directory) {
         try {
             File dir = new File(directory);
             File[] filesList = dir.listFiles();
@@ -105,9 +105,9 @@ public class BatchExecuteG6 implements IBatchExecute {
                 try {
                     name = file.getName();
                     if (name.toLowerCase().endsWith(".mat")) {
-                        processFileMat(executor, file);
+                        processFileMat(file);
                     } else if (name.toLowerCase().endsWith(".g6")) {
-                        processFileG6(executor, dir);
+                        processFileG6(dir);
                     }
                 } catch (Exception e) {
                     System.err.println("Fail in process: " + name);
@@ -117,13 +117,13 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    void processFileMat(IBatchExecute executor, File file) throws IOException {
+    void processFileMat(File file) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         loadGraphAdjMatrix.setName(file.getName());
-        processGraph(executor, loadGraphAdjMatrix);
+        processGraph(loadGraphAdjMatrix);
     }
 
-    void processFileG6(IBatchExecute executor, File file) throws IOException {
+    void processFileG6(File file) throws IOException {
         if (file != null) {
             long graphcount = 0;
             BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -131,7 +131,7 @@ public class BatchExecuteG6 implements IBatchExecute {
             while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
                 UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
                 if (ret != null) {
-                    processGraph(executor, ret);
+                    processGraph(ret);
                     ret.setName(file.getName() + "-" + graphcount);
                     graphcount++;
                 }
@@ -139,13 +139,13 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    public void processGraph(IBatchExecute executor, UndirectedSparseGraphTO loadGraphAdjMatrix) {
+    public void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix) {
         if (loadGraphAdjMatrix == null || loadGraphAdjMatrix.getVertexCount() == 0) {
             return;
         }
 
         long currentTimeMillis = System.currentTimeMillis();
-        IGraphOperation[] operations = executor.getOperations();
+        IGraphOperation[] operations = this.getOperations();
         for (IGraphOperation operation : operations) {
             Map result = operation.doOperation(loadGraphAdjMatrix);
             currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
