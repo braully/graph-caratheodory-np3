@@ -183,15 +183,16 @@ public class BatchExecuteG6 implements IBatchExecute {
         System.out.print(operation.getName());
         System.out.print("\t");
         printResultMap(result, loadGraphAdjMatrix);
+        System.out.println();
     }
 
     public void printResultMap(Map result, UndirectedSparseGraphTO loadGraphAdjMatrix) {
         System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER));
         System.out.print("\t");
-        System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
+        System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS));
         if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
             System.out.print("\t");
-            System.out.println(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET));
+            System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET));
         }
     }
 
