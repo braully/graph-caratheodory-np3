@@ -1,8 +1,10 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import static com.github.braully.graph.operation.GraphAllCaratheodoryExistsSetOfSize.log;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class GraphCaratheodoryHeuristicV2
@@ -13,6 +15,25 @@ public class GraphCaratheodoryHeuristicV2
     @Override
     public String getName() {
         return description;
+    }
+
+    @Override
+    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
+
+        Map<String, Object> result = super.doOperation(graphRead);
+        GraphCaratheodoryExpandSet expand = new GraphCaratheodoryExpandSet();
+        Collection initialSet = (Collection) result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET);
+        graphRead.setSet(initialSet);
+        Map<String, Object> doOperation = expand.doOperation(graphRead);
+        if (GraphCaratheodoryHeuristic.verbose) {
+            log.info("Initial Caratheodory Set: " + initialSet);    
+        }
+        Set<Integer> maxCarat = (Set<Integer>) doOperation.get("Max Caratheodory Superset");
+        if (maxCarat != null && !maxCarat.isEmpty()) {
+            OperationConvexityGraphResult hsp3 = hsp3(graphRead, maxCarat);
+            result.putAll(hsp3.toMap());
+        }
+        return result;
     }
 
     @Override
@@ -152,5 +173,4 @@ public class GraphCaratheodoryHeuristicV2
 //        ranking = (int) (deltaHs * 1 + neighborCount * 0.5 + bfsP * 0.3 + auxv * 0.2);
 //        return ranking;
 //    }
-
 }

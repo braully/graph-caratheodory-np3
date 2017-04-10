@@ -187,7 +187,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         return partial;
     }
 
-    private OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
+    public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
         int[] arr = new int[set.size()];
         int i = 0;
         for (Integer v : set) {

@@ -34,10 +34,14 @@ public class GraphCaratheodoryExpandSet implements IGraphOperation {
             int countNCarat = 0;
             for (int size = set.size() + 1; size <= maxSizeSet; size++) {
                 Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graphRead.getVertexCount(), size);
-                log.info("Verifying sets of size " + size);
+                if (GraphCaratheodoryHeuristic.verbose) {
+                    log.info("Verifying sets of size " + size);
+                }
+                // precisa de melhorias
                 while (combinationsIterator.hasNext()) {
                     int[] currentSet = combinationsIterator.next();
                     boolean isSubset = true;
+
                     for (Integer iv : set) {
                         boolean ba = false;
                         for (int i = 0; i < size; i++) {
@@ -49,16 +53,23 @@ public class GraphCaratheodoryExpandSet implements IGraphOperation {
                         OperationConvexityGraphResult hsp3g = hsp3(graphRead, currentSet);
                         if (hsp3g != null) {
                             String key = "Caratheodory Superset-" + (countNCarat++);
-                            log.info("Find " + key + ": " + hsp3g.caratheodorySet);
+                            if (GraphCaratheodoryHeuristic.verbose) {
+                                log.info("Find " + key + ": " + hsp3g.caratheodorySet);
+                            }
                             result.put(key, hsp3g.caratheodorySet);
-                            log.info("Try next size");
+                            if (GraphCaratheodoryHeuristic.verbose) {
+                                log.info("Try next size");
+                            }
+                            result.put("Max Caratheodory Superset", hsp3g.caratheodorySet);
                             break;
                         }
                     }
                 }
             }
-            log.info("End");
-        } else {
+            if (GraphCaratheodoryHeuristic.verbose) {
+                log.info("End");
+            }
+        } else if (GraphCaratheodoryHeuristic.verbose) {
             log.info("Set size < 2 Or Null");
         }
         totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
