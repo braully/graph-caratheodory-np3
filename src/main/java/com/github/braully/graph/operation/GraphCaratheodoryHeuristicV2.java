@@ -11,6 +11,7 @@ public class GraphCaratheodoryHeuristicV2
         extends GraphCaratheodoryHeuristic {
 
     static final String description = "Nº Caratheodory (Heuristic v2)";
+    static final boolean expand = false;
 
     @Override
     public String getName() {
@@ -21,17 +22,19 @@ public class GraphCaratheodoryHeuristicV2
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
 
         Map<String, Object> result = super.doOperation(graphRead);
-        GraphCaratheodoryExpandSet expand = new GraphCaratheodoryExpandSet();
-        Collection initialSet = (Collection) result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET);
-        graphRead.setSet(initialSet);
-        Map<String, Object> doOperation = expand.doOperation(graphRead);
-        if (GraphCaratheodoryHeuristic.verbose) {
-            log.info("Initial Caratheodory Set: " + initialSet);    
-        }
-        Set<Integer> maxCarat = (Set<Integer>) doOperation.get("Max Caratheodory Superset");
-        if (maxCarat != null && !maxCarat.isEmpty()) {
-            OperationConvexityGraphResult hsp3 = hsp3(graphRead, maxCarat);
-            result.putAll(hsp3.toMap());
+        if (expand) {
+            GraphCaratheodoryExpandSet expand = new GraphCaratheodoryExpandSet();
+            Collection initialSet = (Collection) result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET);
+            graphRead.setSet(initialSet);
+            Map<String, Object> doOperation = expand.doOperation(graphRead);
+            if (GraphCaratheodoryHeuristic.verbose) {
+                log.info("Initial Caratheodory Set: " + initialSet);
+            }
+            Set<Integer> maxCarat = (Set<Integer>) doOperation.get("Max Caratheodory Superset");
+            if (maxCarat != null && !maxCarat.isEmpty()) {
+                OperationConvexityGraphResult hsp3 = hsp3(graphRead, maxCarat);
+                result.putAll(hsp3.toMap());
+            }
         }
         return result;
     }
