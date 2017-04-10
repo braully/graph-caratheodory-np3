@@ -117,10 +117,10 @@ public class UtilResultCompare {
                         } catch (Exception e) {
                         }
 
-//                        addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-//                                resultado1, resultado2, tdouble1, tdouble2);
-                        addResult(nverticestr1 + "_-order", idgrafo1, Integer.parseInt(nverticestr1),
+                        addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
                                 resultado1, resultado2, tdouble1, tdouble2);
+//                        addResult(nverticestr1 + "_-order", idgrafo1, Integer.parseInt(nverticestr1),
+//                                resultado1, resultado2, tdouble1, tdouble2);
                     }
 
 //                    addResult(, Integer.parseInt(nverticestr), parts[2], tdouble);

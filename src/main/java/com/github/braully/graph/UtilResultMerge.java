@@ -12,14 +12,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.cli.*;
 
 /**
@@ -57,14 +57,24 @@ public class UtilResultMerge {
 
         String[] inputs = cmd.getOptionValues("input");
         if (inputs == null) {
+            inputs = new String[]{
+                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian",
+                "/home/strike/Documentos/grafos-processamento/Cubic",
+                "/home/strike/Documentos/grafos-processamento/Critical_H-free",
+                "/home/strike/Documentos/grafos-processamento/Highly_irregular",
+                "/home/strike/Documentos/grafos-processamento/Hypohamiltonian_graphs",
+                "/home/strike/Documentos/grafos-processamento/Maximal_triangle-free",
+                "/home/strike/Documentos/grafos-processamento/Minimal_Ramsey",
+                "/home/strike/Documentos/grafos-processamento/Strongly_regular",
+                "/home/strike/Documentos/grafos-processamento/Vertex-transitive",
+                "/home/strike/Documentos/grafos-processamento/Trees"};
 //            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mtf/resultado-ht.txt",
 //                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht-1.txt",
 //                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4.txt",
 //                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4-1.txt"};
-            inputs = new String[]{"/media/dados/documentos/grafos-processamento/almhypo/resultado-compare-total.txt"};
+//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/almhypo/resultado-compare-total.txt"};
 //            inputs = new String[]{"/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht.txt",
 //                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht4.txt"};
-
 //            inputs = new String[]{"/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht.txt",
 //                "/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht4.txt"};
 //            inputs = new String[]{"/media/dados/documentos/grafos-processamento/hypo/resultado-ht.txt",
@@ -75,48 +85,101 @@ public class UtilResultMerge {
 //                "/media/dados/documentos/grafos-processamento/snarks/resultado-ht4.txt"};
         }
         if (inputs != null) {
-            processFileTxt(inputs);
+            processInputs(inputs);
         }
     }
 
-    private static void processFileTxt(String[] inputs) throws FileNotFoundException, IOException {
+    private static void processInputs(String[] inputs)
+            throws FileNotFoundException, IOException {
         if (inputs == null || inputs.length == 0) {
             return;
         }
         File file = null;
         for (String inputFilePath : inputs) {
-            if (inputFilePath.toLowerCase().endsWith(".txt") && (file = new File(inputFilePath)).isFile()) {
-                BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-                String readLine = null;
-                while ((readLine = r.readLine()) != null) {
-                    String[] parts1 = readLine.split("\t");
-                    if (parts1 != null && parts1.length >= 6) {
-                        String grupo1 = parts1[0];
-                        String idgrafo1 = parts1[1];
-                        String nverticestr1 = parts1[2];
-                        String operacao1 = parts1[3];
-                        String resultao1 = parts1[4];
-                        String tempo1 = parts1[5];
-                        double tdouble1 = Double.parseDouble(tempo1);
-                        Integer resultado1 = null;
-                        try {
-                            resultado1 = Integer.parseInt(resultao1);
-                        } catch (Exception e) {
+            if (inputFilePath == null) {
+                continue;
+            }
 
-                        }
-                        addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-                                operacao1, resultado1, tdouble1);
-                    }
-                }
+            if ((file = new File(inputFilePath)).isFile()) {
+                processFile(file);
+            } else {
+                processDirectory(file);
             }
         }
         printResultadoConsolidado();
     }
 
+    public static void processDirectory(File file)
+            throws FileNotFoundException, NumberFormatException, IOException {
+        if (file == null || file.isFile()) {
+            return;
+        }
+        File ftmp = new File(file, "resultado");
+        if (!ftmp.exists() || !ftmp.isDirectory()) {
+            return;
+        }
+        File[] files = ftmp.listFiles();
+        if (files != null) {
+            List<File> listFiles = new ArrayList<>(Arrays.asList(files));
+            Collections.sort(listFiles, new Comparator<File>() {
+                public int compare(File t, File t1) {
+                    int ret = 0;
+                    try {
+                        if (t != null && t1 != null) {
+                            ret = t.getName().compareToIgnoreCase(t1.getName());
+                        }
+                    } catch (Exception e) {
+
+                    }
+                    return ret;
+                }
+            });
+            for (File f : listFiles) {
+                System.out.println("Process: " + f);
+                processFile(f, file.getName());
+            }
+        }
+    }
+
+    public static void processFile(File file) throws FileNotFoundException, NumberFormatException, IOException {
+        processFile(file, null);
+    }
+
+    public static void processFile(File file, String grupo) throws FileNotFoundException, NumberFormatException, IOException {
+        if (file == null || !file.getName().endsWith(".txt")) {
+            return;
+        }
+        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        String readLine = null;
+        while ((readLine = r.readLine()) != null) {
+            String[] parts1 = readLine.split("\t");
+            if (parts1 != null && parts1.length >= 6) {
+                String grupo1 = parts1[0];
+                String idgrafo1 = parts1[1];
+                String nverticestr1 = parts1[2];
+                String operacao1 = parts1[3];
+                String resultao1 = parts1[4];
+                String tempo1 = parts1[5];
+                double tdouble1 = Double.parseDouble(tempo1);
+                Integer resultado1 = null;
+                try {
+                    resultado1 = Integer.parseInt(resultao1);
+                } catch (Exception e) {
+
+                }
+                if (grupo != null) {
+                    grupo1 = grupo;
+                }
+                addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
+                        operacao1, resultado1, tdouble1);
+            }
+        }
+    }
+
     private static void addResult(String grafo, String id,
             int nvertices, String operacao,
             Integer resultado, double tempo) {
-        String key = grafo.trim() + "-" + nvertices;
+        String key = String.format("%s-%4d", grafo.trim(), nvertices);
         ResultadoLinha r = resultados.get(key);
         if (r == null) {
             r = new ResultadoLinha();
@@ -180,36 +243,6 @@ public class UtilResultMerge {
         }
     }
 
-    private static void processFileJson(String inputFilePath) {
-        Pattern pattern = Pattern.compile("^Caratheodroy number.*?: (\\d+)");
-        System.out.println("Opening Results");
-        List<DatabaseFacade.RecordResultGraph> allResults = DatabaseFacade.getAllResults(inputFilePath);
-        System.out.println("Results open");
-        System.out.println("Total results: " + allResults.size());
-        if (allResults != null) {
-            for (DatabaseFacade.RecordResultGraph r : allResults) {
-                try {
-                    if (r.operation.equals("Nº Caratheodory (Binary Java)") && r.graph.startsWith("planar_conn")) {
-
-                        Matcher matcher = pattern.matcher(r.results);
-                        if (matcher.find()) {
-                            String strNumCarat = matcher.group(1);
-//                            System.out.print(strNumCarat);
-//                            System.out.print(" from result: ");
-//                            System.out.print(r.results);
-//                            addResult("planar_conn", r.id, Integer.parseInt(r.vertices), Integer.parseInt(strNumCarat), resultado2, tdouble1, tdouble2);
-                        } else {
-//                            System.out.println("Not found");
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        printResultadoConsolidado();
-    }
-
     static class ResultadoColuna {
 
         Map<Integer, Integer> totalPorNum = new HashMap<>();
@@ -251,6 +284,7 @@ public class UtilResultMerge {
             if (ncarat == null || ncarat == 0) {
                 erros++;
             } else {
+                cont++;
                 totalTime += tempo;
                 if (ncarat > max) {
                     max = ncarat;
@@ -283,30 +317,60 @@ public class UtilResultMerge {
         }
 
         public void printResultado(ResultadoColuna ref) {
-            double media = ((double) diffAc / (double) diff);
-            System.out.print(String.format("%.2f", totalTime));
-            System.out.print("\t");
-            System.out.print(worst);
-            System.out.print("\t");
-            System.out.print(best);
-            System.out.print("\t");
-            System.out.print(String.format("%.2f", media));
-            System.out.print("\t");
-            System.out.print(ref.max - max);
-            System.out.print("\t");
-            System.out.print(erros);
-            System.out.print("\t");
+            if (cont > 0) {
+                String strMedia = "--";
+                if (diff > 0) {
+                    double media = ((double) diffAc / (double) diff);
+                    strMedia = String.format("%.2f", media);
+                }
+                System.out.print(String.format("%.2f", totalTime));
+                System.out.print("\t");
+                System.out.print(worst);
+                System.out.print("\t");
+                System.out.print(best);
+                System.out.print("\t");
+                System.out.print(strMedia);
+                System.out.print("\t");
+                System.out.print(ref.max - max);
+                System.out.print("\t");
+                System.out.print(erros);
+                System.out.print("\t");
+            } else {
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+            }
         }
 
         public void printResultadoReference() {
-            System.out.print(cont);
-            System.out.print("\t");
-            System.out.print(String.format("%.2f", totalTime));
-            System.out.print("\t");
-            System.out.print(min);
-            System.out.print("\t");
-            System.out.print(max);
-            System.out.print("\t");
+            if (cont > 0) {
+                System.out.print(cont);
+                System.out.print("\t");
+                System.out.print(String.format("%.2f", totalTime));
+                System.out.print("\t");
+                System.out.print(min);
+                System.out.print("\t");
+                System.out.print(max);
+                System.out.print("\t");
+            } else {
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+            }
         }
     }
 
@@ -338,6 +402,11 @@ public class UtilResultMerge {
                     res.printResultadoReference();
                 } else {
                     ResultadoColuna ref = resultados.get(opers.get(0));
+                    if (res == null) {
+                        res = new ResultadoColuna();
+                        resultados.put(str, res);
+
+                    }
                     res.printResultado(ref);
                 }
             }

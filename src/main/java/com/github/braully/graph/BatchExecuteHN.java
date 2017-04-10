@@ -33,6 +33,7 @@ public class BatchExecuteHN extends BatchExecuteG6 {
         return operations;
     }
 
+    @Override
     public void printResultMap(Map result, UndirectedSparseGraphTO loadGraphAdjMatrix) {
         System.out.print(result.get(GraphHullNumber.PARAM_NAME_HULL_NUMBER));
         System.out.print("\t");
