@@ -14,6 +14,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,7 +108,8 @@ public class BatchExecuteG6 implements IBatchExecute {
     void processDirectory(String directory) {
         try {
             File dir = new File(directory);
-            File[] filesList = dir.listFiles();
+            File[] files = dir.listFiles();
+            List<File> filesList = sortFileArray(files);
             for (File file : filesList) {
                 String name = null;
                 try {
@@ -210,5 +216,23 @@ public class BatchExecuteG6 implements IBatchExecute {
 
         }
         return ret;
+    }
+
+    static List<File> sortFileArray(File[] files) {
+        List<File> fileList = new ArrayList<>(Arrays.asList(files));
+        Collections.sort(fileList, new Comparator<File>() {
+            public int compare(File t, File t1) {
+                int ret = 0;
+                try {
+                    if (t != null && t1 != null) {
+                        ret = t.getName().compareToIgnoreCase(t1.getName());
+                    }
+                } catch (Exception e) {
+
+                }
+                return ret;
+            }
+        });
+        return fileList;
     }
 }

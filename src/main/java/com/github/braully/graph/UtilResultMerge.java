@@ -120,20 +120,7 @@ public class UtilResultMerge {
         }
         File[] files = ftmp.listFiles();
         if (files != null) {
-            List<File> listFiles = new ArrayList<>(Arrays.asList(files));
-            Collections.sort(listFiles, new Comparator<File>() {
-                public int compare(File t, File t1) {
-                    int ret = 0;
-                    try {
-                        if (t != null && t1 != null) {
-                            ret = t.getName().compareToIgnoreCase(t1.getName());
-                        }
-                    } catch (Exception e) {
-
-                    }
-                    return ret;
-                }
-            });
+            List<File> listFiles = BatchExecuteG6.sortFileArray(files);
             for (File f : listFiles) {
                 System.out.println("Process: " + f);
                 processFile(f, file.getName());
