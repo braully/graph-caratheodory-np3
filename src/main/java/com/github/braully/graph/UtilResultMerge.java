@@ -68,21 +68,6 @@ public class UtilResultMerge {
                 "/home/strike/Documentos/grafos-processamento/Strongly_regular",
                 "/home/strike/Documentos/grafos-processamento/Vertex-transitive",
                 "/home/strike/Documentos/grafos-processamento/Trees"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/mtf/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht-1.txt",
-//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4.txt",
-//                "/media/dados/documentos/grafos-processamento/mtf/resultado-ht4-1.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/almhypo/resultado-compare-total.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian_graphs_cubic/resultado-ht4.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/highlyirregular/resultado-ht4.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/hypo/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/hypo/resultado-ht4.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/quartic/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/quartic/resultado-ht4.txt"};
-//            inputs = new String[]{"/media/dados/documentos/grafos-processamento/snarks/resultado-ht.txt",
-//                "/media/dados/documentos/grafos-processamento/snarks/resultado-ht4.txt"};
         }
         if (inputs != null) {
             processInputs(inputs);
