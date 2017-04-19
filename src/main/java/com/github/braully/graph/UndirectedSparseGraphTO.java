@@ -44,6 +44,10 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
                     List ed = (List) edge;
                     this.addEdge(n, ed.get(0), ed.get(1));
                     n = n.intValue() + 1;
+                } else if (edge instanceof Pair) {
+                    Pair p = (Pair) edge;
+                    this.addEdge(n, p.getFirst(), p.getSecond());
+                    n = n.intValue() + 1;
                 }
             }
         }
@@ -151,7 +155,8 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         return clone;
     }
 
-    public void addEdge(int i, int j) {
-        this.addEdge(this.getEdgeCount(), i, j);
+    public Object addEdge(int i, int j) {
+        Integer edgeCount = this.getEdgeCount();
+        return this.addEdge(edgeCount, i, j) ? edgeCount : null;
     }
 }

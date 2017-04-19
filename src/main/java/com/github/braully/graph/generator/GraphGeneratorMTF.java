@@ -16,6 +16,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
     static final String description = "Maximal Triangle-Free";
     static final Integer DEFAULT_NVERTICES = 5;
 
+    int count = 0;
+
     @Override
     public String[] getParameters() {
         return parameters;
@@ -52,6 +54,12 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
 //                graph.addEdge(countEdge++, source, target);
 //            }
 //        }
+        this.count = 0;
+        int[] vSet = new int[nvertices];
+        graph.addEdge(0, 1);
+        vSet[1] = 1;
+        vSet[2] = 1;
+        addEdge(graph, vSet, 2);
         return graph;
     }
 
@@ -114,6 +122,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
             }
         }
         if (flag) {
+            System.out.println("Graph Found: " + (count++));
+            System.out.println(graphProcessing);
 //            addGraph(graphProcessing, n);
         }
     }
@@ -142,7 +152,7 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
             for (int j = 0; j < n; j++) {
                 int sum = 0;
                 for (int k = 0; k < n; k++) {
-                    sum = sum + a.getAdjacency(i, k) * a.getAdjacency(k, j);
+                    sum = sum + x[i][k] * a.getAdjacency(k, j);
                 }
                 y[i][j] = sum;
             }
