@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -199,6 +200,15 @@ public class BatchExecuteG6 implements IBatchExecute {
         if (loadGraphAdjMatrix.getVertexCount() >= TRESHOLD_PRINT_SET) {
             System.out.print("\t");
             System.out.print(result.get(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_SET));
+            try {
+                Collection hs = (Collection) result.get(OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL);
+                if (hs != null) {
+                    System.out.print("\t");
+                    System.out.print("|Hs|:");
+                    System.out.print(hs.size());
+                }
+            } catch (Exception e) {
+            }
         }
     }
 

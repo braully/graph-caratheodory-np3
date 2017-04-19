@@ -137,4 +137,21 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
     public void setName(String name) {
         this.name = name;
     }
+
+    @JsonIgnore
+    public int getAdjacency(V i, V k) {
+        return this.isNeighbor(i, k) ? 1 : 0;
+    }
+
+    @Override
+    public UndirectedSparseGraphTO clone() {
+        UndirectedSparseGraphTO clone = new UndirectedSparseGraphTO();
+        clone.setVertices(this.getVertices());
+        clone.setPairs(this.getPairs());
+        return clone;
+    }
+
+    public void addEdge(int i, int j) {
+        this.addEdge(this.getEdgeCount(), i, j);
+    }
 }

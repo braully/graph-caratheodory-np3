@@ -44,14 +44,117 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
             vertexs[i] = i;
             graph.addVertex(vertexs[i]);
         }
-        int countEdge = 0;
-        for (int i = 0; i < nvertices; i++) {
-            for (int j = i; j < nvertices - 1; j++) {
-                Integer source = vertexs[i];
-                Integer target = vertexs[j] + 1;
-                graph.addEdge(countEdge++, source, target);
+//        int countEdge = 0;
+//        for (int i = 0; i < nvertices; i++) {
+//            for (int j = i; j < nvertices - 1; j++) {
+//                Integer source = vertexs[i];
+//                Integer target = vertexs[j] + 1;
+//                graph.addEdge(countEdge++, source, target);
+//            }
+//        }
+        return graph;
+    }
+
+    /**
+     * Adds an edge to the graph a.
+     *
+     * @param graphProcessing the graph under processing
+     * @param vSet the set of vertices processed
+     * @param cV the count of vertices processed
+     */
+    void addEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
+        int n = graphProcessing.getVertexCount();
+        if (cV < n) {
+            processAddEdge(graphProcessing, vSet, cV);
+        } else if (cV == n) {
+            processEndAddEdge(graphProcessing, vSet, cV);
+        }
+    }
+
+    public void processAddEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
+        int n = graphProcessing.getVertexCount();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                if (i != j && graphProcessing.getAdjacency(i, j) == 0
+                        && ((vSet[i] == 0 && vSet[j] == 1) || (vSet[i] == 1 && vSet[j] == 0))) {
+                    UndirectedSparseGraphTO graphCopy = (UndirectedSparseGraphTO) graphProcessing.clone();
+                    graphCopy.addEdge(i, j);
+                    int oldi = vSet[i];
+                    int oldj = vSet[j];
+                    vSet[i] = 1;
+                    vSet[j] = 1;
+
+                    if (isTriangleFree(graphCopy, n)) {
+                        int[] vSetCopy = new int[n];
+                        System.arraycopy(vSet, 0, vSetCopy, 0, vSetCopy.length);
+                        addEdge(graphCopy, vSetCopy, cV + vSet[i] - oldi + vSet[j] - oldj);
+                    }
+                    vSet[i] = oldi;
+                    vSet[j] = oldj;
+                }
             }
         }
-        return graph;
+    }
+
+    public void processEndAddEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
+        int n = graphProcessing.getVertexCount();
+        boolean flag = true;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                if (i != j && graphProcessing.getAdjacency(i, j) == 0 && vSet[i] == 1 && vSet[j] == 1) {
+                    UndirectedSparseGraphTO grpahCopy = (UndirectedSparseGraphTO) graphProcessing.clone();
+                    grpahCopy.addEdge(i, j);
+                    if (isTriangleFree(grpahCopy, n)) {
+                        flag = false;
+                        int[] vSetCopy = new int[n];
+                        System.arraycopy(vSet, 0, vSetCopy, 0, vSetCopy.length);
+                        addEdge(grpahCopy, vSetCopy, cV);
+                    }
+                }
+            }
+        }
+        if (flag) {
+//            addGraph(graphProcessing, n);
+        }
+    }
+
+    /**
+     * Checks if a graph is triangle free.
+     *
+     * @param a the graph to be checked
+     * @param n the number of vertices
+     * @return true if it is triangle free
+     */
+    Boolean isTriangleFree(UndirectedSparseGraphTO a, int n) {
+        int[][] x = new int[n][n];
+        int[][] y = new int[n][n];
+        int trace = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int sum = 0;
+                for (int k = 0; k < n; k++) {
+                    sum = sum + a.getAdjacency(i, k) * a.getAdjacency(k, j);
+                }
+                x[i][j] = sum;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int sum = 0;
+                for (int k = 0; k < n; k++) {
+                    sum = sum + a.getAdjacency(i, k) * a.getAdjacency(k, j);
+                }
+                y[i][j] = sum;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            trace += y[i][i];
+        }
+        if (trace == 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
