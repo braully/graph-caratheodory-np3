@@ -1,20 +1,23 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import static com.github.braully.graph.operation.GraphAllCaratheodoryExistsSetOfSize.log;
 import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.INCLUDED;
 import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.NEIGHBOOR_COUNT_INCLUDED;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 
-public class GraphCheckCaratheodorySet implements IGraphOperation {
+public class GraphCaratheodoryExpandSet implements IGraphOperation {
 
     static final String type = "P3-Convexity";
-    static final String description = "Check Set(S)";
+    static final String description = "Expand Caratheodory Set";
 
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
     public static final int INCLUDED = 2;
@@ -23,25 +26,54 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         long totalTimeMillis = -1;
         Collection<Integer> set = graphRead.getSet();
-
         totalTimeMillis = System.currentTimeMillis();
-        OperationConvexityGraphResult caratheodoryNumberGraph = null;
+        Map<String, Object> result = new HashMap<>();
+
         if (set.size() >= 2) {
-            caratheodoryNumberGraph = hsp3(graphRead, set);
+            int maxSizeSet = (graphRead.getVertexCount() + 1) / 2;
+            int countNCarat = 0;
+            for (int size = set.size() + 1; size <= maxSizeSet; size++) {
+                Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(graphRead.getVertexCount(), size);
+                if (GraphCaratheodoryHeuristic.verbose) {
+                    log.info("Verifying sets of size " + size);
+                }
+                // precisa de melhorias
+                while (combinationsIterator.hasNext()) {
+                    int[] currentSet = combinationsIterator.next();
+                    boolean isSubset = true;
+
+                    for (Integer iv : set) {
+                        boolean ba = false;
+                        for (int i = 0; i < size; i++) {
+                            ba = ba || currentSet[i] == iv;
+                        }
+                        isSubset = isSubset && ba;
+                    }
+                    if (isSubset) {
+                        OperationConvexityGraphResult hsp3g = hsp3(graphRead, currentSet);
+                        if (hsp3g != null) {
+                            String key = "Caratheodory Superset-" + (countNCarat++);
+                            if (GraphCaratheodoryHeuristic.verbose) {
+                                log.info("Find " + key + ": " + hsp3g.caratheodorySet);
+                            }
+                            result.put(key, hsp3g.caratheodorySet);
+                            if (GraphCaratheodoryHeuristic.verbose) {
+                                log.info("Try next size");
+                            }
+                            result.put("Max Caratheodory Superset", hsp3g.caratheodorySet);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (GraphCaratheodoryHeuristic.verbose) {
+                log.info("End");
+            }
+        } else if (GraphCaratheodoryHeuristic.verbose) {
+            log.info("Set size < 2 Or Null");
         }
         totalTimeMillis = System.currentTimeMillis() - totalTimeMillis;
-
-        /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
-        Map<String, Object> response = new HashMap<>();
-        if (caratheodoryNumberGraph == null) {
-            caratheodoryNumberGraph = new OperationConvexityGraphResult();
-        }
-        if (caratheodoryNumberGraph.caratheodorySet != null
-                && !caratheodoryNumberGraph.caratheodorySet.isEmpty()) {
-            response.putAll(caratheodoryNumberGraph.toMap());
-            response.put(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumberGraph.caratheodorySet.size());
-        }
-        return response;
+        return result;
     }
 
     public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graph,
@@ -187,7 +219,7 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         return partial;
     }
 
-    public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
+    private OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
         int[] arr = new int[set.size()];
         int i = 0;
         for (Integer v : set) {

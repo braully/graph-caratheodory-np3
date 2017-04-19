@@ -1,6 +1,7 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,8 +75,9 @@ fim para
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
     public static boolean verbose = true;
-//    public static boolean verbose = false;
+    BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
 
+//    public static boolean verbose = false;
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         long totalTimeMillis = -1;
@@ -112,6 +114,8 @@ fim para
         int[] auxVp = new int[vertexCount];
         Integer partial = v;
 
+        beforeVerticePromotion(graph, v, v, aux);
+
         buildInitialCaratheodorySet(v, graph, s, aux);
 
         promotable.addAll(s);
@@ -127,9 +131,16 @@ fim para
                 continue;
             }
 
+//            beforeVerticePromotion(graph, vp, v, aux);
             if (verbose) {
                 System.out.println("\n\tPromotable: " + promotable);
                 System.out.println("\n\t* Selectd " + vp + " from priority list");
+                System.out.print("V(S)        = {");
+                for (int i = 0; i < aux.length; i++) {
+                    System.out.printf("%2d | ", i);
+                }
+                System.out.println("}");
+
                 System.out.print(String.format("Aux(%2d)    ", vp));
                 printArrayAux(aux);
             }
@@ -444,7 +455,7 @@ fim para
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
             int[] aux) {
-        return selectBestNeighbor(v, graph, aux, null, null);
+        return selectBestNeighbor(v, graph, aux, v, null);
     }
 
     public Integer selectBestNeighbor(Integer v, UndirectedSparseGraphTO<Integer, Integer> graph,
@@ -503,7 +514,7 @@ fim para
         }
         boolean ret = true;
         int vertexCount = graph.getVertexCount();
-        int[] auxc = new int[auxf.length];
+        int[] auxc = new int[vertexCount];
 
         for (Integer p : s) {
             for (int j = 0; j < vertexCount; j++) {
@@ -574,5 +585,22 @@ fim para
         promotable.remove(nv0);
         promotable.remove(nv1);
 
+    }
+
+    void beforeVerticePromotion(UndirectedSparseGraphTO<Integer, Integer> graph, Integer vp, Integer v, int[] aux) {
+//        bdl.labelDistances(graph, vp);
+    }
+
+    public int countSizeHs(Set<Integer> s, int[] aux) {
+        int cont = 0;
+        if (aux == null) {
+            return 0;
+        }
+        for (int i = 0; i < aux.length; i++) {
+            if (aux[i] >= INCLUDED) {
+                cont++;
+            }
+        }
+        return cont;
     }
 }
