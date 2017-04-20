@@ -103,7 +103,7 @@ public class GraphOperationTriangleFree implements IGraphOperation {
         UndirectedSparseGraphTO graph = g.clone();
         int n = graph.getVertexCount();
         for (int i = 0; i < n && ret; i++) {
-            for (int j = 0; j < n && ret; j++) {
+            for (int j = 0; j < i && ret; j++) {
                 if (i != j && !graph.isNeighbor(i, j)) {
                     Object edge = graph.addEdge(i, j);
                     boolean triangleFree = isTriangleFree(graph);
