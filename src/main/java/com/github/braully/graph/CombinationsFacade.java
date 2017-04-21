@@ -17,8 +17,8 @@ public class CombinationsFacade {
         Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(n, k);
         int cont = 0;
         while (combinationsIterator.hasNext()) {
+            comb = combinationsIterator.next();
             if (cont++ == index) {
-                comb = combinationsIterator.next();
                 break;
             }
         }
