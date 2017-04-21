@@ -9,8 +9,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
+
+    static final Logger log = Logger.getLogger(GraphNKIndexedGenerator.class);
 
     static final String N_VERTICES = "N";
     static final String P_EDEGES = "M";
@@ -48,7 +51,8 @@ public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
         }
 
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
-        graph.setName("N" + nvertices + ",M" + pvertices + "-Indexed" + nkindex);
+        String name = "N" + nvertices + ",M" + pvertices + "-Indexed" + nkindex;
+        graph.setName(name);
 
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
@@ -58,12 +62,17 @@ public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
             graph.addVertex(vertexs[i]);
         }
 
-        int[] combination = CombinationsFacade.getCombinationNKByLexicographIndex(nvertices, pvertices, nkindex);
+        int maxEdges = (nvertices * (nvertices - 1)) / 2;
+        int[] combination = CombinationsFacade.getCombinationNKByLexicographIndex(maxEdges, pvertices, nkindex);
+        log.info("Max Edges: " + maxEdges);
+
         if (combination != null && combination.length > 0) {
             Set<Integer> edges = new HashSet<Integer>();
             for (int e : combination) {
                 edges.add(e);
             }
+            log.info("Edges Combinations: " + edges);
+
             int countEdge = 0;
             for (int i = 0; i < nvertices; i++) {
                 for (int j = i; j < nvertices - 1; j++) {
@@ -76,6 +85,7 @@ public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
                 }
             }
         }
+        log.info("Graph: " + name);
         return graph;
     }
 }
