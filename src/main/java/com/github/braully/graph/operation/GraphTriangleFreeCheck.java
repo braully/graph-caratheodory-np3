@@ -2,20 +2,11 @@ package com.github.braully.graph.operation;
 
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.INCLUDED;
-import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.PROCESSED;
-import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.log4j.Logger;
 
-public class GraphOperationTriangleFree implements IGraphOperation {
+public class GraphTriangleFreeCheck implements IGraphOperation {
 
     static final String type = "Graph Class";
     static final String description = "Triangle-Free Check (Java)";

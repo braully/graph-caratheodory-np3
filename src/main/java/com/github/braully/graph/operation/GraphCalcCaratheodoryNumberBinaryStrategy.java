@@ -50,7 +50,7 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
         return result;
     }
 
-    OperationConvexityGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
+    public OperationConvexityGraphResult findCaratheodroySetBruteForce(UndirectedSparseGraphTO<Integer, Integer> graph, int currentSize) {
         OperationConvexityGraphResult processedHullSet = null;
         if (graph == null || graph.getVertexCount() <= 0) {
             return processedHullSet;

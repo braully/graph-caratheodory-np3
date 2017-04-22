@@ -33,7 +33,7 @@ import org.apache.commons.cli.*;
  */
 public class BatchExecuteG6 implements IBatchExecute {
 
-    public static final int TRESHOLD_PRINT_SET = 30;
+    public static final int TRESHOLD_PRINT_SET = 10;
 
     static final IGraphOperation[] operations = new IGraphOperation[]{new GraphCalcCaratheodoryNumberBinaryStrategy()};
 

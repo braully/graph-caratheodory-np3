@@ -17,6 +17,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
     static final Integer DEFAULT_NVERTICES = 5;
 
     int count = 0;
+    boolean interrupt = false;
+    private UndirectedSparseGraphTO lastGraph;
 
     @Override
     public String[] getParameters() {
@@ -71,6 +73,9 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
      * @param cV the count of vertices processed
      */
     void addEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
+        if (interrupt) {
+            return;
+        }
         int n = graphProcessing.getVertexCount();
         if (cV < n) {
             processAddEdge(graphProcessing, vSet, cV);
@@ -81,8 +86,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
 
     public void processAddEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
         int n = graphProcessing.getVertexCount();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
+        for (int i = 0; i < n && !interrupt; i++) {
+            for (int j = 0; j < i && !interrupt; j++) {
                 if (i != j && graphProcessing.getAdjacency(i, j) == 0
                         && ((vSet[i] == 0 && vSet[j] == 1) || (vSet[i] == 1 && vSet[j] == 0))) {
                     UndirectedSparseGraphTO graphCopy = (UndirectedSparseGraphTO) graphProcessing.clone();
@@ -107,8 +112,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
     public void processEndAddEdge(UndirectedSparseGraphTO graphProcessing, int[] vSet, int cV) {
         int n = graphProcessing.getVertexCount();
         boolean flag = true;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
+        for (int i = 0; i < n && !interrupt; i++) {
+            for (int j = 0; j < i && !interrupt; j++) {
                 if (i != j && graphProcessing.getAdjacency(i, j) == 0 && vSet[i] == 1 && vSet[j] == 1) {
                     UndirectedSparseGraphTO grpahCopy = (UndirectedSparseGraphTO) graphProcessing.clone();
                     grpahCopy.addEdge(i, j);
@@ -121,10 +126,11 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
                 }
             }
         }
-        if (flag) {
-            System.out.println("Graph Found: " + (count++));
-            System.out.println(graphProcessing);
-//            addGraph(graphProcessing, n);
+        if (flag && !interrupt) {
+//            System.out.println("Graph Found: " + count);
+//            System.out.println(graphProcessing);
+            count++;
+            addGraph(graphProcessing);
         }
     }
 
@@ -166,5 +172,37 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
         } else {
             return false;
         }
+    }
+
+    public void addNewVertice(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        if (graph == null) {
+            return;
+        }
+        this.interrupt = false;
+        this.count = 0;
+        int nvertices = graph.getVertexCount() + 1;
+        graph.addVertex(graph.getVertexCount());
+        int[] vSet = new int[nvertices];
+        for (int i = 0; i < nvertices - 1; i++) {
+            vSet[i] = 1;
+        }
+        addEdge(graph, vSet, nvertices - 1);
+    }
+
+    public void addGraph(UndirectedSparseGraphTO graphProcessing) {
+        this.lastGraph = graphProcessing;
+        this.observerGraph(graphProcessing);
+    }
+
+    public void observerGraph(UndirectedSparseGraphTO graphProcessing) {
+
+    }
+
+    public void interrupt() {
+        this.interrupt = true;
+    }
+
+    public UndirectedSparseGraphTO getLastGraph() {
+        return lastGraph;
     }
 }

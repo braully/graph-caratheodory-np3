@@ -1,0 +1,75 @@
+package com.github.braully.graph.operation;
+
+import com.github.braully.graph.GraphWS;
+import com.github.braully.graph.UndirectedSparseGraphTO;
+import com.github.braully.graph.UtilGraph;
+import com.github.braully.graph.generator.GraphGeneratorMTF;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.log4j.Logger;
+
+public class GraphTriangleFreeExpand implements IGraphOperation {
+
+    static final String type = "Graph Class";
+    static final String description = "Triangle-Free Expand Infinite (Java)";
+
+    private static final Logger log = Logger.getLogger(GraphWS.class);
+
+    @Override
+    public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
+
+        /* Processar a buscar pelo hullset e hullnumber */
+        final GraphCaratheodoryExistsSetOfSize caratheodoryExistsSetOfSize = new GraphCaratheodoryExistsSetOfSize();
+        Map<String, Object> response = new HashMap<>();
+
+        GraphGeneratorMTF generatorMTF = new GraphGeneratorMTF() {
+            @Override
+            public void observerGraph(UndirectedSparseGraphTO graphProcessing) {
+                boolean cart4 = false;
+                OperationConvexityGraphResult findCaratheodroySetBruteForce = caratheodoryExistsSetOfSize.findCaratheodroySetBruteForce(graphProcessing, 4);
+                if (findCaratheodroySetBruteForce != null) {
+                    cart4 = true;
+//                    System.out.println("Caratheodory size 4 found: " + findCaratheodroySetBruteForce.caratheodorySet);
+                } else {
+//                    System.out.println("Caratheodory size 4 NOT found");
+                }
+                findCaratheodroySetBruteForce = caratheodoryExistsSetOfSize.findCaratheodroySetBruteForce(graphProcessing, 5);
+                if (findCaratheodroySetBruteForce != null) {
+                    System.out.println("******************************************************************************");
+                    System.out.println("Graph: " + graphProcessing);
+                    System.out.println("Caratheodory size 5 found: " + findCaratheodroySetBruteForce.caratheodorySet);
+                    System.out.println("******************************************************************************");
+                    System.out.println("===================== ERROOOOOOOOOOORRRRRRRRRR ================================");
+                    System.exit(-1);
+                } else {
+//                    System.out.println("Caratheodory size 5 NOT found");
+                }
+                if (cart4) {
+                    this.interrupt();
+                }
+            }
+        };
+        try {
+            boolean erro = false;
+            UndirectedSparseGraphTO lastGraph = graph;
+            while (!erro) {
+                generatorMTF.addNewVertice(lastGraph);
+                lastGraph = generatorMTF.getLastGraph();
+                System.out.println("Chield size of " + (lastGraph.getVertexCount()) + "...  OK");
+                System.out.println("\tTrying chield size of " + (lastGraph.getVertexCount() + 1));
+            }
+        } catch (Exception ex) {
+            log.error(null, ex);
+        }
+        return response;
+    }
+
+    public String getTypeProblem() {
+        return type;
+    }
+
+    public String getName() {
+        return description;
+    }
+
+}
