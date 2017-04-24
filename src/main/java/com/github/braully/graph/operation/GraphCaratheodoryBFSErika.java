@@ -5,9 +5,11 @@ import edu.uci.ics.jung.algorithms.filters.FilterUtils;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -55,12 +57,13 @@ public class GraphCaratheodoryBFSErika
         System.out.println("}");
 
         for (Integer v : vertices) {
+            int maxcg = 0;
+
             int[] lv = new int[vertexCount];
             int[] lvLinha = new int[vertexCount];
             int[] l1v = new int[vertexCount];
             int[] l2v = new int[vertexCount];
             int[] l3v = new int[vertexCount];
-            int maxcg = 0;
 
             System.out.println("0 - Enraizando: " + v);
 
@@ -150,7 +153,42 @@ public class GraphCaratheodoryBFSErika
                     System.out.println("\t Compomentes conexas (" + componentesConexas.size() + "): " + componentesConexas);
 
                     //3c -  
+                    l2v[w] = Integer.MIN_VALUE;
+                    if (componentesConexas.size() >= 2) {
+                        int maxlvu[] = new int[componentesConexas.size()];
+                        for (int c = 0; c < componentesConexas.size(); c++) {
+                            maxlvu[c] = Integer.MIN_VALUE;
+                            UndirectedSparseGraphTO componente = componentesConexas.get(c);
+                            for (Integer u : (Collection<Integer>) componente.getVertices()) {
+                                maxlvu[c] = Math.max(maxlvu[c], lv[u]);
+                            }
+                        }
+                        Arrays.sort(maxlvu);
+                        l2v[w] = maxlvu[maxlvu.length - 1] + maxlvu[maxlvu.length - 2];
+                    }
+
                     //3d - 
+                    int maxlvu1lvu2 = Integer.MIN_VALUE;
+                    for (int c = 0; c < componentesConexas.size(); c++) {
+                        int u1 = -1;
+                        int maxlvu = Integer.MIN_VALUE;
+                        int maxlvulinha = Integer.MIN_VALUE;
+                        UndirectedSparseGraphTO componente = componentesConexas.get(c);
+                        for (Integer u : (Collection<Integer>) componente.getVertices()) {
+                            if (maxlvu < lv[u]) {
+                                maxlvu = lv[u];
+                                u1 = u;
+                            }
+                            if (maxlvulinha < lvLinha[u] && !u.equals(u1)) {
+                                maxlvulinha = lvLinha[u];
+                            }
+                        }
+                        if (maxlvu > maxlvu1lvu2 && maxlvulinha > maxlvu1lvu2 && (maxlvu + maxlvulinha) > maxlvu1lvu2) {
+                            maxlvu1lvu2 = maxlvu + maxlvulinha;
+                        }
+                    }
+                    l3v[w] = maxlvu1lvu2;
+
                     //3e - lv(w) = max{l1v(w), l2v(w), l3v(w)}, lvlinha(w) = max{lv(u) |uEChv(w)}
                     lv[w] = Math.max(Math.max(l1v[w], l2v[w]), l3v[w]);
                     lvLinha[w] = Integer.MIN_VALUE;
