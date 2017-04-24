@@ -46,6 +46,8 @@ public class GraphCaratheodoryBFSErika
         Collection<Integer> vertices = graph.getVertices();
         int vertexCount = graph.getVertexCount();
 
+        int maxmaxcg = 0;
+
         System.out.printf("V(G)    = {");
         for (int i = 0; i < vertexCount; i++) {
             System.out.printf("%2d | ", i);
@@ -165,7 +167,11 @@ public class GraphCaratheodoryBFSErika
                 }
             }
             System.out.println("4 - c(G) = max{lv(v)|vEV(G) = " + maxcg);
+            if (maxmaxcg < maxcg) {
+                maxmaxcg = maxcg;
+            }
         }
+        System.out.println("c(G) = " + maxmaxcg);
         return caratheodorySet;
     }
 
