@@ -205,4 +205,8 @@ public class GraphGeneratorMTF extends AbstractGraphGenerator {
     public UndirectedSparseGraphTO getLastGraph() {
         return lastGraph;
     }
+
+    public int getCount() {
+        return count;
+    }
 }

@@ -4,8 +4,12 @@ import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
 import com.github.braully.graph.generator.GraphGeneratorMTF;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 public class GraphTriangleFreeExpand implements IGraphOperation {
@@ -40,6 +44,18 @@ public class GraphTriangleFreeExpand implements IGraphOperation {
                     System.out.println("Caratheodory size 5 found: " + findCaratheodroySetBruteForce.caratheodorySet);
                     System.out.println("******************************************************************************");
                     System.out.println("===================== ERROOOOOOOOOOORRRRRRRRRR ================================");
+
+                    try {
+                        String graphName = graphProcessing.getName() + ".csr";
+                        File graphFile = new File(graphName);
+                        FileWriter fileWriter = new FileWriter(graphFile);
+                        UtilGraph.writerGraphToAdjMatrix(fileWriter, graphProcessing);
+                        fileWriter.flush();
+                        fileWriter.close();
+                        System.out.println("Save on: " + graphFile.getPath());
+                    } catch (IOException ex) {
+                        java.util.logging.Logger.getLogger(GraphTriangleFreeExpand.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     System.exit(-1);
                 } else {
 //                    System.out.println("Caratheodory size 5 NOT found");
@@ -55,8 +71,16 @@ public class GraphTriangleFreeExpand implements IGraphOperation {
             while (!erro) {
                 generatorMTF.addNewVertice(lastGraph);
                 lastGraph = generatorMTF.getLastGraph();
-                System.out.println("Chield size of " + (lastGraph.getVertexCount()) + "...  OK");
-                System.out.println("\tTrying chield size of " + (lastGraph.getVertexCount() + 1));
+
+                String graphName = lastGraph.getName() + "-v" + lastGraph.getVertexCount() + "-f" + generatorMTF.getCount() + ".mat";
+                File graphFile = new File("/home/strike/Dropbox/documentos/mestrado/estudo-mtf/todos-mtf-carat4/descendente/", graphName);
+                FileWriter fileWriter = new FileWriter(graphFile);
+                UtilGraph.writerGraphToAdjMatrix(fileWriter, lastGraph);
+                fileWriter.flush();
+                fileWriter.close();
+
+                System.out.println("Child size of " + (lastGraph.getVertexCount()) + "...  OK");
+                System.out.println("\tTrying child size of " + (lastGraph.getVertexCount() + 1));
             }
         } catch (Exception ex) {
             log.error(null, ex);
