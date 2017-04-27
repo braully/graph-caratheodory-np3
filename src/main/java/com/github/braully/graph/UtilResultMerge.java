@@ -105,7 +105,7 @@ public class UtilResultMerge {
         }
         File[] files = ftmp.listFiles();
         if (files != null) {
-            List<File> listFiles = BatchExecuteG6.sortFileArray(files);
+            List<File> listFiles = BatchExecuteOperation.sortFileArray(files);
             for (File f : listFiles) {
                 System.out.println("Process: " + f);
                 processFile(f, file.getName());

@@ -39,7 +39,7 @@ import org.apache.commons.cli.*;
  *
  * @author strike
  */
-public class BatchExecuteG6 implements IBatchExecute {
+public class BatchExecuteOperation implements IBatchExecute {
 
     public static final int TRESHOLD_PRINT_SET = 30;
 
@@ -50,8 +50,6 @@ public class BatchExecuteG6 implements IBatchExecute {
         new GraphCaratheodoryHeuristicV3(),
         new GraphHullNumber()
     };
-//    static {
-//    }
 
     @Override
     public String getDefaultInput() {
@@ -59,7 +57,7 @@ public class BatchExecuteG6 implements IBatchExecute {
     }
 
     public static void main(String... args) {
-        BatchExecuteG6 executor = new BatchExecuteG6();
+        BatchExecuteOperation executor = new BatchExecuteOperation();
         executor.processMain(args);
     }
 
@@ -140,7 +138,7 @@ public class BatchExecuteG6 implements IBatchExecute {
                     processFileMat(operation, dir);
                 }
             } catch (Exception ex) {
-                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteOperation.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (inputFilePath.toLowerCase().endsWith(".g6")) {
             try {
@@ -148,7 +146,7 @@ public class BatchExecuteG6 implements IBatchExecute {
                     processFileG6(operation, dir);
                 }
             } catch (Exception ex) {
-                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteOperation.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (inputFilePath.toLowerCase().endsWith(".g6.gz")) {
             try {
@@ -156,7 +154,7 @@ public class BatchExecuteG6 implements IBatchExecute {
                     processFileG6GZ(operation, dir);
                 }
             } catch (Exception ex) {
-                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteOperation.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -504,10 +502,9 @@ public class BatchExecuteG6 implements IBatchExecute {
             try {
                 f.createNewFile();
             } catch (IOException ex) {
-                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BatchExecuteOperation.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return f;
     }
-
 }
