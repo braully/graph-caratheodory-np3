@@ -13,9 +13,12 @@ import com.github.braully.graph.operation.GraphHullNumber;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -133,14 +136,26 @@ public class BatchExecuteG6 implements IBatchExecute {
             processDirectory(operationsToExecute, inputFilePath, contProcess);
         } else if (inputFilePath.toLowerCase().endsWith(".mat")) {
             try {
-                processFileMat(operationsToExecute, dir);
-            } catch (IOException ex) {
+                for (IGraphOperation operation : operationsToExecute) {
+                    processFileMat(operation, dir);
+                }
+            } catch (Exception ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (inputFilePath.toLowerCase().endsWith(".g6")) {
             try {
-                processFileG6(operationsToExecute, dir);
-            } catch (IOException ex) {
+                for (IGraphOperation operation : operationsToExecute) {
+                    processFileG6(operation, dir);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if (inputFilePath.toLowerCase().endsWith(".g6.gz")) {
+            try {
+                for (IGraphOperation operation : operationsToExecute) {
+                    processFileG6GZ(operation, dir);
+                }
+            } catch (Exception ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -178,6 +193,7 @@ public class BatchExecuteG6 implements IBatchExecute {
             for (IGraphOperation operation : operationsToExecute) {
                 String resultFileNameGroup = getResultFileName(operation, dirname, null);
 
+//                long continueOffset = -1;
                 if (contProcess) {
                     File file = getExistResultFile(dir, resultFileNameGroup);
                     BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -198,11 +214,9 @@ public class BatchExecuteG6 implements IBatchExecute {
                             }
                             graphCount++;
                         } else if (name.toLowerCase().endsWith(".g6")) {
-                            String resultFileNameArq = getResultFileName(operation, dirname, name);
-                            processFileG6(operationsToExecute, file, dirname);
+                            processFileG6(operation, file, dirname, contProcess);
                         } else if (name.toLowerCase().endsWith(".g6.gz")) {
-                            String resultFileNameArq = getResultFileName(operation, dirname, name);
-                            processFileG6GZ(operationsToExecute, file, dirname);
+                            processFileG6GZ(operation, file, dirname, contProcess);
                         }
                     } catch (Exception e) {
                         System.err.println("Fail in process: " + name);
@@ -222,49 +236,96 @@ public class BatchExecuteG6 implements IBatchExecute {
             String dirname) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         loadGraphAdjMatrix.setName(file.getName());
-        processGraph(operation, loadGraphAdjMatrix, null, 0);
+        processGraph(operation, loadGraphAdjMatrix, dirname, 0);
     }
 
-    void processFileG6(List<IGraphOperation> operationsToExecute, File file) throws IOException {
-        processFileG6(operationsToExecute, file, null);
+    void processFileG6GZ(IGraphOperation operation, File file) throws IOException {
+        processFileG6GZ(operation, file, null, false);
     }
 
-    void processFileG6(List<IGraphOperation> operationsToExecute, File file,
-            String dirname) throws IOException {
+    void processFileG6GZ(IGraphOperation operation, File file,
+            String dirname, boolean contProcess) throws IOException {
         if (file != null) {
-            long graphcount = 0;
-            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            String readLine = null;
-            while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
-                UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
-                if (ret != null) {
-                    ret.setName(file.getName() + "-" + graphcount);
-                    processGraph(ret, graphcount);
-                    graphcount++;
-                }
+            String name = file.getName();
+            long continueOffset = -1;
+            if (contProcess) {
+                continueOffset = getLastProcessCont(operation, dirname, name, file);
             }
-        }
-    }
 
-    void processFileG6GZ(List<IGraphOperation> operationsToExecute, File file) throws IOException {
-        processFileG6GZ(operationsToExecute, file, null);
-    }
-
-    void processFileG6GZ(List<IGraphOperation> operationsToExecute, File file,
-            String dirname) throws IOException {
-        if (file != null) {
-            long graphcount = 0;
             BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
-            String readLine = null;
-            while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
-                UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
-                if (ret != null) {
-                    ret.setName(file.getName() + "-" + graphcount);
-                    processGraph(ret, graphcount);
-                    graphcount++;
-                }
+            File resultFile = getResultFile(operation, file, dirname);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile, true));
+            processStreamGraph(r, operation, dirname, file.getName(), writer, continueOffset);
+            try {
+                writer.flush();
+                writer.close();
+                r.close();
+            } catch (Exception e) {
             }
         }
+    }
+
+    void processFileG6(IGraphOperation operation, File dir) throws IOException {
+        processFileG6(operation, dir, null, false);
+    }
+
+    void processFileG6(IGraphOperation operation, File file,
+            String dirname, boolean contProcess) throws IOException {
+        if (file != null) {
+            String name = file.getName();
+            long continueOffset = -1;
+            if (contProcess) {
+                continueOffset = getLastProcessCont(operation, dirname, name, file);
+            }
+
+            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            File resultFile = getResultFile(operation, file, dirname);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile, true));
+            processStreamGraph(r, operation, dirname, file.getName(), writer, continueOffset);
+            try {
+                writer.flush();
+                writer.close();
+                r.close();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public void processStreamGraph(BufferedReader r, IGraphOperation operation,
+            String dirname, String graphFileName, BufferedWriter writer,
+            long continueOffset) throws IOException {
+        long graphcount = 0;
+        String readLine;
+        while ((readLine = r.readLine()) != null && !readLine.isEmpty()) {
+            try {
+                UndirectedSparseGraphTO ret = UtilGraph.loadGraphG6(readLine);
+                if (ret != null) {
+                    if (graphcount > continueOffset) {
+                        ret.setName(graphFileName + "-" + graphcount);
+                        String resultProcess = processGraph(operation, ret, dirname, graphcount);
+                        writer.write(resultProcess);
+                        writer.flush();
+                    }
+                    graphcount++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    long getLastProcessCont(IGraphOperation operation, String dirname, String name, File file)
+            throws FileNotFoundException, IOException {
+        long continueOffset = -1;
+        String resultFileNameArq = getResultFileName(operation, dirname, name);
+        File fileExpress = getExistResultFile(file.getParentFile(), resultFileNameArq);
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        while (reader.readLine() != null) {
+            continueOffset++;
+        }
+        reader.close();
+        return continueOffset;
     }
 
     public String processGraph(IGraphOperation operation, UndirectedSparseGraphTO loadGraphAdjMatrix, String groupName,
@@ -391,14 +452,6 @@ public class BatchExecuteG6 implements IBatchExecute {
 
     }
 
-    void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix) {
-//        processGraph(loadGraphAdjMatrix, null, 0, null);
-    }
-
-    void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix, long countContinue) {
-//        processGraph(loadGraphAdjMatrix, null, countContinue, null);
-    }
-
     private String removerCaracteresEspeciais(String nameOperation) {
         if (nameOperation == null) {
             return nameOperation;
@@ -409,11 +462,52 @@ public class BatchExecuteG6 implements IBatchExecute {
                 .replaceAll(")", "");
     }
 
-    private File getExistResultFile(File dirBase, String resultFileNameGroup) {
+    File getExistResultFile(File dirBase, String resultFileNameGroup) {
         File f = null;
         if (resultFileNameGroup != null) {
-
+            File resultDir = getExistResultDir(dirBase);
+            File f1 = new File(dirBase, resultFileNameGroup);
+            File f2 = new File(resultDir, resultFileNameGroup);
+            if (f1.exists()) {
+                f = f1;
+            }
+            if (f2.exists()) {
+                f = f2;
+            }
         }
         return f;
     }
+
+    private File getExistResultDir(File dirBase) {
+        File dirResult = null;
+        File f2 = new File(dirBase, "resultado");
+        File f3 = new File(dirBase.getParentFile(), "resultado");
+        File f4 = new File(dirBase.getParentFile().getParentFile(), "resultado");
+        if (f2.exists()) {
+            dirResult = f2;
+        }
+        if (f3.exists()) {
+            dirResult = f3;
+        }
+        if (f4.exists()) {
+            dirResult = f4;
+        }
+        return dirResult;
+    }
+
+    private File getResultFile(IGraphOperation operation, File fileGraph, String dirname) {
+        File f = null;
+        File resultDir = getExistResultDir(fileGraph);
+        String resultFileName = getResultFileName(operation, dirname, fileGraph.getName());
+        f = new File(resultDir, resultFileName);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return f;
+    }
+
 }
