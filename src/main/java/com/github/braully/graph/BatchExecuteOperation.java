@@ -40,9 +40,9 @@ import org.apache.commons.cli.*;
  * @author strike
  */
 public class BatchExecuteOperation implements IBatchExecute {
-
+    
     public static final int TRESHOLD_PRINT_SET = 30;
-
+    
     static final IGraphOperation[] operations = new IGraphOperation[]{
         new GraphCalcCaratheodoryNumberBinaryStrategy(),
         new GraphCaratheodoryHeuristic(),
@@ -50,27 +50,27 @@ public class BatchExecuteOperation implements IBatchExecute {
         new GraphCaratheodoryHeuristicV3(),
         new GraphHullNumber()
     };
-
+    
     @Override
     public String getDefaultInput() {
         return "/home/strike/grafos-para-processar/almhypo";
     }
-
+    
     public static void main(String... args) {
         BatchExecuteOperation executor = new BatchExecuteOperation();
         executor.processMain(args);
     }
-
+    
     @Override
     public IGraphOperation[] getOperations() {
         return operations;
     }
-
+    
     void processMain(String... args) {
         GraphCaratheodoryHeuristic.verbose = false;
-
+        
         Options options = new Options();
-
+        
         OptionGroup exec = new OptionGroup();
         exec.setRequired(false);
         IGraphOperation[] opers = getOperations();
@@ -80,24 +80,26 @@ public class BatchExecuteOperation implements IBatchExecute {
             execs[i] = new Option("" + i, false, oper.getName());
             exec.addOption(execs[i]);
         }
+        exec.setRequired(true);
         options.addOptionGroup(exec);
-
+        
         Option input = new Option("i", "input", true, "input file or directory");
         input.setRequired(true);
+//        input.setRequired(false);
         options.addOption(input);
-
+        
         Option cont = new Option("c", "continue", false, "continue from last processing");
         cont.setRequired(false);
         options.addOption(cont);
-
+        
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
-
+        
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
-
+        
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
@@ -106,9 +108,9 @@ public class BatchExecuteOperation implements IBatchExecute {
             System.exit(1);
             return;
         }
-
+        
         boolean contProcess = false;
-
+        
         String inputFilePath = cmd.getOptionValue("input");
         if (inputFilePath == null) {
             inputFilePath = getDefaultInput();
@@ -116,11 +118,11 @@ public class BatchExecuteOperation implements IBatchExecute {
         if (inputFilePath == null) {
             return;
         }
-
+        
         if (cmd.hasOption("continue")) {
             contProcess = true;
         }
-
+        
         List<IGraphOperation> operationsToExecute = new ArrayList<IGraphOperation>();
         for (int i = 0; i < opers.length; i++) {
             IGraphOperation oper = opers[i];
@@ -128,7 +130,7 @@ public class BatchExecuteOperation implements IBatchExecute {
                 operationsToExecute.add(oper);
             }
         }
-
+        
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(operationsToExecute, inputFilePath, contProcess);
@@ -158,7 +160,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
     }
-
+    
     public String getResultFileName(IGraphOperation graphOperation, String group, String file) {
         StringBuilder resultFileName = new StringBuilder();
         resultFileName.append("resultado-");
@@ -176,7 +178,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         resultFileName.append(".txt");
         return resultFileName.toString();
     }
-
+    
     void processDirectory(List<IGraphOperation> operationsToExecute, String directory, boolean contProcess) {
         try {
             File dir = new File(directory);
@@ -187,7 +189,7 @@ public class BatchExecuteOperation implements IBatchExecute {
 //            for (File file : filesList) {
 
             long continueOffset = -1;
-
+            
             for (IGraphOperation operation : operationsToExecute) {
                 String resultFileNameGroup = getResultFileName(operation, dirname, null);
 
@@ -200,7 +202,7 @@ public class BatchExecuteOperation implements IBatchExecute {
                     }
                     reader.close();
                 }
-
+                
                 for (File file : files) {
                     String name = null;
                     long graphCount = 0;
@@ -225,22 +227,22 @@ public class BatchExecuteOperation implements IBatchExecute {
         } catch (Exception e) {
         }
     }
-
+    
     void processFileMat(IGraphOperation operation, File file) throws IOException {
         processFileMat(operation, file, null);
     }
-
+    
     void processFileMat(IGraphOperation operation, File file,
             String dirname) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         loadGraphAdjMatrix.setName(file.getName());
         processGraph(operation, loadGraphAdjMatrix, dirname, 0);
     }
-
+    
     void processFileG6GZ(IGraphOperation operation, File file) throws IOException {
         processFileG6GZ(operation, file, null, false);
     }
-
+    
     void processFileG6GZ(IGraphOperation operation, File file,
             String dirname, boolean contProcess) throws IOException {
         if (file != null) {
@@ -249,7 +251,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             if (contProcess) {
                 continueOffset = getLastProcessCont(operation, dirname, name, file);
             }
-
+            
             BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
             File resultFile = getResultFile(operation, file, dirname);
             BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile, true));
@@ -262,11 +264,11 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
     }
-
+    
     void processFileG6(IGraphOperation operation, File dir) throws IOException {
         processFileG6(operation, dir, null, false);
     }
-
+    
     void processFileG6(IGraphOperation operation, File file,
             String dirname, boolean contProcess) throws IOException {
         if (file != null) {
@@ -275,7 +277,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             if (contProcess) {
                 continueOffset = getLastProcessCont(operation, dirname, name, file);
             }
-
+            
             BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             File resultFile = getResultFile(operation, file, dirname);
             BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile, true));
@@ -285,11 +287,11 @@ public class BatchExecuteOperation implements IBatchExecute {
                 writer.close();
                 r.close();
             } catch (Exception e) {
-
+                
             }
         }
     }
-
+    
     public void processStreamGraph(BufferedReader r, IGraphOperation operation,
             String dirname, String graphFileName, BufferedWriter writer,
             long continueOffset) throws IOException {
@@ -312,7 +314,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
     }
-
+    
     long getLastProcessCont(IGraphOperation operation, String dirname, String name, File file)
             throws FileNotFoundException, IOException {
         long continueOffset = -1;
@@ -325,13 +327,13 @@ public class BatchExecuteOperation implements IBatchExecute {
         reader.close();
         return continueOffset;
     }
-
+    
     public String processGraph(IGraphOperation operation, UndirectedSparseGraphTO loadGraphAdjMatrix, String groupName,
             long graphcount) {
         if (loadGraphAdjMatrix == null || loadGraphAdjMatrix.getVertexCount() == 0) {
             return null;
         }
-
+        
         long currentTimeMillis = System.currentTimeMillis();
         Map result = operation.doOperation(loadGraphAdjMatrix);
         currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
@@ -339,7 +341,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS,
                     (double) ((double) currentTimeMillis / 1000));
         }
-
+        
         String group = loadGraphAdjMatrix.getName();
         String id = group.replaceAll(".mat", "").replaceAll(".g6", "").replaceAll(".json", "").replaceAll(".gz", "");
         try {
@@ -353,7 +355,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         if (groupName == null) {
             groupName = group;
         }
-
+        
         inforResult(groupName, id, loadGraphAdjMatrix, operation, result);
         String formatResult = formatResult(groupName, id, loadGraphAdjMatrix, operation, result);
 //            if (output == null) {
@@ -369,7 +371,7 @@ public class BatchExecuteOperation implements IBatchExecute {
 
         return formatResult;
     }
-
+    
     public String formatResult(String name, String id, UndirectedSparseGraphTO loadGraphAdjMatrix,
             IGraphOperation operation, Map result) {
         StringBuilder sb = new StringBuilder();
@@ -385,7 +387,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         sb.append("\n");
         return sb.toString();
     }
-
+    
     public String printResultMap(Map result, UndirectedSparseGraphTO loadGraphAdjMatrix) {
         StringBuilder sb = new StringBuilder();
         sb.append(result.get(IGraphOperation.DEFAULT_PARAM_NAME_RESULT));
@@ -412,7 +414,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         return sb.toString();
     }
-
+    
     int indexOf(String str, String patern) {
         int ret = 0;
         try {
@@ -423,11 +425,11 @@ public class BatchExecuteOperation implements IBatchExecute {
 //                System.out.println(matcher.start());//this will give you index
             }
         } catch (Exception e) {
-
+            
         }
         return ret;
     }
-
+    
     static List<File> sortFileArray(File[] files) {
         List<File> fileList = new ArrayList<>(Arrays.asList(files));
         Collections.sort(fileList, new Comparator<File>() {
@@ -438,18 +440,18 @@ public class BatchExecuteOperation implements IBatchExecute {
                         ret = t.getName().compareToIgnoreCase(t1.getName());
                     }
                 } catch (Exception e) {
-
+                    
                 }
                 return ret;
             }
         });
         return fileList;
     }
-
+    
     public void inforResult(String group, String id, UndirectedSparseGraphTO loadGraphAdjMatrix, IGraphOperation operation, Map result) {
-
+        
     }
-
+    
     private String removerCaracteresEspeciais(String nameOperation) {
         if (nameOperation == null) {
             return nameOperation;
@@ -459,7 +461,7 @@ public class BatchExecuteOperation implements IBatchExecute {
                 .replaceAll("(", "")
                 .replaceAll(")", "");
     }
-
+    
     File getExistResultFile(File dirBase, String resultFileNameGroup) {
         File f = null;
         if (resultFileNameGroup != null) {
@@ -475,7 +477,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         return f;
     }
-
+    
     private File getExistResultDir(File dirBase) {
         File dirResult = null;
         File f2 = new File(dirBase, "resultado");
@@ -492,7 +494,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         return dirResult;
     }
-
+    
     private File getResultFile(IGraphOperation operation, File fileGraph, String dirname) {
         File f = null;
         File resultDir = getExistResultDir(fileGraph);
