@@ -130,16 +130,16 @@ public class BatchExecuteG6 implements IBatchExecute {
 
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
-            processDirectory(inputFilePath, contProcess);
+            processDirectory(operationsToExecute, inputFilePath, contProcess);
         } else if (inputFilePath.toLowerCase().endsWith(".mat")) {
             try {
-                processFileMat(dir);
+                processFileMat(operationsToExecute, dir);
             } catch (IOException ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (inputFilePath.toLowerCase().endsWith(".g6")) {
             try {
-                processFileG6(dir);
+                processFileG6(operationsToExecute, dir);
             } catch (IOException ex) {
                 Logger.getLogger(BatchExecuteG6.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -164,7 +164,7 @@ public class BatchExecuteG6 implements IBatchExecute {
         return resultFileName.toString();
     }
 
-    void processDirectory(String directory, boolean contProcess) {
+    void processDirectory(List<IGraphOperation> operationsToExecute, String directory, boolean contProcess) {
         try {
             File dir = new File(directory);
             String dirname = dir.getName();
@@ -177,11 +177,11 @@ public class BatchExecuteG6 implements IBatchExecute {
                 try {
                     name = file.getName();
                     if (name.toLowerCase().endsWith(".mat")) {
-                        processFileMat(file, dirname);
+                        processFileMat(operationsToExecute, file, dirname);
                     } else if (name.toLowerCase().endsWith(".g6")) {
-                        processFileG6(file, dirname);
+                        processFileG6(operationsToExecute, file, dirname);
                     } else if (name.toLowerCase().endsWith(".g6.gz")) {
-                        processFileG6GZ(file, dirname);
+                        processFileG6GZ(operationsToExecute, file, dirname);
                     }
                 } catch (Exception e) {
                     System.err.println("Fail in process: " + name);
@@ -192,21 +192,21 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    void processFileMat(File file) throws IOException {
-        processFileMat(file, null);
+    void processFileMat(List<IGraphOperation> operationsToExecute, File file) throws IOException {
+        processFileMat(operationsToExecute, file, null);
     }
 
-    void processFileMat(File file, String dirname) throws IOException {
+    void processFileMat(List<IGraphOperation> operationsToExecute, File file, String dirname) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         loadGraphAdjMatrix.setName(file.getName());
         processGraph(loadGraphAdjMatrix);
     }
 
-    void processFileG6(File file) throws IOException {
-        processFileG6(file, null);
+    void processFileG6(List<IGraphOperation> operationsToExecute, File file) throws IOException {
+        processFileG6(operationsToExecute, file, null);
     }
 
-    void processFileG6(File file, String dirname) throws IOException {
+    void processFileG6(List<IGraphOperation> operationsToExecute, File file, String dirname) throws IOException {
         if (file != null) {
             long graphcount = 0;
             BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -222,11 +222,11 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    void processFileG6GZ(File file) throws IOException {
-        processFileG6GZ(file, null);
+    void processFileG6GZ(List<IGraphOperation> operationsToExecute, File file) throws IOException {
+        processFileG6GZ(operationsToExecute, file, null);
     }
 
-    void processFileG6GZ(File file, String dirname) throws IOException {
+    void processFileG6GZ(List<IGraphOperation> operationsToExecute, File file, String dirname) throws IOException {
         if (file != null) {
             long graphcount = 0;
             BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
@@ -242,49 +242,48 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    public void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix, String groupName,
-            long graphcount, Writer output) {
+    public String processGraph(IGraphOperation operation, UndirectedSparseGraphTO loadGraphAdjMatrix, String groupName,
+            long graphcount) {
         if (loadGraphAdjMatrix == null || loadGraphAdjMatrix.getVertexCount() == 0) {
-            return;
+            return null;
         }
 
-        IGraphOperation[] opers = this.getOperations();
-        for (IGraphOperation operation : opers) {
-            long currentTimeMillis = System.currentTimeMillis();
-            Map result = operation.doOperation(loadGraphAdjMatrix);
-            currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
-            if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
-                result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS,
-                        (double) ((double) currentTimeMillis / 1000));
-            }
-
-            String group = loadGraphAdjMatrix.getName();
-            String id = group.replaceAll(".mat", "").replaceAll(".g6", "").replaceAll(".json", "").replaceAll(".gz", "");
-            try {
-                int indexOf = indexOf(group, "\\d");
-                if (indexOf > 0) {
-                    group = group.substring(0, indexOf);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (groupName == null) {
-                groupName = group;
-            }
-
-            inforResult(groupName, id, loadGraphAdjMatrix, operation, result);
-            String formatResult = formatResult(groupName, id, loadGraphAdjMatrix, operation, result);
-            if (output == null) {
-                System.out.println(formatResult);
-            } else {
-                try {
-                    output.write(formatResult);
-                    output.flush();
-                } catch (IOException ex) {
-                    System.err.println(formatResult);
-                }
-            }
+        long currentTimeMillis = System.currentTimeMillis();
+        Map result = operation.doOperation(loadGraphAdjMatrix);
+        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+        if (result.get(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS) == null) {
+            result.put(OperationConvexityGraphResult.PARAM_NAME_TOTAL_TIME_MS,
+                    (double) ((double) currentTimeMillis / 1000));
         }
+
+        String group = loadGraphAdjMatrix.getName();
+        String id = group.replaceAll(".mat", "").replaceAll(".g6", "").replaceAll(".json", "").replaceAll(".gz", "");
+        try {
+            int indexOf = indexOf(group, "\\d");
+            if (indexOf > 0) {
+                group = group.substring(0, indexOf);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (groupName == null) {
+            groupName = group;
+        }
+
+        inforResult(groupName, id, loadGraphAdjMatrix, operation, result);
+        String formatResult = formatResult(groupName, id, loadGraphAdjMatrix, operation, result);
+//            if (output == null) {
+//                System.out.println(formatResult);
+//            } else {
+//                try {
+//                    output.write(formatResult);
+//                    output.flush();
+//                } catch (IOException ex) {
+//                    System.err.println(formatResult);
+//                }
+//            }
+
+        return formatResult;
     }
 
     public String formatResult(String name, String id, UndirectedSparseGraphTO loadGraphAdjMatrix,
@@ -368,11 +367,11 @@ public class BatchExecuteG6 implements IBatchExecute {
     }
 
     void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix) {
-        processGraph(loadGraphAdjMatrix, null, 0, null);
+//        processGraph(loadGraphAdjMatrix, null, 0, null);
     }
 
     void processGraph(UndirectedSparseGraphTO loadGraphAdjMatrix, long countContinue) {
-        processGraph(loadGraphAdjMatrix, null, countContinue, null);
+//        processGraph(loadGraphAdjMatrix, null, countContinue, null);
     }
 
     private String removerCaracteresEspeciais(String nameOperation) {
