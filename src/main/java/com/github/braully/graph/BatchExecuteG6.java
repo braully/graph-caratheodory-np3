@@ -194,7 +194,7 @@ public class BatchExecuteG6 implements IBatchExecute {
                         name = file.getName();
                         if (name.toLowerCase().endsWith(".mat")) {
                             if (graphCount > continueOffset) {
-                                processFileMat(operationsToExecute, file, dirname);
+                                processFileMat(operation, file, dirname);
                             }
                             graphCount++;
                         } else if (name.toLowerCase().endsWith(".g6")) {
@@ -214,15 +214,15 @@ public class BatchExecuteG6 implements IBatchExecute {
         }
     }
 
-    void processFileMat(List<IGraphOperation> operationsToExecute, File file) throws IOException {
-        processFileMat(operationsToExecute, file, null);
+    void processFileMat(IGraphOperation operation, File file) throws IOException {
+        processFileMat(operation, file, null);
     }
 
-    void processFileMat(List<IGraphOperation> operationsToExecute, File file,
+    void processFileMat(IGraphOperation operation, File file,
             String dirname) throws IOException {
         UndirectedSparseGraphTO loadGraphAdjMatrix = UtilGraph.loadGraphAdjMatrix(new FileInputStream(file));
         loadGraphAdjMatrix.setName(file.getName());
-        processGraph(loadGraphAdjMatrix);
+        processGraph(operation, loadGraphAdjMatrix, null, 0);
     }
 
     void processFileG6(List<IGraphOperation> operationsToExecute, File file) throws IOException {
