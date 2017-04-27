@@ -15,6 +15,8 @@ import java.util.Map;
  */
 public interface IGraphOperation {
 
+    public static final String DEFAULT_PARAM_NAME_RESULT = "result";
+
     public String getTypeProblem();
 
     public String getName();

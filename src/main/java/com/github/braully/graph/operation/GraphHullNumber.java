@@ -48,6 +48,7 @@ public class GraphHullNumber implements IGraphOperation {
         Map<String, Object> response = new HashMap<>();
         response.put(PARAM_NAME_HULL_NUMBER, hullNumber);
         response.put(PARAM_NAME_HULL_SET, minHullSet);
+        response.put(IGraphOperation.DEFAULT_PARAM_NAME_RESULT, hullNumber);
         return response;
     }
 

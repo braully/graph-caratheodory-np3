@@ -16,7 +16,8 @@ public class BatchExecuteHeuristicCompare extends BatchExecuteG6 {
         new GraphCalcCaratheodoryNumberBinaryStrategy(),
         new GraphCaratheodoryHeuristic(),
         new GraphCaratheodoryHeuristicV2(),
-        new GraphCaratheodoryHeuristicV3()};
+        new GraphCaratheodoryHeuristicV3()
+    };
 
     @Override
     public String getDefaultInput() {
