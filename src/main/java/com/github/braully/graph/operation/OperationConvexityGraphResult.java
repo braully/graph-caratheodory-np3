@@ -33,8 +33,10 @@ public class OperationConvexityGraphResult {
 
         if (caratheodoryNumber != null && caratheodoryNumber > 0) {
             result.put(PARAM_NAME_CARATHEODORY_NUMBER, caratheodoryNumber);
+            result.put(IGraphOperation.DEFAULT_PARAM_NAME_RESULT, caratheodoryNumber);
         } else {
             result.put(PARAM_NAME_CARATHEODORY_NUMBER, -1);
+            result.put(IGraphOperation.DEFAULT_PARAM_NAME_RESULT, -1);
         }
 
         if (caratheodorySet != null && !caratheodorySet.isEmpty()) {
