@@ -45,6 +45,7 @@ public class GraphCaratheodoryBFSErika
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
         response.put(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER, maxmaxcg);
+        response.put(IGraphOperation.DEFAULT_PARAM_NAME_RESULT, maxmaxcg);
         return response;
     }
 

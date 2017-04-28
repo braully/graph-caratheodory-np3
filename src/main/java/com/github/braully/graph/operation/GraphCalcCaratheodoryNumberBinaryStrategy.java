@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
 /**
@@ -21,6 +22,8 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (Binary Java)";
 
+    public static final int THRESHOLD_HEURISTIC_FEED = 15;
+
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         OperationConvexityGraphResult processedCaratheodroySet = null;
@@ -28,11 +31,22 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
         if (graph == null) {
             return result;
         }
-        int maxSizeSet = (graph.getVertexCount() + 1) / 2;
+        int vertexCount = graph.getVertexCount();
+        int maxSizeSet = (vertexCount + 1) / 2;
         int currentSize = maxSizeSet;
         int left = 0;
         int rigth = maxSizeSet;
         result = new HashMap<>();
+
+        if (vertexCount >= THRESHOLD_HEURISTIC_FEED) {
+            GraphCaratheodoryHeuristicHybrid graphCaratheodoryHeuristicHybrid = new GraphCaratheodoryHeuristicHybrid();
+            Set<Integer> caratheodorySet = graphCaratheodoryHeuristicHybrid.buildMaxCaratheodorySet(graph);
+            if (caratheodorySet != null) {
+                left = caratheodorySet.size() + 1;
+                processedCaratheodroySet = hsp3(graph, caratheodorySet);
+                result.putAll(processedCaratheodroySet.toMap());
+            }
+        }
 
         while (left <= rigth) {
             currentSize = (left + rigth) / 2;

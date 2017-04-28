@@ -20,7 +20,6 @@ public class GraphCaratheodoryHeuristicV2
 
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-
         Map<String, Object> result = super.doOperation(graphRead);
         if (expand) {
             GraphCaratheodoryExpandSet expand = new GraphCaratheodoryExpandSet();
