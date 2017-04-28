@@ -3,16 +3,13 @@ package com.github.braully.graph.operation;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.filters.FilterUtils;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 public class GraphCaratheodoryBFSErika
