@@ -8,6 +8,7 @@ package com.github.braully.graph;
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
 import com.github.braully.graph.operation.GraphCaratheodoryBFSErika;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristicHybrid;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
 import com.github.braully.graph.operation.GraphHullNumber;
@@ -51,6 +52,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         new GraphCaratheodoryHeuristic(),
         new GraphCaratheodoryHeuristicV2(),
         new GraphCaratheodoryHeuristicV3(),
+        new GraphCaratheodoryHeuristicHybrid(),
         new GraphHullNumber(),
         new GraphCaratheodoryBFSErika()
     };
@@ -187,7 +189,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         if (file != null) {
             resultFileName.append(".");
-            resultFileName.append(file);
+            resultFileName.append(removerExtensao(file));
         }
         resultFileName.append(".txt");
         return resultFileName.toString();
@@ -533,5 +535,12 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
         return f;
+    }
+
+    String removerExtensao(String file) {
+        if (file == null) {
+            return file;
+        }
+        return file.replaceAll(".gz", "").replaceAll(".g6", "").replaceAll(".mat", "").replaceAll(".plc", "");
     }
 }
