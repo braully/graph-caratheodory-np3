@@ -138,15 +138,15 @@ public class BatchExecuteOperation implements IBatchExecute {
         List<IGraphOperation> operationsToExecute = new ArrayList<IGraphOperation>();
         for (int i = 0; i < opers.length; i++) {
             IGraphOperation oper = opers[i];
-            if (cmd.hasOption(execs[i].getArgName())) {
+            String value = execs[i].getOpt();
+            if (cmd.hasOption(value)) {
                 operationsToExecute.add(oper);
             }
         }
 
-        if (operationsToExecute.isEmpty()) {
-            operationsToExecute.add(opers[0]);
-        }
-
+//        if (operationsToExecute.isEmpty()) {
+//            operationsToExecute.add(opers[0]);
+//        }
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(operationsToExecute, inputFilePath, contProcess);
@@ -215,11 +215,13 @@ public class BatchExecuteOperation implements IBatchExecute {
 //                long continueOffset = -1;
                 if (contProcess) {
                     File file = getExistResultFile(dir, resultFileNameGroup);
-                    BufferedReader reader = new BufferedReader(new FileReader(file));
-                    while (reader.readLine() != null) {
-                        continueOffset++;
+                    if (file != null && file.exists()) {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        while (reader.readLine() != null) {
+                            continueOffset++;
+                        }
+                        reader.close();
                     }
-                    reader.close();
                 }
 
                 for (File file : files) {
@@ -347,11 +349,13 @@ public class BatchExecuteOperation implements IBatchExecute {
         long continueOffset = -1;
         String resultFileNameArq = getResultFileName(operation, dirname, name);
         File fileExpress = getExistResultFile(file.getParentFile(), resultFileNameArq);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        while (reader.readLine() != null) {
-            continueOffset++;
+        if (fileExpress != null && fileExpress.exists()) {
+            BufferedReader reader = new BufferedReader(new FileReader(fileExpress));
+            while (reader.readLine() != null) {
+                continueOffset++;
+            }
+            reader.close();
         }
-        reader.close();
         return continueOffset;
     }
 
