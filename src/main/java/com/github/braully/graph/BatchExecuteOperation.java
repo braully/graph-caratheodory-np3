@@ -59,7 +59,7 @@ public class BatchExecuteOperation implements IBatchExecute {
 
     @Override
     public String getDefaultInput() {
-        return "/home/strike/Documentos/grafos-processamento/Almost_hypohamiltonian/almhypo";
+        return "/home/strike/Documentos/grafos-processamento/Critical_H-free/critical";
     }
 
     public static void main(String... args) {
@@ -84,9 +84,9 @@ public class BatchExecuteOperation implements IBatchExecute {
         for (int i = 0; i < opers.length; i++) {
             IGraphOperation oper = opers[i];
             execs[i] = new Option("" + i, false, oper.getName());
-            exec.addOption(execs[i]);
+            options.addOption(execs[i]);
         }
-        options.addOptionGroup(exec);
+//        options.addOptionGroup(exec);
 
         Option input = new Option("i", "input", true, "input file or directory");
         options.addOption(input);
@@ -112,7 +112,7 @@ public class BatchExecuteOperation implements IBatchExecute {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
-            formatter.printHelp("BatchExecuteG6", options);
+            formatter.printHelp("BatchExecuteOperation", options);
             System.exit(1);
             return;
         }
@@ -144,9 +144,12 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
 
-//        if (operationsToExecute.isEmpty()) {
-//            operationsToExecute.add(opers[0]);
-//        }
+        if (operationsToExecute.isEmpty()) {
+            operationsToExecute.add(opers[0]);
+//            formatter.printHelp("BatchExecuteOperation", options);
+//            System.exit(1);
+//            return;
+        }
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(operationsToExecute, inputFilePath, contProcess);
