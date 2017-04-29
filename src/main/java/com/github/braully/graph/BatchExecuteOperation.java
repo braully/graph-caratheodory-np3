@@ -6,7 +6,9 @@
 package com.github.braully.graph;
 
 import com.github.braully.graph.operation.GraphCalcCaratheodoryNumberBinaryStrategy;
+import com.github.braully.graph.operation.GraphCaratheodoryBFSErika;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristic;
+import com.github.braully.graph.operation.GraphCaratheodoryHeuristicHybrid;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
 import com.github.braully.graph.operation.GraphHullNumber;
@@ -50,7 +52,9 @@ public class BatchExecuteOperation implements IBatchExecute {
         new GraphCaratheodoryHeuristic(),
         new GraphCaratheodoryHeuristicV2(),
         new GraphCaratheodoryHeuristicV3(),
-        new GraphHullNumber()
+        new GraphCaratheodoryHeuristicHybrid(),
+        new GraphHullNumber(),
+        new GraphCaratheodoryBFSErika()
     };
 
     @Override
@@ -134,15 +138,15 @@ public class BatchExecuteOperation implements IBatchExecute {
         List<IGraphOperation> operationsToExecute = new ArrayList<IGraphOperation>();
         for (int i = 0; i < opers.length; i++) {
             IGraphOperation oper = opers[i];
-            if (cmd.hasOption(execs[i].getArgName())) {
+            String value = execs[i].getOpt();
+            if (cmd.hasOption(value)) {
                 operationsToExecute.add(oper);
             }
         }
 
-        if (operationsToExecute.isEmpty()) {
-            operationsToExecute.add(opers[0]);
-        }
-
+//        if (operationsToExecute.isEmpty()) {
+//            operationsToExecute.add(opers[0]);
+//        }
         File dir = new File(inputFilePath);
         if (dir.isDirectory()) {
             processDirectory(operationsToExecute, inputFilePath, contProcess);
@@ -185,7 +189,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         if (file != null) {
             resultFileName.append(".");
-            resultFileName.append(file);
+            resultFileName.append(removerExtensao(file));
         }
         resultFileName.append(".txt");
         return resultFileName.toString();
@@ -211,11 +215,13 @@ public class BatchExecuteOperation implements IBatchExecute {
 //                long continueOffset = -1;
                 if (contProcess) {
                     File file = getExistResultFile(dir, resultFileNameGroup);
-                    BufferedReader reader = new BufferedReader(new FileReader(file));
-                    while (reader.readLine() != null) {
-                        continueOffset++;
+                    if (file != null && file.exists()) {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        while (reader.readLine() != null) {
+                            continueOffset++;
+                        }
+                        reader.close();
                     }
-                    reader.close();
                 }
 
                 for (File file : files) {
@@ -343,11 +349,13 @@ public class BatchExecuteOperation implements IBatchExecute {
         long continueOffset = -1;
         String resultFileNameArq = getResultFileName(operation, dirname, name);
         File fileExpress = getExistResultFile(file.getParentFile(), resultFileNameArq);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        while (reader.readLine() != null) {
-            continueOffset++;
+        if (fileExpress != null && fileExpress.exists()) {
+            BufferedReader reader = new BufferedReader(new FileReader(fileExpress));
+            while (reader.readLine() != null) {
+                continueOffset++;
+            }
+            reader.close();
         }
-        reader.close();
         return continueOffset;
     }
 
@@ -531,5 +539,12 @@ public class BatchExecuteOperation implements IBatchExecute {
             }
         }
         return f;
+    }
+
+    String removerExtensao(String file) {
+        if (file == null) {
+            return file;
+        }
+        return file.replaceAll(".gz", "").replaceAll(".g6", "").replaceAll(".mat", "").replaceAll(".plc", "");
     }
 }

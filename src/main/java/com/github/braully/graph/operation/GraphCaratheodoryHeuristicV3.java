@@ -42,6 +42,12 @@ public class GraphCaratheodoryHeuristicV3
             aux[i] = 0;
         }
         addVertToS(v, s, graph, aux);
+        expandCaratheodorySet(graph, s, aux);
+        return s;
+    }
+
+    public void expandCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> s, int[] aux) {
+        int vertexCount = graph.getVertexCount();
         int bv;
         do {
             bv = -1;
@@ -72,12 +78,8 @@ public class GraphCaratheodoryHeuristicV3
                         menorGrau = neighborCount;
                         bv = i;
                     }
-//                    else {
-//                        log.info("\tBut |H(S+" + i + ")| >= |H(S+" + bv + "| && d(" + i + ") > d(" + bv + ")");
-//                    }
                 } else {
                     s.remove(i);
-//                    log.info("\t" + s + " + " + i + " = Not Charatheodory");
                 }
             }
             if (bv != -1) {
@@ -85,14 +87,12 @@ public class GraphCaratheodoryHeuristicV3
                 if (GraphCaratheodoryHeuristic.verbose) {
                     log.info("\tBest vert choice: " + bv);
                 }
-//                log.info("\t" + s + " + " + bv + " = Charatheodory");
             } else if (GraphCaratheodoryHeuristic.verbose) {
                 if (GraphCaratheodoryHeuristic.verbose) {
                     log.info("End Avaiable: S=" + s);
                 }
             }
         } while (bv != -1);
-        return s;
     }
 
     @Override

@@ -74,7 +74,7 @@ fim para
     public static final int INCLUDED = 2;
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
 
-    public static boolean verbose = true;
+    public static boolean verbose = false;
     BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
 
 //    public static boolean verbose = false;
@@ -211,6 +211,7 @@ fim para
             printFinalState(graph, partial, derivatedPartialReal, aux, convexHullReal, s, auxReal);
         }
 
+        beforeReturnSFind(graph, s, aux);
         return s;
     }
 
@@ -602,5 +603,9 @@ fim para
             }
         }
         return cont;
+    }
+
+    void beforeReturnSFind(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> s, int[] aux) {
+
     }
 }
