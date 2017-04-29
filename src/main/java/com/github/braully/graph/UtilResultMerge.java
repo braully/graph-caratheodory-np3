@@ -7,6 +7,7 @@ package com.github.braully.graph;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 import org.apache.commons.cli.*;
 
 /**
@@ -58,16 +60,18 @@ public class UtilResultMerge {
         String[] inputs = cmd.getOptionValues("input");
         if (inputs == null) {
             inputs = new String[]{
-                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian",
-                "/home/strike/Documentos/grafos-processamento/Cubic",
-                "/home/strike/Documentos/grafos-processamento/Critical_H-free",
-                "/home/strike/Documentos/grafos-processamento/Highly_irregular",
-                "/home/strike/Documentos/grafos-processamento/Hypohamiltonian_graphs",
-                "/home/strike/Documentos/grafos-processamento/Maximal_triangle-free",
-                "/home/strike/Documentos/grafos-processamento/Minimal_Ramsey",
-                "/home/strike/Documentos/grafos-processamento/Strongly_regular",
-                "/home/strike/Documentos/grafos-processamento/Vertex-transitive",
-                "/home/strike/Documentos/grafos-processamento/Trees"};
+                "/home/strike/Dropbox/documentos/mestrado/grafos-processamento/"
+//                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian",
+//                "/home/strike/Documentos/grafos-processamento/Cubic",
+//                "/home/strike/Documentos/grafos-processamento/Critical_H-free",
+//                "/home/strike/Documentos/grafos-processamento/Highly_irregular",
+//                "/home/strike/Documentos/grafos-processamento/Hypohamiltonian_graphs",
+//                "/home/strike/Documentos/grafos-processamento/Maximal_triangle-free",
+//                "/home/strike/Documentos/grafos-processamento/Minimal_Ramsey",
+//                "/home/strike/Documentos/grafos-processamento/Strongly_regular",
+//                "/home/strike/Documentos/grafos-processamento/Vertex-transitive",
+//                "/home/strike/Documentos/grafos-processamento/Trees"
+            };
         }
         if (inputs != null) {
             processInputs(inputs);
@@ -101,9 +105,32 @@ public class UtilResultMerge {
         }
         File ftmp = new File(file, "resultado");
         if (!ftmp.exists() || !ftmp.isDirectory()) {
+            File[] files = file.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    if (file != null && file.isDirectory()) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            if (files != null) {
+                for (File f : files) {
+                    processDirectory(f);
+                }
+            }
             return;
         }
-        File[] files = ftmp.listFiles();
+        File[] files = ftmp.listFiles(new FileFilter() {
+            public boolean accept(File file) {
+                if (file != null && file.isFile()
+                        && file.getName().startsWith("resultado-")
+                        && (file.getName().endsWith(".txt")
+                        || file.getName().endsWith(".txt.gz"))) {
+                    return true;
+                }
+                return false;
+            }
+        });
         if (files != null) {
             List<File> listFiles = BatchExecuteOperation.sortFileArray(files);
             for (File f : listFiles) {
@@ -118,10 +145,19 @@ public class UtilResultMerge {
     }
 
     public static void processFile(File file, String grupo) throws FileNotFoundException, NumberFormatException, IOException {
-        if (file == null || !file.getName().endsWith(".txt")) {
+        if (file == null) {
             return;
         }
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        BufferedReader r = null;
+
+        if (file.getName().endsWith(".txt")) {
+            r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        } else if (file.getName().endsWith(".txt.gz")) {
+            r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
+        } else {
+            return;
+        }
+
         String readLine = null;
         while ((readLine = r.readLine()) != null) {
             String[] parts1 = readLine.split("\t");
