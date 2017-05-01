@@ -46,6 +46,14 @@ public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCarathe
                 processedCaratheodroySet = hsp3(graph, caratheodorySet);
                 result.putAll(processedCaratheodroySet.toMap());
             }
+            processedCaratheodroySet = findCaratheodroySetBruteForce(graph, left);
+            if (processedCaratheodroySet == null || processedCaratheodroySet.caratheodorySet == null) {
+                return result;
+            } else {
+                result.clear();
+                result.putAll(processedCaratheodroySet.toMap());
+                left = left + 1;
+            }
         }
 
         while (left <= rigth) {

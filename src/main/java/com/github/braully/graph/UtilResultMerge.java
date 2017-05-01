@@ -253,9 +253,9 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print(str + " - Media");
                 System.out.print("\t");
-                System.out.print(str + " - Pior");
+                System.out.print(str + " - Pior resultado");
                 System.out.print("\t");
-                System.out.print(str + " - Melhor");
+                System.out.print(str + " - Acertos exatos ");
                 System.out.print("\t");
                 System.out.print(str + " - Max");
                 System.out.print("\t");
@@ -346,8 +346,8 @@ public class UtilResultMerge {
             if (tmpdiff > worst) {
                 worst = tmpdiff;
             }
-            if (best == 0 || tmpdiff < best) {
-                best = tmpdiff;
+            if (tmpdiff == 0) {
+                best++;
             }
             diffAc += tmpdiff;
             diff++;
