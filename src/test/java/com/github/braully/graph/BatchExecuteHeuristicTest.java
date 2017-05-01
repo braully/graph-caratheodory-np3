@@ -24,5 +24,19 @@ public class BatchExecuteHeuristicTest extends TestCase {
 //        File file = new File("graph" + File.separator + "almhypo", "almhypo20_g5-order-20-08.mat");
 //        BatchExecuteHeuristic bach = new BatchExecuteHeuristic();
 //        bach.processFileMat(file, dirname);
+
     }
+
+    public void testReverseParentheses() {
+//        String s = "a(bc)de";
+//        String inicio, meio, fim;
+//        int ix = s.indexOf("(");
+//        int fx = s.indexOf(")");
+//        System.out.println("i:" + ix + " f:" + fx);
+//        inicio = s.substring(0, ix);
+//        meio = s.substring(ix+1, fx);
+//        fim = s.substring(fx+1);
+//        System.out.println(inicio + meio + fim);
+    }
+
 }

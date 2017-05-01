@@ -204,7 +204,25 @@ public class UtilResultMerge {
 
     static List<String> getOperationsSorted() {
         List<String> opers = new ArrayList<>(operations);
-        Collections.sort(opers);
+        Collections.sort(opers, new Comparator<String>() {
+            public int compare(String t, String t1) {
+                try {
+                    if (t != null && t1 != null) {
+                        t = t.toLowerCase();
+                        t1 = t.toLowerCase();
+                        if (t.contains(OPERACAO_REFERENCIA.toLowerCase())) {
+                            t = "a" + t;
+                        }
+                        if (t1.contains(OPERACAO_REFERENCIA.toLowerCase())) {
+                            t1 = "a" + t1;
+                        }
+                        return t.compareTo(t1);
+                    }
+                } catch (Exception e) {
+                }
+                return 0;
+            }
+        });
         return opers;
     }
 
@@ -223,18 +241,27 @@ public class UtilResultMerge {
         List<String> opers = getOperationsSorted();
 
         for (String str : opers) {
-            System.out.print(str + " - T(s)");
-            System.out.print("\t");
-            System.out.print(str + " - Media");
-            System.out.print("\t");
-            System.out.print(str + " - Pior");
-            System.out.print("\t");
-            System.out.print(str + " - Melhor");
-            System.out.print("\t");
-            System.out.print(str + " - Max");
-            System.out.print("\t");
-            System.out.print(str + " - Erro");
-            System.out.print("\t");
+            if (str.equals(OPERACAO_REFERENCIA)) {
+                System.out.print(str + " - T(s)");
+                System.out.print("\t");
+                System.out.print("Min");
+                System.out.print("\t");
+                System.out.print("Max");
+                System.out.print("\t");
+            } else {
+                System.out.print(str + " - T(s)");
+                System.out.print("\t");
+                System.out.print(str + " - Media");
+                System.out.print("\t");
+                System.out.print(str + " - Pior");
+                System.out.print("\t");
+                System.out.print(str + " - Melhor");
+                System.out.print("\t");
+                System.out.print(str + " - Max");
+                System.out.print("\t");
+//                System.out.print(str + " - Erro");
+//                System.out.print("\t");
+            }
         }
 
         for (int i = 2; i <= maxCarat; i++) {
@@ -308,7 +335,9 @@ public class UtilResultMerge {
                     totalPorNum.put(ncarat, (tparcial + 1));
                 }
 
-                addDiference(ncarat, ref);
+                if (ref != null) {
+                    addDiference(ncarat, ref);
+                }
             }
         }
 
@@ -333,16 +362,28 @@ public class UtilResultMerge {
                 }
                 System.out.print(String.format("%.2f", totalTime));
                 System.out.print("\t");
-                System.out.print(worst);
+                if (diff > 0) {
+                    System.out.print(worst);
+                } else {
+                    System.out.print("--");
+                }
                 System.out.print("\t");
-                System.out.print(best);
+                if (diff > 0) {
+                    System.out.print(best);
+                } else {
+                    System.out.print("--");
+                }
                 System.out.print("\t");
                 System.out.print(strMedia);
                 System.out.print("\t");
-                System.out.print(ref.max - max);
+                if (diff > 0) {
+                    System.out.print(ref.max - max);
+                } else {
+                    System.out.print("--");
+                }
                 System.out.print("\t");
-                System.out.print(erros);
-                System.out.print("\t");
+//                System.out.print(erros);
+//                System.out.print("\t");
             } else {
                 System.out.print("--");
                 System.out.print("\t");
@@ -354,8 +395,8 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print("--");
                 System.out.print("\t");
-                System.out.print("--");
-                System.out.print("\t");
+//                System.out.print("--");
+//                System.out.print("\t");
             }
         }
 
@@ -458,12 +499,7 @@ public class UtilResultMerge {
                 }
             } else {
                 Integer ref = resultadoReferencia.get(id);
-                if (ref != null) {
-                    r.addResultado(id, resultado, tempo, ref);
-                } else {
-                    //will be ignored, not result reference
-                    //throw new IllegalStateException("Not ref result to graph: " + id);
-                }
+                r.addResultado(id, resultado, tempo, ref);
             }
         }
 
