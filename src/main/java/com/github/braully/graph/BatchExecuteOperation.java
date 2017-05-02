@@ -352,8 +352,17 @@ public class BatchExecuteOperation implements IBatchExecute {
         long continueOffset = -1;
         String resultFileNameArq = getResultFileName(operation, dirname, name);
         File fileExpress = getExistResultFile(file.getParentFile(), resultFileNameArq);
+        BufferedReader reader = null;
         if (fileExpress != null && fileExpress.exists()) {
-            BufferedReader reader = new BufferedReader(new FileReader(fileExpress));
+            reader = new BufferedReader(new FileReader(fileExpress));
+        } else {
+            fileExpress = getExistResultFile(file.getParentFile(), resultFileNameArq + ".gz");
+            if (fileExpress != null && fileExpress.exists()) {
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileExpress))));
+            }
+        }
+
+        if (reader != null) {
             while (reader.readLine() != null) {
                 continueOffset++;
             }
