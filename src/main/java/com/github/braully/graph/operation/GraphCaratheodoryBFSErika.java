@@ -11,10 +11,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 public class GraphCaratheodoryBFSErika
         extends GraphCheckCaratheodorySet
         implements IGraphOperation {
+
+    private static final Logger log = Logger.getLogger(GraphCaratheodoryBFSErika.class);
 
     static final String type = "P3-Convexity";
     static final String description = "Nº Caratheodory (BFS Bloco Erika)";
@@ -27,11 +30,15 @@ public class GraphCaratheodoryBFSErika
 
         int maxmaxcg = 0;
 
-        System.out.printf("V(G)    = {");
-        for (int i = 0; i < graph.getVertexCount(); i++) {
-            System.out.printf("%2d | ", i);
+        if (verbose) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("V(G)    = {");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                sb.append(String.format("%2d | ", i));
+            }
+            sb.append("}");
+            log.info(sb.toString());
         }
-        System.out.println("}");
         Collection<Integer> vertices = graph.getVertices();
 
         for (Integer v : vertices) {
@@ -41,7 +48,9 @@ public class GraphCaratheodoryBFSErika
                 maxmaxcg = maxcg;
             }
         }
-        System.out.println("c(G) = " + maxmaxcg);
+        if (verbose) {
+            log.info("c(G) = " + maxmaxcg);
+        }
         /* Processar a buscar pelo caratheodoryset e caratheodorynumber */
         Map<String, Object> response = new HashMap<>();
         response.put(OperationConvexityGraphResult.PARAM_NAME_CARATHEODORY_NUMBER, maxmaxcg);
@@ -60,17 +69,21 @@ public class GraphCaratheodoryBFSErika
         int[] l2v = new int[vertexCount];
         int[] l3v = new int[vertexCount];
         int maxcg = 0;
-        System.out.println("0 - Enraizando: " + v);
+        if (verbose) {
+            log.info("0 - Enraizando: v=" + v);
+        }
         //BFS
         bdl.labelDistances(graph, v);
 
-        if (GraphCaratheodoryHeuristic.verbose) {
-            System.out.printf("bfs(%2d) = {", v);
+        if (verbose) {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(String.format("bfs(%2d) = {", v));
             for (int i = 0; i < vertexCount; i++) {
                 int distance = bdl.getDistance(graph, i);
-                System.out.printf("%2d | ", distance);
+                sb.append(String.format("%2d | ", distance));
             }
-            System.out.println("}");
+            log.info("}");
         }
         //Computar arvore
         Map<Integer, Integer> predecessorCount = new HashMap<>();
@@ -99,13 +112,14 @@ public class GraphCaratheodoryBFSErika
         Set<Integer> keySet = predecessorCount.keySet();
         Set<Integer> leafs = new HashSet<>(vertices);
         leafs.removeAll(keySet);
-        if (GraphCaratheodoryHeuristic.verbose) {
-            System.out.println("Leafs(" + v + "): " + leafs);
+        if (verbose) {
+            log.info("Leafs(" + v + "): " + leafs);
+
         }
         // 1 - Se w é folha
         for (Integer w : leafs) {
-            if (GraphCaratheodoryHeuristic.verbose) {
-                System.out.println("1 - É folha: " + w);
+            if (verbose) {
+                log.info("1 - É folha: " + w);
             }
             lv[w] = 1;
             lvLinha[w] = Integer.MIN_VALUE;
@@ -116,7 +130,9 @@ public class GraphCaratheodoryBFSErika
             Integer pdcount = predecessorCount.get(w);
             if (pdcount != null && pdcount.equals(1)) {
                 Set<Integer> ChvW = childs.get(w);
-                System.out.println("2 - Apenas 1 filho: " + w + " -> " + ChvW);
+                if (verbose) {
+                    log.info("2 - Apenas 1 filho: " + w + " -> " + ChvW);
+                }
                 for (Integer u : ChvW) {
                     lv[w] = 1;
                     lvLinha[w] = lv[u]; //duvida
@@ -128,8 +144,8 @@ public class GraphCaratheodoryBFSErika
             Integer pdcount = predecessorCount.get(w);
             if (pdcount != null && pdcount.intValue() >= 2) {
                 Set<Integer> su = childs.get(w);
-                if (GraphCaratheodoryHeuristic.verbose) {
-                    System.out.println("3 - Pelo menos 2 filhos: " + w + " -> " + su);
+                if (verbose) {
+                    log.info("3 - Pelo menos 2 filhos: w=" + w + " -> Chv(w)=" + su);
                 }
                 // 3a - Se dois filhos são folha
                 int contFilhosFolha = 0;
@@ -139,20 +155,20 @@ public class GraphCaratheodoryBFSErika
                     }
                 }
                 if (contFilhosFolha >= 2) {
-                    if (GraphCaratheodoryHeuristic.verbose) {
-                        System.out.println("\t3a - 2 filhos folha: " + w);
+                    if (verbose) {
+                        log.info("\t3a - 2 filhos folha: " + w);
                     }
                     l1v[w] = 2;
                 }
 
                 //3b - Conjunto de componentes conexas do subgrafo induzido G|Chv(w)
                 UndirectedSparseGraphTO inducedSubgraph = FilterUtils.createInducedSubgraph(su, graph);
-                if (GraphCaratheodoryHeuristic.verbose) {
-                    System.out.println("\t3b - subgrafo induzido G|Chv(w) : " + inducedSubgraph);
+                if (verbose) {
+                    log.info("\t3b - subgrafo induzido G|Chv(w) : " + inducedSubgraph);
                 }
                 List<UndirectedSparseGraphTO> componentesConexas = listaComponentesConexas(inducedSubgraph);
-                if (GraphCaratheodoryHeuristic.verbose) {
-                    System.out.println("\t Compomentes conexas (" + componentesConexas.size() + "): " + componentesConexas);
+                if (verbose) {
+                    log.info("\t Compomentes conexas (" + componentesConexas.size() + "): " + componentesConexas);
                 }
                 //3c -
                 l2v[w] = Integer.MIN_VALUE;
@@ -199,14 +215,48 @@ public class GraphCaratheodoryBFSErika
                 }
             }
         }
+
+        if (verbose) {
+            StringBuilder sblv = new StringBuilder("lv(");
+            StringBuilder sblv1 = new StringBuilder("l1v(");
+            StringBuilder sblv2 = new StringBuilder("l2v(");
+            StringBuilder sblv3 = new StringBuilder("l3v(");
+            StringBuilder sblvlinha = new StringBuilder("lv'(");
+            for (int i = 0; i < graph.getVertexCount(); i++) {
+                String f = String.format(") = { ");
+                sblv.append(f);
+                sblv1.append(f);
+                sblv2.append(f);
+                sblv3.append(f);
+                sblvlinha.append(f);
+
+                sblv.append(String.format("%2d | ", lv[i]));
+                sblv1.append(String.format("%2d | ", l1v[i]));
+                sblv2.append(String.format("%2d | ", l2v[i]));
+                sblv3.append(String.format("%2d | ", l3v[i]));
+                sblvlinha.append(String.format("%2d | ", lvLinha[i]));
+            }
+            sblv.append("}");
+            sblv1.append("}");
+            sblv2.append("}");
+            sblv3.append("}");
+            sblvlinha.append("}");
+
+            log.info(sblv.toString());
+            log.info(sblv1.toString());
+            log.info(sblv2.toString());
+            log.info(sblv3.toString());
+            log.info(sblvlinha.toString());
+        }
+
         //4 - c(G) = max{lv(v)|vEV(G)}
         for (Integer vert : vertices) {
             if (lv[vert] > maxcg) {
                 maxcg = lv[vert];
             }
         }
-        if (GraphCaratheodoryHeuristic.verbose) {
-            System.out.println("4 - c(G) = max{lv(v)|vEV(G) = " + maxcg);
+        if (verbose) {
+            log.info("4 - c(G) = max{lv(v)|vEV(G) = " + maxcg);
         }
         return maxcg;
     }

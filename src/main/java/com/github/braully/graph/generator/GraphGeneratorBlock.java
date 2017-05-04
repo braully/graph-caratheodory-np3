@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import org.apache.log4j.Logger;
 
 public class GraphGeneratorBlock extends AbstractGraphGenerator {
 
@@ -75,7 +76,6 @@ public class GraphGeneratorBlock extends AbstractGraphGenerator {
             Integer target2 = null;
 
             long type = Math.round(Math.random() * 2);
-//            System.out.println("Random type: " + type);
             if (type == 0 && countVertice < joinPoints.length) {
                 target1 = joinPoints[countVertice++];
                 graph.addEdge(verti, target1);
