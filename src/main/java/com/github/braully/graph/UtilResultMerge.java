@@ -32,6 +32,8 @@ public class UtilResultMerge {
 
     public static String OPERACAO_REFERENCIA = "Nº Caratheodory (Binary Java)";
 
+    public static boolean verbose = false;
+
     public static void main(String... args) throws Exception {
         Options options = new Options();
 
@@ -42,6 +44,10 @@ public class UtilResultMerge {
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
+
+        Option verb = new Option("v", "verbose", false, "verbose");
+        output.setRequired(false);
+        options.addOption(verb);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -55,6 +61,10 @@ public class UtilResultMerge {
 
             System.exit(1);
             return;
+        }
+
+        if (cmd.hasOption(verb.getOpt())) {
+            verbose = true;
         }
 
         String[] inputs = cmd.getOptionValues("input");
@@ -134,7 +144,9 @@ public class UtilResultMerge {
         if (files != null) {
             List<File> listFiles = BatchExecuteOperation.sortFileArray(files);
             for (File f : listFiles) {
-                System.out.println("Process: " + f);
+                if (verbose) {
+                    System.out.println("Process: " + f);
+                }
                 processFile(f, file.getName());
             }
         }
@@ -187,6 +199,9 @@ public class UtilResultMerge {
     private static void addResult(String grafo, String id,
             int nvertices, String operacao,
             Integer resultado, double tempo) {
+        if (operacao.contains("v1")) {
+            return;
+        }
         String key = String.format("%s-%4d", grafo.trim(), nvertices);
         ResultadoLinha r = resultados.get(key);
         if (r == null) {
@@ -239,7 +254,7 @@ public class UtilResultMerge {
         System.out.print("\t");
 
         List<String> opers = getOperationsSorted();
-
+        int j = 1;
         for (String str : opers) {
             if (str.equals(OPERACAO_REFERENCIA)) {
                 System.out.print(str + " - T(s)");
@@ -249,19 +264,20 @@ public class UtilResultMerge {
                 System.out.print("Max");
                 System.out.print("\t");
             } else {
-                System.out.print(str + " - T(s)");
+                System.out.print(str + " (" + j + ") - T(s)");
                 System.out.print("\t");
-                System.out.print(str + " - Media");
+                System.out.print("Media das Dif");
                 System.out.print("\t");
-                System.out.print(str + " - Pior resultado");
+                System.out.print("Pior resultado");
                 System.out.print("\t");
-                System.out.print(str + " - Acertos exatos ");
+                System.out.print("Acertos exatos ");
                 System.out.print("\t");
-                System.out.print(str + " - Max");
-                System.out.print("\t");
+//                System.out.print("Diff Max");
+//                System.out.print("\t");
 //                System.out.print(str + " - Erro");
 //                System.out.print("\t");
             }
+            j++;
         }
 
         for (int i = 2; i <= maxCarat; i++) {
@@ -354,6 +370,16 @@ public class UtilResultMerge {
         }
 
         public void printResultado(ResultadoColuna ref) {
+//            System.out.print(str + " - T(s)");
+//            System.out.print("\t");
+//            System.out.print(str + " - Media");
+//            System.out.print("\t");
+//            System.out.print(str + " - Pior resultado");
+//            System.out.print("\t");
+//            System.out.print(str + " - Acertos exatos ");
+//            System.out.print("\t");
+//            System.out.print(str + " - Max");
+
             if (cont > 0) {
                 String strMedia = "--";
                 if (diff > 0) {
@@ -362,6 +388,10 @@ public class UtilResultMerge {
                 }
                 System.out.print(String.format("%.2f", totalTime));
                 System.out.print("\t");
+
+                System.out.print(strMedia);
+                System.out.print("\t");
+
                 if (diff > 0) {
                     System.out.print(worst);
                 } else {
@@ -374,14 +404,12 @@ public class UtilResultMerge {
                     System.out.print("--");
                 }
                 System.out.print("\t");
-                System.out.print(strMedia);
-                System.out.print("\t");
-                if (diff > 0) {
-                    System.out.print(ref.max - max);
-                } else {
-                    System.out.print("--");
-                }
-                System.out.print("\t");
+//                if (diff > 0) {
+//                    System.out.print(ref.max - max);
+//                } else {
+//                    System.out.print("--");
+//                }
+//                System.out.print("\t");
 //                System.out.print(erros);
 //                System.out.print("\t");
             } else {
