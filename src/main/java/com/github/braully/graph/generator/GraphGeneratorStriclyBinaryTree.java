@@ -10,7 +10,7 @@ public class GraphGeneratorStriclyBinaryTree extends AbstractGraphGenerator {
     static final String N_VERTICES = "Nº Vertices";
     static final String[] parameters = {N_VERTICES};
 
-    static final String description = "Stricly Binary Tree";
+    static final String description = "Binary (Stricly) Tree";
 
     @Override
     public String[] getParameters() {
@@ -35,7 +35,6 @@ public class GraphGeneratorStriclyBinaryTree extends AbstractGraphGenerator {
 
         Queue<Integer> frontier = new ArrayDeque<>();
         graph.addVertex(0);
-        int countEdge = 0;
         int countVertice = 1;
         frontier.add(0);
 
@@ -43,8 +42,8 @@ public class GraphGeneratorStriclyBinaryTree extends AbstractGraphGenerator {
             Integer verti = frontier.remove();
             Integer target1 = countVertice++;
             Integer target2 = countVertice++;
-            graph.addEdge(countEdge++, verti, target1);
-            graph.addEdge(countEdge++, verti, target2);
+            graph.addEdge(verti, target1);
+            graph.addEdge(verti, target2);
             if (countVertice < nvert) {
                 frontier.add(target1);
                 frontier.add(target2);

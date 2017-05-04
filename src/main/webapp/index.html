@@ -64,8 +64,12 @@
     </head>
     <body>
         <div class="jumbotron">
-
-                <h1>Graph Problems</h1>
+            <h1>Graph Problems</h1>
+            <!--            <p>  
+                            <span class="text-muted">
+                                Authors: Braully Rocha, <a href="http://www.inf.ufg.br/node/112">Erika Morais Martins Coelho</a> and <a href="http://www.inf.ufg.br/node/226">Hebert Coelho</a>
+                            </span>
+                        </p>-->
         </div>
 
         <div class="container-fluid" ng-app="appCaratheodroyNumber" 
@@ -304,10 +308,21 @@
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>
+
         </div>
+
+
+        <footer class="footer"> 
+            <p>  
+                <span class="text-muted">
+                    Developing and Credits: Braully Rocha, <a href="http://www.inf.ufg.br/node/112">Erika Morais Martins Coelho</a> and <a href="http://www.inf.ufg.br/node/226">Hebert Coelho</a>
+                </span>
+            </p>
+        </footer>
 
         <script>
             var app = angular.module('appCaratheodroyNumber', []);
@@ -516,7 +531,6 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $scope.batchExecuteOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -540,7 +554,6 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $scope.cancelOperation = function () {
                     $http.post('rest/graph/process-cancel').success(function (result) {
                         $scope.processing = false;
