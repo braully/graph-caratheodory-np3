@@ -62,11 +62,14 @@
             }
         </style>
     </head>
-    <body >
+    <body>
         <div class="jumbotron">
-            <div class="container">
-                <h1>Graph Problems</h1>
-            </div>
+            <h1>Graph Problems</h1>
+            <!--            <p>  
+                            <span class="text-muted">
+                                Authors: Braully Rocha, <a target="_blank" href="http://www.inf.ufg.br/node/112">Erika Morais Martins Coelho</a> and <a target="_blank" href="http://www.inf.ufg.br/node/226">Hebert Coelho</a>
+                            </span>
+                        </p>-->
         </div>
 
         <div class="container-fluid" ng-app="appCaratheodroyNumber" 
@@ -305,10 +308,21 @@
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>
+
         </div>
+
+
+        <footer class="footer"> 
+            <p>  
+                <span class="text-muted">
+                    Developing and Credits: Braully Rocha, <a target="_blank" href="http://www.inf.ufg.br/node/112">Erika Morais Martins Coelho</a> and <a target="_blank" href="http://www.inf.ufg.br/node/226">Hebert Coelho</a>
+                </span>
+            </p>
+        </footer>
 
         <script>
             var app = angular.module('appCaratheodroyNumber', []);
@@ -517,7 +531,6 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $scope.batchExecuteOperation = function () {
                     $scope.graph.inputData = $scope.inputData;
                     if ($scope.inputData)
@@ -541,7 +554,6 @@
                         window.alert('Error: ' + err);
                     });
                 };
-
                 $scope.cancelOperation = function () {
                     $http.post('rest/graph/process-cancel').success(function (result) {
                         $scope.processing = false;
