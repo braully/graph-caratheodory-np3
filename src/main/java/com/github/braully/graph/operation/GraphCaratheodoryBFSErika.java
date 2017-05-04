@@ -217,18 +217,18 @@ public class GraphCaratheodoryBFSErika
         }
 
         if (verbose) {
-            StringBuilder sblv = new StringBuilder("lv(");
-            StringBuilder sblv1 = new StringBuilder("l1v(");
-            StringBuilder sblv2 = new StringBuilder("l2v(");
-            StringBuilder sblv3 = new StringBuilder("l3v(");
-            StringBuilder sblvlinha = new StringBuilder("lv'(");
+            StringBuilder sblv = new StringBuilder("lv   = { ");
+            StringBuilder sblv1 = new StringBuilder("l1v  = { ");
+            StringBuilder sblv2 = new StringBuilder("l2v  = { ");
+            StringBuilder sblv3 = new StringBuilder("l3v  = { ");
+            StringBuilder sblvlinha = new StringBuilder("lv' ={ ");
             for (int i = 0; i < graph.getVertexCount(); i++) {
-                String f = String.format(") = { ");
-                sblv.append(f);
-                sblv1.append(f);
-                sblv2.append(f);
-                sblv3.append(f);
-                sblvlinha.append(f);
+//                String f = String.format(") = { ");
+//                sblv.append(f);
+//                sblv1.append(f);
+//                sblv2.append(f);
+//                sblv3.append(f);
+//                sblvlinha.append(f);
 
                 sblv.append(String.format("%2d | ", lv[i]));
                 sblv1.append(String.format("%2d | ", l1v[i]));
