@@ -14,14 +14,106 @@ public class CombinationsFacade {
         if (n <= 0 || k <= 0 || index < 0) {
             return comb;
         }
-        Iterator<int[]> combinationsIterator = CombinatoricsUtils.combinationsIterator(n, k);
-        int cont = 0;
-        while (combinationsIterator.hasNext()) {
-            comb = combinationsIterator.next();
-            if (cont++ == index) {
-                break;
-            }
+        long maxCombinations = CombinationsFacade.maxCombinations(n, k);
+        if (index > maxCombinations) {
+            return comb;
         }
+        comb = new int[k];
+        CombinationsFacade.initialCombination(n, k, comb);
         return comb;
     }
+
+    public static synchronized long lexicographicIndex(int n, int k, int[] combination) {
+        long index = 0;
+        int j = 0;
+        for (int i = 0; i < k; ++i) {
+            for (++j; j != combination[i] + 1; ++j) {
+                int nj = n - j;
+                int kj = k - i - 1;
+                long maxComb = maxCombinations(nj, kj);
+                index = index + maxComb;
+                if (maxComb == 0) {
+                    index++;
+                }
+            }
+        }
+        return index;
+    }
+
+    public static synchronized void printCombination(int[] currentCombination) {
+        System.out.printf("S = {");
+        for (int i = 0; i < currentCombination.length; i++) {
+            System.out.printf("%2d", currentCombination[i]);
+            if (i < currentCombination.length - 1) {
+                System.out.printf(", ");
+            }
+        }
+        System.out.printf(" }");
+    }
+
+    public static synchronized long maxCombinations(int n, int k) {
+        if (n == 0 || k == 0) {
+            return 0;
+        }
+        if (n < k) {
+            return 0;
+        }
+        if (n == k) {
+            return 1;
+        }
+        long delta, idxMax;
+        if (k < n - k) {
+            delta = n - k;
+            idxMax = k;
+        } else {
+            delta = k;
+            idxMax = n - k;
+        }
+
+        long ans = delta + 1;
+        for (int i = 2; i <= idxMax; ++i) {
+            ans = (ans * (delta + i)) / i;
+        }
+        return ans;
+    }
+
+    public static synchronized void initialCombination(int n, int k, int[] combinationArray, int idx) {
+        int a = n;
+        int b = k;
+        long x = (maxCombinations(n, k) - 1) - idx;
+        for (int i = 0; i < k; ++i) {
+            combinationArray[i] = a - 1;
+            while (maxCombinations(combinationArray[i], b) > x) {
+                --combinationArray[i];
+            }
+            x = x - maxCombinations(combinationArray[i], b);
+            a = combinationArray[i];
+            b = b - 1;
+        }
+
+        for (int i = 0; i < k; ++i) {
+            combinationArray[i] = (n - 1) - combinationArray[i];
+        }
+    }
+
+    public static synchronized void initialCombination(int n, int k, int[] combinationArray) {
+        for (int i = 0; i < k; i++) {
+            combinationArray[i] = i;
+        }
+    }
+
+    public static synchronized void nextCombination(int n,
+            int k,
+            int[] currentCombination) {
+        if (currentCombination[0] == n - k) {
+            return;
+        }
+        int i;
+        for (i = k - 1; i > 0 && currentCombination[i] == n - k + i; --i);
+        ++currentCombination[i];
+        for (int j = i; j < k - 1; ++j) {
+            currentCombination[j + 1] = currentCombination[j] + 1;
+        }
+    }
+
 }
