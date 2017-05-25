@@ -5,6 +5,7 @@
  */
 package com.github.braully.graph;
 
+import com.github.braully.graph.operation.IGraphOperation;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -13,7 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,6 +49,10 @@ public class UtilResultMerge {
         output.setRequired(false);
         options.addOption(verb);
 
+        Option exluces = new Option("x", "exclude", true, "exclude operations");
+        exluces.setRequired(false);
+        options.addOption(exluces);
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
@@ -83,12 +87,15 @@ public class UtilResultMerge {
 //                "/home/strike/Documentos/grafos-processamento/Trees"
             };
         }
+
+        String[] excludes = cmd.getOptionValues("exclude");
+
         if (inputs != null) {
-            processInputs(inputs);
+            processInputs(inputs, excludes);
         }
     }
 
-    private static void processInputs(String[] inputs)
+    private static void processInputs(String[] inputs, String[] excludes)
             throws FileNotFoundException, IOException {
         if (inputs == null || inputs.length == 0) {
             return;
@@ -100,15 +107,15 @@ public class UtilResultMerge {
             }
 
             if ((file = new File(inputFilePath)).isFile()) {
-                processFile(file);
+                processFile(file, excludes);
             } else {
-                processDirectory(file);
+                processDirectory(file, excludes);
             }
         }
         printResultadoConsolidado();
     }
 
-    public static void processDirectory(File file)
+    public static void processDirectory(File file, String[] excludes)
             throws FileNotFoundException, NumberFormatException, IOException {
         if (file == null || file.isFile()) {
             return;
@@ -125,7 +132,7 @@ public class UtilResultMerge {
             });
             if (files != null) {
                 for (File f : files) {
-                    processDirectory(f);
+                    processDirectory(f, excludes);
                 }
             }
             return;
@@ -147,16 +154,17 @@ public class UtilResultMerge {
                 if (verbose) {
                     System.out.println("Process: " + f);
                 }
-                processFile(f, file.getName());
+                processFile(f, file.getName(), excludes);
             }
         }
     }
 
-    public static void processFile(File file) throws FileNotFoundException, NumberFormatException, IOException {
-        processFile(file, null);
+    public static void processFile(File file, String[] excludes)
+            throws FileNotFoundException, NumberFormatException, IOException {
+        processFile(file, null, excludes);
     }
 
-    public static void processFile(File file, String grupo) throws FileNotFoundException, NumberFormatException, IOException {
+    public static void processFile(File file, String grupo, String[] excludes) throws FileNotFoundException, NumberFormatException, IOException {
         if (file == null) {
             return;
         }
@@ -168,6 +176,18 @@ public class UtilResultMerge {
             r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
         } else {
             return;
+        }
+
+        Set<String> excludeOperation = new HashSet<>();
+        if (excludes != null) {
+            for (IGraphOperation oper : BatchExecuteOperation.operations) {
+                for (String str : excludes) {
+                    String operName = oper.getName().toLowerCase();
+                    if (operName.contains(str.toLowerCase())) {
+                        excludeOperation.add(oper.getName());
+                    }
+                }
+            }
         }
 
         String readLine = null;
@@ -190,8 +210,10 @@ public class UtilResultMerge {
                 if (grupo != null) {
                     grupo1 = grupo;
                 }
-                addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-                        operacao1, resultado1, tdouble1);
+                if (!excludeOperation.contains(operacao1)) {
+                    addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
+                            operacao1, resultado1, tdouble1);
+                }
             }
         }
     }
@@ -521,8 +543,7 @@ public class UtilResultMerge {
                 maxCarat = resultado;
             }
             if (OPERACAO_REFERENCIA.equals(operacao)) {
-                if (resultado != null) {
-                    resultadoReferencia.put(id, resultado);
+                if (resultado != null && resultadoReferencia.put(id, resultado) == null) {
                     r.addResultadoReferencia(id, resultado, tempo);
                 }
             } else {

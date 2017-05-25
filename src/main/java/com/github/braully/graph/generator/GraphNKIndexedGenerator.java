@@ -53,9 +53,9 @@ public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         String name = "N" + nvertices + ",M" + pvertices + "-Indexed" + nkindex;
         graph.setName(name);
-
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
         Integer[] vertexs = new Integer[nvertices];
+
         for (int i = 0; i < nvertices; i++) {
             vertexElegibles.add(i);
             vertexs[i] = i;
@@ -64,8 +64,19 @@ public class GraphNKIndexedGenerator extends AbstractGraphGenerator {
 
         int maxEdges = (nvertices * (nvertices - 1)) / 2;
         int[] combination = CombinationsFacade.getCombinationNKByLexicographIndex(maxEdges, pvertices, nkindex);
-        log.info("Max Edges: " + maxEdges);
 
+        System.out.println(name);
+
+        System.out.printf("Comb = {");
+        for (int i = 0; i < combination.length; i++) {
+            System.out.printf("%d", combination[i]);
+            if (i < combination.length - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("}");
+
+//        log.info("Max Edges: " + maxEdges);
         if (combination != null && combination.length > 0) {
             Set<Integer> edges = new HashSet<Integer>();
             for (int e : combination) {

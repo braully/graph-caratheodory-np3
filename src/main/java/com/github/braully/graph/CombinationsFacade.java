@@ -19,7 +19,7 @@ public class CombinationsFacade {
             return comb;
         }
         comb = new int[k];
-        CombinationsFacade.initialCombination(n, k, comb);
+        CombinationsFacade.initialCombination(n, k, comb, index);
         return comb;
     }
 

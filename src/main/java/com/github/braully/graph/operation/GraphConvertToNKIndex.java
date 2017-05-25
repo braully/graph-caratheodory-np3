@@ -37,6 +37,16 @@ public class GraphConvertToNKIndex implements IGraphOperation {
                 }
             }
             k = combi;
+
+            System.out.printf("Comb-edge = {");
+            for (int i = 0; i < comb.length ; i++) {
+                System.out.printf("%d", comb[i]);
+                if (i < comb.length - 1) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println("}");
+
             index = CombinationsFacade.lexicographicIndex((int) maxEdges, (int) combi, comb);
         } catch (Exception ex) {
             log.error(null, ex);
