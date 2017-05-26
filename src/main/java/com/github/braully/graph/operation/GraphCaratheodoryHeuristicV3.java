@@ -46,7 +46,8 @@ public class GraphCaratheodoryHeuristicV3
         return s;
     }
 
-    public void expandCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> s, int[] aux) {
+    public void expandCaratheodorySet(UndirectedSparseGraphTO<Integer, Integer> graph, 
+            Set<Integer> s, int[] aux) {
         int vertexCount = graph.getVertexCount();
         int bv;
         do {
@@ -78,9 +79,10 @@ public class GraphCaratheodoryHeuristicV3
                         menorGrau = neighborCount;
                         bv = i;
                     }
-                } else {
+                } 
+//                else {
                     s.remove(i);
-                }
+//                }
             }
             if (bv != -1) {
                 addVertToS(bv, s, graph, aux);

@@ -30,7 +30,9 @@ public class GraphConvertToNKIndex implements IGraphOperation {
             int countEdge = 0;
             for (int i = 0; i < n; i++) {
                 for (int j = i; j < n - 1; j++) {
-                    if (graph.isNeighbor(i, j)) {
+                    Integer source = i;
+                    Integer target = j + 1;
+                    if (graph.isNeighbor(source, target)) {
                         comb[combi++] = countEdge;
                     }
                     countEdge++;
@@ -39,7 +41,7 @@ public class GraphConvertToNKIndex implements IGraphOperation {
             k = combi;
 
             System.out.printf("Comb-edge = {");
-            for (int i = 0; i < comb.length ; i++) {
+            for (int i = 0; i < comb.length; i++) {
                 System.out.printf("%d", comb[i]);
                 if (i < comb.length - 1) {
                     System.out.print(", ");
