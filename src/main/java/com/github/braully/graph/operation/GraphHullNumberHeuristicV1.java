@@ -1,7 +1,6 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import static com.github.braully.graph.operation.GraphAllCaratheodoryExistsSetOfSize.log;
 import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.INCLUDED;
 import static com.github.braully.graph.operation.GraphHullNumber.PARAM_NAME_HULL_NUMBER;
 import static com.github.braully.graph.operation.GraphHullNumber.PARAM_NAME_HULL_SET;
