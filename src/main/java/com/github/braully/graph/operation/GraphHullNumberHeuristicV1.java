@@ -50,14 +50,14 @@ public class GraphHullNumberHeuristicV1
 
 //    @Override
     public Set<Integer> buildOptimizedHullSet(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
-        Set<Integer> hullSet = new HashSet<>();
+        Set<Integer> hullSet = null;
         Collection<Integer> vertices = graphRead.getVertices();
         for (Integer v : vertices) {
             if (GraphCaratheodoryHeuristic.verbose) {
                 log.info("Trying Start Vertice: " + v);
             }
             Set<Integer> tmp = buildOptimizedHullSetFromStartVertice(graphRead, v);
-            if (tmp != null && tmp.size() < hullSet.size()) {
+            if (hullSet == null || tmp.size() < hullSet.size()) {
                 hullSet = tmp;
             }
         }
@@ -85,7 +85,7 @@ public class GraphHullNumberHeuristicV1
                 log.info("\tAnalizing vertice: ");
             }
             for (int i = 0; i < vertexCount; i++) {
-                if (s.contains(i)) {
+                if (aux[i] >= INCLUDED) {
                     continue;
                 }
                 int[] auxb = aux.clone();
@@ -101,7 +101,7 @@ public class GraphHullNumberHeuristicV1
                 if (GraphCaratheodoryHeuristic.verbose) {
                     log.info("\t" + s + " = Charatheodory |H(S)|=" + sizeHs + " d=" + neighborCount);
                 }
-                if (bv == -1 || (deltaHsi <= maiorDeltaHs && neighborCount > maiorGrau)) {
+                if (bv == -1 || (deltaHsi >= maiorDeltaHs && neighborCount > maiorGrau)) {
                     maiorDeltaHs = deltaHsi;
                     maiorGrau = neighborCount;
                     bv = i;
