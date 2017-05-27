@@ -12,6 +12,7 @@ import com.github.braully.graph.operation.GraphCaratheodoryHeuristicHybrid;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
 import com.github.braully.graph.operation.GraphHullNumber;
+import com.github.braully.graph.operation.GraphHullNumberHeuristicV1;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.BufferedReader;
@@ -54,6 +55,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         new GraphCaratheodoryHeuristicV3(),
         new GraphCaratheodoryHeuristicHybrid(),
         new GraphHullNumber(),
+        new GraphHullNumberHeuristicV1(),
         new GraphCaratheodoryBFSErika()
     };
 

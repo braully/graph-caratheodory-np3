@@ -91,7 +91,17 @@ public class GraphHullNumber implements IGraphOperation {
         }
         int maxSizeSet = ceilling.size();
         int currentSize = 1;
+        int countOneNeigh = 0;
+
         Collection<Integer> vertices = graph.getVertices();
+
+        for (Integer i : vertices) {
+            if (graph.degree(i) == 1) {
+                countOneNeigh++;
+            }
+        }
+        currentSize = Math.max(currentSize, countOneNeigh);
+
         while (currentSize < maxSizeSet) {
             Set<Integer> hs = findHullSetBruteForce(graph, currentSize);
             if (hs != null && !hs.isEmpty()) {
