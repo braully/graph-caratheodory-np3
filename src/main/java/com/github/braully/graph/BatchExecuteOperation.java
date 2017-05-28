@@ -485,10 +485,14 @@ public class BatchExecuteOperation implements IBatchExecute {
                     if (t != null && t1 != null) {
                         String tname = t.getName().toLowerCase();
                         String t1name = t1.getName().toLowerCase();
-                        if (tname.contains("binary") || tname.contains("-00-ref")) {
+                        if (tname.contains("binary")
+                                || tname.contains("-00-ref")
+                                || tname.contains("hull_number_java")) {
                             tname = "a" + tname;
                         }
-                        if (t1name.contains("binary") || t1name.contains("-00-ref")) {
+                        if (t1name.contains("binary")
+                                || t1name.contains("-00-ref")
+                                || t1name.contains("hull_number_java")) {
                             t1name = "a" + t1name;
                         }
                         ret = tname.compareToIgnoreCase(t1name);
