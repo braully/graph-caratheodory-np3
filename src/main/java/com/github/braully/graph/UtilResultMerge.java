@@ -301,10 +301,9 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print("Acertos exatos ");
                 System.out.print("\t");
-//                System.out.print("Diff Max");
-//                System.out.print("\t");
-//                System.out.print(str + " - Erro");
-//                System.out.print("\t");
+                System.out.print("Quantidade");
+                System.out.print("\t");
+
             }
             j++;
         }
@@ -448,8 +447,8 @@ public class UtilResultMerge {
 //                    System.out.print("--");
 //                }
 //                System.out.print("\t");
-//                System.out.print(erros);
-//                System.out.print("\t");
+                System.out.print(cont);
+                System.out.print("\t");
             } else {
                 System.out.print("--");
                 System.out.print("\t");
@@ -461,8 +460,8 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print("--");
                 System.out.print("\t");
-//                System.out.print("--");
-//                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
             }
         }
 
