@@ -68,10 +68,6 @@ public class UtilResultMerge {
             return;
         }
 
-        if (cmd.hasOption(verb.getOpt())) {
-            verbose = true;
-        }
-
         String[] excludes = cmd.getOptionValues("exclude");
         String[] inputs = cmd.getOptionValues("input");
         if (inputs == null) {
@@ -89,6 +85,10 @@ public class UtilResultMerge {
 //                "/home/strike/Documentos/grafos-processamento/Trees"
             };
             excludes = new String[]{"carathe"};
+            verbose = true;
+        }
+
+        if (cmd.hasOption(verb.getOpt())) {
             verbose = true;
         }
 
