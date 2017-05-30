@@ -303,7 +303,8 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print("Quantidade");
                 System.out.print("\t");
-
+                System.out.print("Desconto");
+                System.out.print("\t");
             }
             j++;
         }
@@ -335,6 +336,7 @@ public class UtilResultMerge {
         long diff;
         long worst;
         long best;
+        long disconto;
 
         private void addResultadoReferencia(String id, Integer ncarat, double tempo) {
             totalTime += tempo;
@@ -390,6 +392,8 @@ public class UtilResultMerge {
 
                 if (ref != null) {
                     addDiference(ncarat, ref);
+                } else {
+                    disconto++;
                 }
             }
         }
@@ -449,7 +453,11 @@ public class UtilResultMerge {
 //                System.out.print("\t");
                 System.out.print(cont);
                 System.out.print("\t");
+                System.out.print(disconto);
+                System.out.print("\t");
             } else {
+                System.out.print("--");
+                System.out.print("\t");
                 System.out.print("--");
                 System.out.print("\t");
                 System.out.print("--");
