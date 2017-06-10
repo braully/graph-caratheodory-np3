@@ -9,7 +9,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
  */
 public class CombinationsFacade {
 
-    public static synchronized int[] getCombinationNKByLexicographIndex(int n, int k, int index) {
+    public static synchronized int[] getCombinationNKByLexicographIndex(int n, int k, long index) {
         int[] comb = null;
         if (n <= 0 || k <= 0 || index < 0) {
             return comb;
@@ -77,7 +77,7 @@ public class CombinationsFacade {
         return ans;
     }
 
-    public static synchronized void initialCombination(int n, int k, int[] combinationArray, int idx) {
+    public static synchronized void initialCombination(int n, int k, int[] combinationArray, long idx) {
         int a = n;
         int b = k;
         long x = (maxCombinations(n, k) - 1) - idx;

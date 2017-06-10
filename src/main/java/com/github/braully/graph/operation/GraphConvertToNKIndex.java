@@ -3,8 +3,10 @@ package com.github.braully.graph.operation;
 import com.github.braully.graph.CombinationsFacade;
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 public class GraphConvertToNKIndex implements IGraphOperation {
@@ -18,6 +20,13 @@ public class GraphConvertToNKIndex implements IGraphOperation {
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         /* Processar a buscar pelo hullset e hullnumber */
         Map<String, Object> response = new HashMap<>();
+        String code = graphToNMIndexedCode(graph);
+        response.put("n,k,indexed", code);
+        return response;
+    }
+
+    public static synchronized String graphToNMIndexedCode(UndirectedSparseGraphTO<Integer, Integer> graph) {
+        String code = null;
         long n = 0;
         long k = 0;
         long index = 0;
@@ -48,15 +57,12 @@ public class GraphConvertToNKIndex implements IGraphOperation {
                 }
             }
             System.out.println("}");
-
             index = CombinationsFacade.lexicographicIndex((int) maxEdges, (int) combi, comb);
+            code = n + "," + k + "," + index;
         } catch (Exception ex) {
             log.error(null, ex);
         }
-        response.put("n", n);
-        response.put("k", k);
-        response.put("index", index);
-        return response;
+        return code;
     }
 
     public String getTypeProblem() {

@@ -273,7 +273,7 @@ public class UtilGraph {
     /*
      Code from:  https://github.com/bingmann/BispanningGame/blob/master/src/net/panthema/BispanningGame/Graph6.java
      */
-    static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(String strGraph) throws IOException {
+    public static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(String strGraph) throws IOException {
         if (strGraph == null || strGraph.isEmpty()) {
             return null;
         }
@@ -300,7 +300,7 @@ public class UtilGraph {
         return graph;
     }
 
-    static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(InputStream uploadedInputStream) throws IOException {
+    public static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO ret = null;
         if (uploadedInputStream != null) {
             BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
