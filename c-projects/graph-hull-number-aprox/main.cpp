@@ -119,88 +119,102 @@ int serialAproxHullNumber(graphCsr *graph) {
     return minHullSet;
 }
 
+int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
+    for (int i = 0; i < cont; i++) {
+        int minhHullSet = serialAproxHullNumber(&graphs[i]);
+        printf("MinHullNumberAprox Graph-%d: %d\n", i, minhHullSet);
+    }
+}
+
 void processFiles(int argc, char** argv) {
-    char* strFile = "graph-test.txt";
-
-    if ((argc > 1)) {
-        strFile = argv[1];
-    }
-
-    DIR *dpdf;
-    struct dirent *epdf;
-    struct stat filestat;
-
-    dpdf = opendir(strFile);
-    std::string filepath = std::string(strFile);
-    while (dpdf && (epdf = readdir(dpdf))) {
-        filepath = std::string(strFile) + "/" + epdf->d_name;
-        if (epdf->d_name == "." || epdf->d_name == "..")
-            continue;
-        if (stat(filepath.c_str(), &filestat))
-            continue;
-        if (S_ISDIR(filestat.st_mode))
-            continue;
-        else break;
-    }
-    closedir(dpdf);
-
-    std::string line, strCArray, strRArray;
-    std::ifstream infile(filepath.c_str());
-
-    if (infile) {
-        while (getline(infile, line)) {
-            if (line.at(0) != CHARACTER_INIT_COMMENT) {
-                if (strCArray.empty()) {
-                    strCArray = line;
-                } else if (strRArray.empty()) {
-                    strRArray = line;
-                }
-            }
-        }
-        infile.close();
-    } else {
-        return;
-    }
-
-    if (strCArray.empty() || strRArray.empty()) {
-        perror("Invalid file format");
-        return;
-    }
-
-    std::stringstream stream(strCArray.c_str());
+    graphCsr* graphs = (graphCsr*) malloc((sizeof (graphCsr)) * argc);
     std::vector<int> values;
 
-    int n;
-    while (stream >> n) {
-        values.push_back(n);
+    int contGraph = 0;
+
+    for (int x = 1; x < argc; x++) {
+        char* strFile = "graph-test.txt";
+        strFile = argv[x];
+        DIR *dpdf;
+        struct dirent *epdf;
+        struct stat filestat;
+
+        dpdf = opendir(strFile);
+        std::string filepath = std::string(strFile);
+
+        while (dpdf && (epdf = readdir(dpdf))) {
+            filepath = std::string(strFile) + "/" + epdf->d_name;
+            if (epdf->d_name == "." || epdf->d_name == "..")
+                continue;
+            if (stat(filepath.c_str(), &filestat))
+                continue;
+            if (S_ISDIR(filestat.st_mode))
+                continue;
+            else break;
+        }
+        closedir(dpdf);
+
+        std::string line, strCArray, strRArray;
+        std::ifstream infile(filepath.c_str());
+
+        if (infile) {
+            while (getline(infile, line)) {
+                if (line.at(0) != CHARACTER_INIT_COMMENT) {
+                    if (strCArray.empty()) {
+                        strCArray = line;
+                    } else if (strRArray.empty()) {
+                        strRArray = line;
+                    }
+                }
+            }
+            infile.close();
+        } else {
+            continue;
+        }
+
+        if (strCArray.empty() || strRArray.empty()) {
+            perror("Invalid file format");
+            continue;
+        }
+
+        std::stringstream stream(strCArray.c_str());
+        values.clear();
+        int n;
+        while (stream >> n) {
+            values.push_back(n);
+        }
+        strCArray.clear();
+
+        int numVertices = values.size() - 1;
+        int *colIdx = new int[numVertices + 1];
+        std::copy(values.begin(), values.end(), colIdx);
+        values.clear();
+        stream.str("");
+
+        std::stringstream stream2(strRArray);
+        while (stream2 >> n) {
+            values.push_back(n);
+        }
+        stream2.str("");
+        strRArray.clear();
+
+        int sizeRowOffset = values.size();
+        int *rowOffset = new int[sizeRowOffset];
+        std::copy(values.begin(), values.end(), rowOffset);
+        values.clear();
+
+        //        graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
+        graphCsr* graph = &graphs[contGraph];
+        graph->nVertices = numVertices;
+        graph->csrColIdxs = colIdx;
+        graph->csrRowOffset = rowOffset;
+        contGraph++;
     }
-    strCArray.clear();
 
-    int numVertices = values.size() - 1;
-    int *colIdx = new int[numVertices + 1];
-    std::copy(values.begin(), values.end(), colIdx);
-    values.clear();
-    stream.str("");
+    serialAproxHullNumberGraphs(graphs, contGraph);
 
-    std::stringstream stream2(strRArray);
-    while (stream2 >> n) {
-        values.push_back(n);
-    }
-    stream2.str("");
-    strRArray.clear();
-
-    int sizeRowOffset = values.size();
-    int *rowOffset = new int[sizeRowOffset];
-    std::copy(values.begin(), values.end(), rowOffset);
-    values.clear();
-
-    graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
-    graph->nVertices = numVertices;
-    graph->csrColIdxs = colIdx;
-    graph->csrRowOffset = rowOffset;
-    int minSerialAprox = serialAproxHullNumber(graph);
-    
-    printf("MinAproxHullSet: %d", minSerialAprox);
+    //    int minSerialAprox = serialAproxHullNumber(graph);
+    //    printf("MinAproxHullSet: %d\n", minSerialAprox);
 }
 
 void runTest() {
@@ -213,7 +227,9 @@ void runTest() {
     graph->csrColIdxs = colIdx;
     graph->csrRowOffset = rowOffset;
     int minSerialAprox = serialAproxHullNumber(graph);
-    printf("MinAproxHullSet: %d", minSerialAprox);
+    printf("MinAproxHullSet: %d\n", minSerialAprox);
+
+    serialAproxHullNumberGraphs(graph, 1);
 }
 
 int main(int argc, char** argv) {
