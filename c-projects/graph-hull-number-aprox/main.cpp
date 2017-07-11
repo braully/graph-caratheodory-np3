@@ -1,0 +1,226 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <dirent.h>
+#include <unistd.h>
+#include <fstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <vector>
+#include <math.h> 
+#include <string.h>
+
+#define CHARACTER_INIT_COMMENT '#'
+
+#define DEFAULT_THREAD_PER_BLOCK 256
+#define DEFAULT_BLOCK 256 
+#define MAX_DEFAULT_SIZE_QUEUE 256
+
+#define SINCLUDED 4
+#define PROCESSED 3
+#define INCLUDED 2
+#define NEIGHBOOR_COUNT_INCLUDED 1
+/* */
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define COPY_ARRAY(SRC,DST,LEN) { memcpy((DST), (SRC), LEN); }
+
+#define verboseSerial false
+
+struct graphCsr {
+    int nVertices;
+    int *csrColIdxs;
+    int *csrRowOffset;
+};
+
+int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
+    int countIncluded = 0;
+    int nvertices = graph->nVertices;
+
+    if (aux[vert] >= INCLUDED) {
+        return countIncluded;
+    }
+    int headQueue = vert;
+    int tailQueue = vert;
+    aux[vert] = INCLUDED;
+
+    while (headQueue <= tailQueue) {
+        int verti = headQueue;
+        if (verti >= nvertices || aux[verti] != INCLUDED) {
+            headQueue++;
+            continue;
+        }
+        int end = graph->csrColIdxs[verti + 1];
+        for (int j = graph->csrColIdxs[verti]; j < end; j++) {
+            int vertn = graph->csrRowOffset[j];
+            if (vertn >= nvertices) continue;
+            if (vertn != verti && aux[vertn] < INCLUDED) {
+                aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                if (aux[vertn] == INCLUDED) {
+                    headQueue = MIN(headQueue, vertn);
+                    tailQueue = MAX(tailQueue, vertn);
+                }
+            }
+        }
+        aux[verti] = PROCESSED;
+        countIncluded++;
+    }
+    aux[vert] = SINCLUDED;
+    return countIncluded;
+}
+
+int serialAproxHullNumber(graphCsr *graph) {
+    int nvertices = graph->nVertices;
+    unsigned char *aux = new unsigned char [nvertices];
+    unsigned char *auxb = new unsigned char [nvertices];
+    int minHullSet = nvertices;
+
+    for (int v = 0; v < nvertices; v++) {
+        for (int j = 0; j < nvertices; j++) {
+            aux[j] = 0;
+        }
+
+        int sizeHs = addVertToS(v, aux, graph);
+        int sSize = 1;
+        int bv;
+        do {
+            bv = -1;
+            int maiorGrau = 0;
+            int maiorDeltaHs = 0;
+            for (int i = 0; i < nvertices; i++) {
+                if (aux[i] >= INCLUDED) {
+                    continue;
+                }
+                COPY_ARRAY(aux, auxb, nvertices);
+                int deltaHsi = addVertToS(i, auxb, graph);
+
+                int neighborCount = 0;
+                for (int j = 0; j < nvertices; j++) {
+                    if (auxb[j] == INCLUDED) {
+                        neighborCount++;
+                    }
+                }
+
+                if (bv == -1 || (deltaHsi >= maiorDeltaHs && neighborCount > maiorGrau)) {
+                    maiorDeltaHs = deltaHsi;
+                    maiorGrau = neighborCount;
+                    bv = i;
+                }
+            }
+            sizeHs = sizeHs + addVertToS(bv, aux, graph);
+            sSize++;
+        } while (sizeHs < nvertices);
+        minHullSet = MIN(minHullSet, sSize);
+    }
+    free(aux);
+    free(auxb);
+    return minHullSet;
+}
+
+void processFiles(int argc, char** argv) {
+    char* strFile = "graph-test.txt";
+
+    if ((argc > 1)) {
+        strFile = argv[1];
+    }
+
+    DIR *dpdf;
+    struct dirent *epdf;
+    struct stat filestat;
+
+    dpdf = opendir(strFile);
+    std::string filepath = std::string(strFile);
+    while (dpdf && (epdf = readdir(dpdf))) {
+        filepath = std::string(strFile) + "/" + epdf->d_name;
+        if (epdf->d_name == "." || epdf->d_name == "..")
+            continue;
+        if (stat(filepath.c_str(), &filestat))
+            continue;
+        if (S_ISDIR(filestat.st_mode))
+            continue;
+        else break;
+    }
+    closedir(dpdf);
+
+    std::string line, strCArray, strRArray;
+    std::ifstream infile(filepath.c_str());
+
+    if (infile) {
+        while (getline(infile, line)) {
+            if (line.at(0) != CHARACTER_INIT_COMMENT) {
+                if (strCArray.empty()) {
+                    strCArray = line;
+                } else if (strRArray.empty()) {
+                    strRArray = line;
+                }
+            }
+        }
+        infile.close();
+    } else {
+        return;
+    }
+
+    if (strCArray.empty() || strRArray.empty()) {
+        perror("Invalid file format");
+        return;
+    }
+
+    std::stringstream stream(strCArray.c_str());
+    std::vector<int> values;
+
+    int n;
+    while (stream >> n) {
+        values.push_back(n);
+    }
+    strCArray.clear();
+
+    int numVertices = values.size() - 1;
+    int *colIdx = new int[numVertices + 1];
+    std::copy(values.begin(), values.end(), colIdx);
+    values.clear();
+    stream.str("");
+
+    std::stringstream stream2(strRArray);
+    while (stream2 >> n) {
+        values.push_back(n);
+    }
+    stream2.str("");
+    strRArray.clear();
+
+    int sizeRowOffset = values.size();
+    int *rowOffset = new int[sizeRowOffset];
+    std::copy(values.begin(), values.end(), rowOffset);
+    values.clear();
+
+    graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
+    graph->nVertices = numVertices;
+    graph->csrColIdxs = colIdx;
+    graph->csrRowOffset = rowOffset;
+    int minSerialAprox = serialAproxHullNumber(graph);
+    
+    printf("MinAproxHullSet: %d", minSerialAprox);
+}
+
+void runTest() {
+    int numVertices = 10;
+    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
+    int sizeRowOffset = numVertices + 1;
+    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+    graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
+    graph->nVertices = numVertices;
+    graph->csrColIdxs = colIdx;
+    graph->csrRowOffset = rowOffset;
+    int minSerialAprox = serialAproxHullNumber(graph);
+    printf("MinAproxHullSet: %d", minSerialAprox);
+}
+
+int main(int argc, char** argv) {
+    if (argc > 1) {
+        processFiles(argc, argv);
+    } else {
+        runTest();
+    }
+    return 0;
+}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="97">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <in>graphNCaratheodory.cu</in>
@@ -45,10 +45,10 @@
             </incFile>
             <preprocessorList>
               <Elem>CUDA_DOUBLE_MATH_FUNCTIONS</Elem>
-              <Elem>__CUDACC_VER_BUILD__=44</Elem>
+              <Elem>__CUDACC_VER_BUILD__=61</Elem>
               <Elem>__CUDACC_VER_MAJOR__=8</Elem>
               <Elem>__CUDACC_VER_MINOR__=0</Elem>
-              <Elem>__CUDACC_VER__=80044</Elem>
+              <Elem>__CUDACC_VER__=80061</Elem>
               <Elem>__CUDACC__</Elem>
               <Elem>__CUDA_ARCH__=600</Elem>
               <Elem>__NVCC__</Elem>
