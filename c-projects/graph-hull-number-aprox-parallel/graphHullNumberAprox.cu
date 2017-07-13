@@ -72,7 +72,8 @@ int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
 }
 
 __global__
-void kernelSerialAproxHullNumber(graphCsr *graphs, int* results) {
+void kernelSerialAproxHullNumber(graphCsr &graphs, int* results) {
+    //void kernelSerialAproxHullNumber(graphCsr *graphs, int* results) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     graphCsr *graph = &graphs[idx];
     int nvertices = graph->nvertices;
@@ -135,21 +136,19 @@ int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     printf("Cuda Malloc Graph\n");
 
     int* dataGraphsGpu;
-    cudaMalloc((void**) &dataGraphsGpu, numbytesDataGraph);
-
+    graphCsr *graphsGpu;
     int* resultGpu;
     cudaMalloc((void**) &resultGpu, cont * sizeof (int));
-
-    graphCsr *graphsGpu;
-    cudaMalloc((void**) &graphsGpu, cont * sizeof (graphCsr));
+    cudaMalloc((void**) &dataGraphsGpu, cont * sizeof (graphCsr) + numbytesDataGraph);
     r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (graphCsr), cudaMemcpyHostToDevice);
 
-    int offset = 0;
+    int offset = cont * sizeof (graphCsr);
 
     printf("Cuda Atrib Graph\n");
     for (int i = 0; i < cont; i++) {
         graphCsr *graph = &graphs[i];
         graphCsr *graphGpu = &graphsGpu[i];
+      
         int nbytes = (graph->nvertices + 1) * sizeof (int);
         r = cudaMemcpy(dataGraphsGpu + offset, graph->destination_indices, nbytes, cudaMemcpyHostToDevice);
         if (r != cudaSuccess) {
