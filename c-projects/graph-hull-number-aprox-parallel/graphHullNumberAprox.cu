@@ -30,14 +30,26 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define COPY_ARRAY(SRC,DST,LEN) { memcpy((DST), (SRC), LEN); }
 
-#define verboseSerial false
+#define verboseKernel false
+bool verbose = true;
+bool graphByThread = false;
+bool graphByKernel = false;
+bool serial = false;
 
-typedef struct nvgraphCSRTopology32I_st graphCsr;
+struct graphCsr {
+    int *data;
+    //    data[0] nVertices;
+    //    data[0] nEdges
+    //    data[2] *csrColIdxs;
+    //    data[nVertices+3] *csrRowOffset;
+};
 
 __host__ __device__
-int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
+int addVertToS(int vert, unsigned char* aux, int *graphData) {
     int countIncluded = 0;
-    int nvertices = graph->nvertices;
+    int nvertices = graphData[0];
+    int *csrColIdxs = &graphData[2];
+    int *csrRowOffset = &graphData[nvertices + 3];
 
     if (aux[vert] >= INCLUDED) {
         return countIncluded;
@@ -52,9 +64,9 @@ int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
             headQueue++;
             continue;
         }
-        int end = graph->destination_indices[verti + 1];
-        for (int j = graph->destination_indices[verti]; j < end; j++) {
-            int vertn = graph->source_offsets[j];
+        int end = csrColIdxs[verti + 1];
+        for (int j = csrColIdxs[verti]; j < end; j++) {
+            int vertn = csrRowOffset[j];
             if (vertn >= nvertices) continue;
             if (vertn != verti && aux[vertn] < INCLUDED) {
                 aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
@@ -71,12 +83,101 @@ int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
     return countIncluded;
 }
 
+__host__ __device__
+int exapandHullSetFromV(int v, int nvertices, unsigned char *aux, unsigned char *auxb, int *graphData, int idx) {
+    for (int j = 0; j < nvertices; j++) {
+        aux[j] = 0;
+    }
+    if (verboseKernel) printf("thread-%d: cleanded aux\n", idx);
+    if (verboseKernel) printf("thread-%d: add Vert %d to S\n", idx, v);
+
+    int sizeHs = addVertToS(v, aux, graphData);
+    int sSize = 1;
+    int bv;
+    do {
+        bv = -1;
+        int maiorGrau = 0;
+        int maiorDeltaHs = 0;
+        for (int i = 0; i < nvertices; i++) {
+            if (aux[i] >= INCLUDED) {
+                continue;
+            }
+            COPY_ARRAY(aux, auxb, nvertices);
+            int deltaHsi = addVertToS(i, auxb, graphData);
+
+            int neighborCount = 0;
+            for (int j = 0; j < nvertices; j++) {
+                if (auxb[j] == INCLUDED) {
+                    neighborCount++;
+                }
+            }
+
+            if (bv == -1 || (deltaHsi >= maiorDeltaHs && neighborCount > maiorGrau)) {
+                maiorDeltaHs = deltaHsi;
+                maiorGrau = neighborCount;
+                bv = i;
+            }
+        }
+        if (verboseKernel) printf("thread-%d: add Vert %d to S\n", idx, bv);
+        sizeHs = sizeHs + addVertToS(bv, aux, graphData);
+        sSize++;
+    } while (sizeHs < nvertices);
+    return sSize;
+}
+
 __global__
-void kernelSerialAproxHullNumber(graphCsr &graphs, int* results) {
+void kernelSerialAproxHullNumberIndexed(int offset, int* graphsGpu, int* dataGraphs, int* results) {
     //void kernelSerialAproxHullNumber(graphCsr *graphs, int* results) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    graphCsr *graph = &graphs[idx];
-    int nvertices = graph->nvertices;
+    if (verboseKernel) printf("thread-%d\n", idx);
+
+    int start = graphsGpu[offset];
+    if (verboseKernel) printf("thread-%d Graph-start: %d\n", idx, start);
+
+    int *graphData = &dataGraphs[start];
+    int nvertices = graphData[0];
+
+    if (idx == 0) {
+        results[offset] = nvertices;
+    }
+    __syncthreads();
+
+    if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
+    if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+
+    unsigned char *aux = new unsigned char [nvertices];
+    unsigned char *auxb = new unsigned char [nvertices];
+    int minHullSet = nvertices;
+    int v = idx;
+
+    int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
+
+    minHullSet = MIN(minHullSet, sSize);
+
+    if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
+
+    free(aux);
+    free(auxb);
+    if (verboseKernel) printf("thread-%d: memory freed\n", idx);
+
+    atomicMin(&results[offset], minHullSet);
+}
+
+__global__
+void kernelSerialAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) {
+    //void kernelSerialAproxHullNumber(graphCsr *graphs, int* results) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (verboseKernel) printf("thread-%d\n", idx);
+
+    int start = graphsGpu[idx];
+    if (verboseKernel) printf("thread-%d Graph-start: %d\n", idx, start);
+
+    int *graphData = &dataGraphs[start];
+    int nvertices = graphData[0];
+
+    if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
+    if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+
     unsigned char *aux = new unsigned char [nvertices];
     unsigned char *auxb = new unsigned char [nvertices];
     int minHullSet = nvertices;
@@ -85,8 +186,10 @@ void kernelSerialAproxHullNumber(graphCsr &graphs, int* results) {
         for (int j = 0; j < nvertices; j++) {
             aux[j] = 0;
         }
+        if (verboseKernel) printf("thread-%d: cleanded aux\n", idx);
+        if (verboseKernel) printf("thread-%d: add Vert %d to S\n", idx, v);
 
-        int sizeHs = addVertToS(v, aux, graph);
+        int sizeHs = addVertToS(v, aux, graphData);
         int sSize = 1;
         int bv;
         do {
@@ -98,7 +201,7 @@ void kernelSerialAproxHullNumber(graphCsr &graphs, int* results) {
                     continue;
                 }
                 COPY_ARRAY(aux, auxb, nvertices);
-                int deltaHsi = addVertToS(i, auxb, graph);
+                int deltaHsi = addVertToS(i, auxb, graphData);
 
                 int neighborCount = 0;
                 for (int j = 0; j < nvertices; j++) {
@@ -113,95 +216,107 @@ void kernelSerialAproxHullNumber(graphCsr &graphs, int* results) {
                     bv = i;
                 }
             }
-            sizeHs = sizeHs + addVertToS(bv, aux, graph);
+            if (verboseKernel) printf("thread-%d: add Vert %d to S\n", idx, bv);
+            sizeHs = sizeHs + addVertToS(bv, aux, graphData);
             sSize++;
         } while (sizeHs < nvertices);
         minHullSet = MIN(minHullSet, sSize);
+        if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
     }
     free(aux);
     free(auxb);
+    if (verboseKernel) printf("thread-%d: memory freed\n", idx);
     results[idx] = minHullSet;
 }
 
 int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
-    printf("serialAproxHullNumberGraphs\n");
+    if (verbose) printf("serialAproxHullNumberGraphs\n");
     int numbytesDataGraph = 0;
     cudaError_t r;
     for (int i = 0; i < cont; i++) {
-        int size = (graphs[i].nvertices + 1) * sizeof (int);
-        size = size + graphs[i].nedges * sizeof (int);
+        int size = (graphs[i].data[0] + 3 + graphs[i].data[1]) * sizeof (int);
         numbytesDataGraph = numbytesDataGraph + size;
     }
 
-    printf("Cuda Malloc Graph\n");
+    if (verbose) printf("Cuda Malloc Graph\n");
 
     int* dataGraphsGpu;
-    graphCsr *graphsGpu;
+    int *graphsGpu;
     int* resultGpu;
+    int* graphsHost = new int[cont];
     cudaMalloc((void**) &resultGpu, cont * sizeof (int));
-    cudaMalloc((void**) &dataGraphsGpu, cont * sizeof (graphCsr) + numbytesDataGraph);
+    cudaMalloc((void**) &dataGraphsGpu, numbytesDataGraph);
+    cudaMalloc((void**) &graphsGpu, cont * sizeof (int));
     r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (graphCsr), cudaMemcpyHostToDevice);
 
-    int offset = cont * sizeof (graphCsr);
+    int offset = 0;
 
-    printf("Cuda Atrib Graph\n");
+    if (verbose) printf("Cuda Atrib Graph\n");
     for (int i = 0; i < cont; i++) {
+        if (verbose) printf("Cuda Atrib Graph-%d\n", i);
         graphCsr *graph = &graphs[i];
-        graphCsr *graphGpu = &graphsGpu[i];
-      
-        int nbytes = (graph->nvertices + 1) * sizeof (int);
-        r = cudaMemcpy(dataGraphsGpu + offset, graph->destination_indices, nbytes, cudaMemcpyHostToDevice);
+        int sizeGraph = graph->data[0] + 3 + graph->data[1];
+        int nbytes = sizeGraph * sizeof (int);
+        r = cudaMemcpy(dataGraphsGpu + offset, graph->data, nbytes, cudaMemcpyHostToDevice);
         if (r != cudaSuccess) {
             fprintf(stderr, "Failed to copy memory 1 \nError: %s\n", cudaGetErrorString(r));
             exit(EXIT_FAILURE);
         }
-        graphGpu->destination_indices = dataGraphsGpu + offset;
-
-        offset = offset + nbytes;
-
-        nbytes = graph->nedges * sizeof (int);
-
-        r = cudaMemcpy(dataGraphsGpu + offset, graph->source_offsets, nbytes, cudaMemcpyHostToDevice);
-        if (r != cudaSuccess) {
-            fprintf(stderr, "Failed to copy memory 1 \nError: %s\n", cudaGetErrorString(r));
-            exit(EXIT_FAILURE);
-        }
-        graphGpu->source_offsets = dataGraphsGpu + offset;
-        offset = offset + graph->nedges;
+        graphsHost[i] = offset;
+        offset = offset + sizeGraph;
     }
 
+    r = cudaMemcpy(graphsGpu, graphsHost, cont * sizeof (int), cudaMemcpyHostToDevice);
+    if (r != cudaSuccess) {
+        fprintf(stderr, "Failed to copy memory 2 \nError: %s\n", cudaGetErrorString(r));
+        exit(EXIT_FAILURE);
+    }
 
-    printf("Launch Kernel\n");
+    if (verbose) printf("Launch Kernel\n");
 
-    //    kernelSerialAproxHullNumber << <1, cont>>>(graphsGpu, resultGpu);
+    if (graphByThread) {
+        if (verbose) printf("One graph by thread\n");
+        kernelSerialAproxHullNumber << <1, cont>>>(graphsGpu, dataGraphsGpu, resultGpu);
+    } else {
+        if (verbose) printf("One graph by kernel\n");
+        for (int i = 0; i < cont; i++) {
+            graphCsr *graph = &graphs[i];
+            int nvertice = graph->data[0];
+            kernelSerialAproxHullNumberIndexed << <1, nvertice>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
+        }
+    }
 
-    printf("Read Result\n");
+    if (verbose) printf("Read Result\n");
 
-    //    r = cudaDeviceSynchronize();
+    r = cudaDeviceSynchronize();
     if (r != cudaSuccess) {
         fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
         exit(EXIT_FAILURE);
     }
 
 
-    //    int* resultLocal;
-
-    //    r = cudaMemcpyFromSymbol(&resultLocal, resultGpu, sizeof (int)*cont);
+    int* resultLocal = new int[cont];
+    r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
     if (r != cudaSuccess) {
         fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
         exit(EXIT_FAILURE);
     }
 
-    r = cudaGetLastError();
-    if (r != cudaSuccess) {
-        fprintf(stderr, "Failed in kernelSerialAproxHullNumber \nError: %s\n", cudaGetErrorString(r));
-        exit(EXIT_FAILURE);
-    }
+    //    r = cudaGetLastError();
+    //    if (r != cudaSuccess) {
+    //        fprintf(stderr, "Failed in kernelSerialAproxHullNumber \nError: %s\n", cudaGetErrorString(r));
+    //        exit(EXIT_FAILURE);
+    //    }
 
     for (int i = 0; i < cont; i++) {
-        //        printf("MinHullNumberAprox Graph-%d: %d\n", i, resultLocal[i]);
+        printf("MinHullNumberAprox Graph-%d: %d\n", i, resultLocal[i]);
     }
 
+    free(resultLocal);
+    free(graphsHost);
+    cudaFree(resultGpu);
+    cudaFree(graphsGpu);
+    cudaFree(dataGraphsGpu);
 }
 
 void processFiles(int argc, char** argv) {
@@ -257,6 +372,7 @@ void processFiles(int argc, char** argv) {
 
         std::stringstream stream(strCArray.c_str());
         values.clear();
+
         int n;
         while (stream >> n) {
             values.push_back(n);
@@ -264,46 +380,43 @@ void processFiles(int argc, char** argv) {
         strCArray.clear();
 
         int numVertices = values.size() - 1;
-        int *colIdx = new int[numVertices + 1];
-        std::copy(values.begin(), values.end(), colIdx);
-        values.clear();
         stream.str("");
 
         std::stringstream stream2(strRArray);
         while (stream2 >> n) {
-
             values.push_back(n);
         }
         stream2.str("");
         strRArray.clear();
 
-        int sizeRowOffset = values.size();
-        int *rowOffset = new int[sizeRowOffset];
-        std::copy(values.begin(), values.end(), rowOffset);
+        int numedges = values.size() - (numVertices + 1);
+        values.insert(values.begin(), numedges);
+        values.insert(values.begin(), numVertices);
+        int *data = new int[values.size()];
+        std::copy(values.begin(), values.end(), data);
+
         values.clear();
 
-        //        graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
         graphCsr* graph = &graphs[contGraph];
-        graph->nvertices = numVertices;
-        graph->destination_indices = colIdx;
-        graph->source_offsets = rowOffset;
+        graph->data = data;
         contGraph++;
     }
     serialAproxHullNumberGraphs(graphs, contGraph);
-
 }
 
 void runTest() {
-
-    int numVertices = 10;
-    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
-    int sizeRowOffset = numVertices + 1;
-    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+    //    int numVertices = 10;
+    //    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
+    //    int sizeRowOffset = numVertices + 1;
+    //    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+    int data[] = {10, 30,
+        0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30,
+        2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
     graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
-    graph->nvertices = numVertices;
-    graph->nedges = 30;
-    graph->destination_indices = colIdx;
-    graph->source_offsets = rowOffset;
+    graph->data = data;
+    //    graph->nVertices = numVertices;
+    //    graph->csrColIdxs = colIdx;
+    //    graph->csrRowOffset = rowOffset;
     //    int minSerialAprox = serialAproxHullNumber(graph);
     //    printf("MinAproxHullSet: %d\n", minSerialAprox);
 
