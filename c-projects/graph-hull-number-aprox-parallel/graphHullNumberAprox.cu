@@ -31,7 +31,7 @@
 #define COPY_ARRAY(SRC,DST,LEN) { memcpy((DST), (SRC), LEN); }
 
 #define verboseKernel false
-bool verbose = true;
+bool verbose = false;
 bool graphByThread = false;
 bool graphByKernel = false;
 bool serial = false;
@@ -229,7 +229,7 @@ void kernelSerialAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) 
     results[idx] = minHullSet;
 }
 
-int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
+int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     if (verbose) printf("serialAproxHullNumberGraphs\n");
     int numbytesDataGraph = 0;
     cudaError_t r;
@@ -274,33 +274,60 @@ int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
     if (verbose) printf("Launch Kernel\n");
 
+    int* resultLocal = new int[cont];
+
+    /* Graphs by Thread */
     if (graphByThread) {
-        if (verbose) printf("One graph by thread\n");
+        if (verbose) printf("Lanch Kernel One graph by thread\n");
         kernelSerialAproxHullNumber << <1, cont>>>(graphsGpu, dataGraphsGpu, resultGpu);
-    } else {
-        if (verbose) printf("One graph by kernel\n");
+        if (verbose) printf("Read Result\n");
+
+        r = cudaDeviceSynchronize();
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+        r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < cont; i++) {
+            printf("MinHullNumberAprox Graph-%d: %d\n", i, resultLocal[i]);
+        }
+    }
+
+    /* Graphs by Block (Kernel) */
+    if (graphByKernel) {
+        if (verbose) printf("Lauch Kernel One graph by kernel\n");
         for (int i = 0; i < cont; i++) {
             graphCsr *graph = &graphs[i];
             int nvertice = graph->data[0];
             kernelSerialAproxHullNumberIndexed << <1, nvertice>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
         }
+        if (verbose) printf("Read Result\n");
+
+        r = cudaDeviceSynchronize();
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+
+        r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < cont; i++) {
+            printf("MinHullNumberAprox Graph-%d: %d\n", i, resultLocal[i]);
+        }
     }
 
-    if (verbose) printf("Read Result\n");
 
-    r = cudaDeviceSynchronize();
-    if (r != cudaSuccess) {
-        fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
-        exit(EXIT_FAILURE);
-    }
-
-
-    int* resultLocal = new int[cont];
-    r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
-    if (r != cudaSuccess) {
-        fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
-        exit(EXIT_FAILURE);
-    }
 
     //    r = cudaGetLastError();
     //    if (r != cudaSuccess) {
@@ -308,15 +335,70 @@ int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     //        exit(EXIT_FAILURE);
     //    }
 
-    for (int i = 0; i < cont; i++) {
-        printf("MinHullNumberAprox Graph-%d: %d\n", i, resultLocal[i]);
-    }
+
 
     free(resultLocal);
     free(graphsHost);
     cudaFree(resultGpu);
     cudaFree(graphsGpu);
     cudaFree(dataGraphsGpu);
+}
+
+int serialAproxHullNumber(int *graphData) {
+    int nvertices = graphData[0];
+
+    unsigned char *aux = new unsigned char [nvertices];
+    unsigned char *auxb = new unsigned char [nvertices];
+    int minHullSet = nvertices;
+
+    for (int v = 0; v < nvertices; v++) {
+        for (int j = 0; j < nvertices; j++) {
+            aux[j] = 0;
+        }
+
+        int sizeHs = addVertToS(v, aux, graphData);
+        int sSize = 1;
+        int bv;
+        do {
+            bv = -1;
+            int maiorGrau = 0;
+            int maiorDeltaHs = 0;
+            for (int i = 0; i < nvertices; i++) {
+                if (aux[i] >= INCLUDED) {
+                    continue;
+                }
+                COPY_ARRAY(aux, auxb, nvertices);
+                int deltaHsi = addVertToS(i, auxb, graphData);
+
+                int neighborCount = 0;
+                for (int j = 0; j < nvertices; j++) {
+                    if (auxb[j] == INCLUDED) {
+                        neighborCount++;
+                    }
+                }
+
+                if (bv == -1 || (deltaHsi >= maiorDeltaHs && neighborCount > maiorGrau)) {
+                    maiorDeltaHs = deltaHsi;
+                    maiorGrau = neighborCount;
+                    bv = i;
+                }
+            }
+            sizeHs = sizeHs + addVertToS(bv, aux, graphData);
+            sSize++;
+        } while (sizeHs < nvertices);
+        minHullSet = MIN(minHullSet, sSize);
+    }
+    free(aux);
+    free(auxb);
+    return minHullSet;
+}
+
+int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
+    if (verbose) printf("Serial execution\n");
+    for (int i = 0; i < cont; i++) {
+        int minhHullSet = serialAproxHullNumber(graphs[i].data);
+        printf("MinHullNumberAprox Graph-%d: %d\n", i, minhHullSet);
+    }
 }
 
 void processFiles(int argc, char** argv) {
@@ -326,11 +408,14 @@ void processFiles(int argc, char** argv) {
     int contGraph = 0;
 
     for (int x = 1; x < argc; x++) {
-        char* strFile = "graph-test.txt";
-        strFile = argv[x];
+        char* strFile = argv[x];
         DIR *dpdf;
         struct dirent *epdf;
         struct stat filestat;
+
+        if (strFile[0] == '-') {
+            continue;
+        }
 
         dpdf = opendir(strFile);
         std::string filepath = std::string(strFile);
@@ -401,7 +486,10 @@ void processFiles(int argc, char** argv) {
         graph->data = data;
         contGraph++;
     }
-    serialAproxHullNumberGraphs(graphs, contGraph);
+    if (graphByKernel || graphByThread)
+        parallelAproxHullNumberGraphs(graphs, contGraph);
+    if (serial)
+        serialAproxHullNumberGraphs(graphs, contGraph);
 }
 
 void runTest() {
@@ -414,17 +502,34 @@ void runTest() {
         2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
     graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
     graph->data = data;
-    //    graph->nVertices = numVertices;
-    //    graph->csrColIdxs = colIdx;
-    //    graph->csrRowOffset = rowOffset;
-    //    int minSerialAprox = serialAproxHullNumber(graph);
-    //    printf("MinAproxHullSet: %d\n", minSerialAprox);
-
-    serialAproxHullNumberGraphs(graph, 1);
+    parallelAproxHullNumberGraphs(graph, 1);
 }
 
 int main(int argc, char** argv) {
     printf("Main\n");
+
+    long opt = 0;
+
+    while ((opt = getopt(argc, argv, "svtb")) != -1) {
+        switch (opt) {
+            case 't':
+                graphByThread = true;
+                break;
+            case 'b':
+                graphByKernel = true;
+                break;
+            case 's':
+                serial = true;
+                break;
+            case 'v':
+                verbose = true;
+                break;
+            case '?':
+                printf("Unknow option: %c", char(opt));
+                break;
+        }
+    }
+
     if (argc > 1) {
         processFiles(argc, argv);
     } else {
