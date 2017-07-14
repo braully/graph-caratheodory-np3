@@ -30,14 +30,17 @@
 #define verboseSerial false
 
 struct graphCsr {
-    int nVertices;
-    int *csrColIdxs;
-    int *csrRowOffset;
+    int *data;
+    //    int nVertices;
+    //    int *csrColIdxs;
+    //    int *csrRowOffset;
 };
 
-int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
+int addVertToS(int vert, unsigned char* aux, int *graphData) {
     int countIncluded = 0;
-    int nvertices = graph->nVertices;
+    int nvertices = graphData[0];
+    int *csrColIdxs = &graphData[2];
+    int *csrRowOffset = &graphData[nvertices + 3];
 
     if (aux[vert] >= INCLUDED) {
         return countIncluded;
@@ -52,9 +55,9 @@ int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
             headQueue++;
             continue;
         }
-        int end = graph->csrColIdxs[verti + 1];
-        for (int j = graph->csrColIdxs[verti]; j < end; j++) {
-            int vertn = graph->csrRowOffset[j];
+        int end = csrColIdxs[verti + 1];
+        for (int j = csrColIdxs[verti]; j < end; j++) {
+            int vertn = csrRowOffset[j];
             if (vertn >= nvertices) continue;
             if (vertn != verti && aux[vertn] < INCLUDED) {
                 aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
@@ -71,8 +74,9 @@ int addVertToS(int vert, unsigned char* aux, graphCsr *graph) {
     return countIncluded;
 }
 
-int serialAproxHullNumber(graphCsr *graph) {
-    int nvertices = graph->nVertices;
+int serialAproxHullNumber(int *graphData) {
+    int nvertices = graphData[0];
+
     unsigned char *aux = new unsigned char [nvertices];
     unsigned char *auxb = new unsigned char [nvertices];
     int minHullSet = nvertices;
@@ -82,7 +86,7 @@ int serialAproxHullNumber(graphCsr *graph) {
             aux[j] = 0;
         }
 
-        int sizeHs = addVertToS(v, aux, graph);
+        int sizeHs = addVertToS(v, aux, graphData);
         int sSize = 1;
         int bv;
         do {
@@ -94,7 +98,7 @@ int serialAproxHullNumber(graphCsr *graph) {
                     continue;
                 }
                 COPY_ARRAY(aux, auxb, nvertices);
-                int deltaHsi = addVertToS(i, auxb, graph);
+                int deltaHsi = addVertToS(i, auxb, graphData);
 
                 int neighborCount = 0;
                 for (int j = 0; j < nvertices; j++) {
@@ -109,7 +113,7 @@ int serialAproxHullNumber(graphCsr *graph) {
                     bv = i;
                 }
             }
-            sizeHs = sizeHs + addVertToS(bv, aux, graph);
+            sizeHs = sizeHs + addVertToS(bv, aux, graphData);
             sSize++;
         } while (sizeHs < nvertices);
         minHullSet = MIN(minHullSet, sSize);
@@ -121,7 +125,7 @@ int serialAproxHullNumber(graphCsr *graph) {
 
 int serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     for (int i = 0; i < cont; i++) {
-        int minhHullSet = serialAproxHullNumber(&graphs[i]);
+        int minhHullSet = serialAproxHullNumber(graphs[i].data);
         printf("MinHullNumberAprox Graph-%d: %d\n", i, minhHullSet);
     }
 }
@@ -179,6 +183,7 @@ void processFiles(int argc, char** argv) {
 
         std::stringstream stream(strCArray.c_str());
         values.clear();
+
         int n;
         while (stream >> n) {
             values.push_back(n);
@@ -186,9 +191,10 @@ void processFiles(int argc, char** argv) {
         strCArray.clear();
 
         int numVertices = values.size() - 1;
-        int *colIdx = new int[numVertices + 1];
-        std::copy(values.begin(), values.end(), colIdx);
-        values.clear();
+
+        //        int *colIdx = new int[numVertices + 1];
+        //        std::copy(values.begin(), values.end(), colIdx);
+        //        values.clear();
         stream.str("");
 
         std::stringstream stream2(strRArray);
@@ -198,36 +204,44 @@ void processFiles(int argc, char** argv) {
         stream2.str("");
         strRArray.clear();
 
-        int sizeRowOffset = values.size();
-        int *rowOffset = new int[sizeRowOffset];
-        std::copy(values.begin(), values.end(), rowOffset);
+        //        int sizeRowOffset = values.size();
+        //        int *rowOffset = new int[sizeRowOffset];
+        //        std::copy(values.begin(), values.end(), rowOffset);
+
+
+        int numedges = values.size() - (numVertices + 1);
+        values.insert(values.begin(), numedges);
+        values.insert(values.begin(), numVertices);
+        int *data = new int[values.size()];
+        std::copy(values.begin(), values.end(), data);
+
         values.clear();
 
-        //        graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
         graphCsr* graph = &graphs[contGraph];
-        graph->nVertices = numVertices;
-        graph->csrColIdxs = colIdx;
-        graph->csrRowOffset = rowOffset;
+        graph->data = data;
+        //        graph->nVertices = numVertices;
+        //        graph->csrColIdxs = colIdx;
+        //        graph->csrRowOffset = rowOffset;
         contGraph++;
     }
-
     serialAproxHullNumberGraphs(graphs, contGraph);
-
-    //    int minSerialAprox = serialAproxHullNumber(graph);
-    //    printf("MinAproxHullSet: %d\n", minSerialAprox);
 }
 
 void runTest() {
-    int numVertices = 10;
-    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
-    int sizeRowOffset = numVertices + 1;
-    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+    //    int numVertices = 10;
+    //    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
+    //    int sizeRowOffset = numVertices + 1;
+    //    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+    int data[] = {10, 30,
+        0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30,
+        2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
     graphCsr* graph = (graphCsr*) malloc(sizeof (graphCsr));
-    graph->nVertices = numVertices;
-    graph->csrColIdxs = colIdx;
-    graph->csrRowOffset = rowOffset;
-    int minSerialAprox = serialAproxHullNumber(graph);
-    printf("MinAproxHullSet: %d\n", minSerialAprox);
+    graph->data = data;
+    //    graph->nVertices = numVertices;
+    //    graph->csrColIdxs = colIdx;
+    //    graph->csrRowOffset = rowOffset;
+    //    int minSerialAprox = serialAproxHullNumber(graph);
+    //    printf("MinAproxHullSet: %d\n", minSerialAprox);
 
     serialAproxHullNumberGraphs(graph, 1);
 }
