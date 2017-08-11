@@ -22,6 +22,7 @@
 #define DEFAULT_BLOCK 256 
 #define MAX_DEFAULT_SIZE_QUEUE 256
 
+#define WARP_SIZE 32
 #define SINCLUDED 4
 #define PROCESSED 3
 #define INCLUDED 2
@@ -32,9 +33,11 @@
 #define COPY_ARRAY(SRC,DST,LEN) { memcpy((DST), (SRC), LEN); }
 
 #define verboseKernel false
+
 bool verbose = false;
 bool graphByThread = false;
 bool graphByKernel = false;
+bool verticesBythread = false;
 bool serial = false;
 bool printResults = true;
 
@@ -147,8 +150,8 @@ void kernelAproxHullNumberIndexed(int offset, int* graphsGpu, int* dataGraphs, i
     if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
     if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
 
-    unsigned char *aux = new unsigned char [nvertices];
-    unsigned char *auxb = new unsigned char [nvertices];
+    unsigned char *aux = new unsigned char [nvertices * 2];
+    unsigned char *auxb = &aux[nvertices];
     int minHullSet = nvertices;
     int v = idx;
 
@@ -159,29 +162,78 @@ void kernelAproxHullNumberIndexed(int offset, int* graphsGpu, int* dataGraphs, i
     if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
 
     free(aux);
-    free(auxb);
+    //    free(auxb);
     if (verboseKernel) printf("thread-%d: memory freed\n", idx);
 
     atomicMin(&results[offset], minHullSet);
 }
 
 __global__
-void kernelAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) {
+void kernelAproxHullNumberByVertex(int offset, int* graphsGpu,
+        int* dataGraphs, int* results) {
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (verboseKernel) printf("thread-%d\n", idx);
+    if (verboseKernel)
+        printf("thread-%d\n", idx);
 
-    int start = graphsGpu[idx];
-    if (verboseKernel) printf("thread-%d Graph-start: %d\n", idx, start);
+    int start = graphsGpu[offset];
+    if (verboseKernel)
+        printf("thread-%d Graph-start: %d\n", idx, start);
 
     int *graphData = &dataGraphs[start];
     int nvertices = graphData[0];
 
-    if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
-    if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+    if (idx == 0) {
+        results[offset] = nvertices;
+    }
+    __syncthreads();
 
-    unsigned char *aux = new unsigned char [nvertices];
-    unsigned char *auxb = new unsigned char [nvertices];
+    if (idx < nvertices) {
+        if (verboseKernel)
+            printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
+        if (verboseKernel)
+            printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+
+        unsigned char *aux = new unsigned char [nvertices * 2];
+        unsigned char *auxb = &aux[nvertices];
+        int minHullSet = nvertices;
+        int v = idx;
+
+        int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
+        minHullSet = MIN(minHullSet, sSize);
+
+        if (verboseKernel)
+            printf("thread-%d: minHullSet %d\n", idx, minHullSet);
+        if (verboseKernel)
+            printf("thread-%d: memory freed\n", idx);
+        atomicMin(&results[offset], minHullSet);
+        free(aux);
+    }
+}
+
+__global__
+void kernelAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) {
+    //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (verboseKernel)
+        printf("thread-%d\n", idx);
+
+    int start = graphsGpu[idx];
+    if (verboseKernel)
+        printf("thread-%d Graph-start: %d\n", idx, start);
+
+    int *graphData = &dataGraphs[start];
+    int nvertices = graphData[0];
+
+    if (verboseKernel)
+        printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
+    if (verboseKernel)
+        printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+
+    unsigned char *aux = new unsigned char [nvertices * 2];
+    //    unsigned char *auxb = new unsigned char [nvertices];
+    unsigned char *auxb = &aux[nvertices];
+
     int minHullSet = nvertices;
 
     for (int v = 0; v < nvertices; v++) {
@@ -226,7 +278,7 @@ void kernelAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) {
         if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
     }
     free(aux);
-    free(auxb);
+    //    free(auxb);
     if (verboseKernel) printf("thread-%d: memory freed\n", idx);
     results[idx] = minHullSet;
 }
@@ -274,6 +326,11 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         exit(EXIT_FAILURE);
     }
 
+    cudaStream_t *streams = (cudaStream_t *) malloc(cont * sizeof (cudaStream_t));
+    for (int i = 0; i < cont; i++) {
+        cudaStreamCreate(&(streams[i]));
+    }
+
     if (verbose) printf("Launch Kernel\n");
 
     int* resultLocal = new int[cont];
@@ -295,8 +352,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         cudaEventSynchronize(stop);
         float milliseconds = 0;
         cudaEventElapsedTime(&milliseconds, start, stop);
-        printf("Time for the kernel(one graph by thread): %f ms\n", milliseconds);
-
+        printf("Time for the kernel(one graph by thread): %2.f ms\n", milliseconds);
 
         if (verbose) printf("Read Result\n");
 
@@ -319,24 +375,26 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
     /* Graphs by Block (Kernel) */
     if (graphByKernel) {
-        if (verbose) printf("Lauch Kernel One graph by kernel\n");
+        if (verbose)
+            printf("Lauch Kernel One graph by kernel\n");
         cudaEventRecord(start);
 
         for (int i = 0; i < cont; i++) {
             graphCsr *graph = &graphs[i];
             int nvertice = graph->data[0];
-            kernelAproxHullNumberIndexed << <1, nvertice>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
+            kernelAproxHullNumberIndexed << <1, nvertice, 0, streams[i]>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
         }
-        r = cudaDeviceSynchronize();
+        //        r = cudaDeviceSynchronize();
 
         cudaEventRecord(stop);
-
         cudaEventSynchronize(stop);
+
         float milliseconds = 0;
         cudaEventElapsedTime(&milliseconds, start, stop);
-        printf("Time for the kernel(one graph by block): %f ms\n", milliseconds);
+        printf("Time for the kernel(one graph by block): %2.f ms\n", milliseconds);
 
-        if (verbose) printf("Read Result\n");
+        if (verbose)
+            printf("Read Result\n");
 
 
         if (r != cudaSuccess) {
@@ -357,6 +415,52 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             }
     }
 
+    /* Vertices by Thread */
+    if (verticesBythread) {
+        if (verbose)
+            printf("Vertices by Thread One graph by kernel\n");
+        cudaEventRecord(start);
+
+        for (int i = 0; i < cont; i++) {
+            graphCsr *graph = &graphs[i];
+            int nvertice = graph->data[0];
+            int factor = nvertice / WARP_SIZE;
+            if ((nvertice % WARP_SIZE) > 0) {
+                factor++;
+            }
+            kernelAproxHullNumberByVertex << <factor, WARP_SIZE, 0, streams[i]>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
+        }
+        //        r = cudaDeviceSynchronize();
+
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+
+        float milliseconds = 0;
+        cudaEventElapsedTime(&milliseconds, start, stop);
+        printf("Time for Vertices by Thread kernel(one graph by block): %2.f ms\n", milliseconds);
+
+        if (verbose)
+            printf("Read Result\n");
+
+
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+
+        r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+        if (printResults)
+            for (int i = 0; i < cont; i++) {
+                printf("MinHullNumberAprox-Vertices Thread-%d: %d\n", i, resultLocal[i]);
+            }
+    }
+
 
 
     //    r = cudaGetLastError();
@@ -366,7 +470,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     //    }
 
 
-
+    free(streams);
     free(resultLocal);
     free(graphsHost);
     cudaFree(resultGpu);
@@ -376,8 +480,10 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
 int serialAproxHullNumber(int *graphData) {
     int nvertices = graphData[0];
-    unsigned char *aux = new unsigned char [nvertices];
-    unsigned char *auxb = new unsigned char [nvertices];
+    //    printf("Nvertices: %d\n", nvertices);
+    unsigned char *aux = (unsigned char *) malloc(sizeof (unsigned char)*nvertices);
+    unsigned char *auxb = (unsigned char *) malloc(sizeof (unsigned char)*nvertices);
+    if (aux == NULL || auxb == NULL) perror("Not memory allocation");
     int minHullSet = nvertices;
 
     for (int v = 0; v < nvertices; v++) {
@@ -429,14 +535,14 @@ void serialAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     begin_serial_time = clock();
     for (int i = 0; i < cont; i++) {
         results[i] = serialAproxHullNumber(graphs[i].data);
-//        printf("MinHullNumberAprox-Serial Graph-%d: %d\n", i, results[i]);
+        //        printf("MinHullNumberAprox-Serial Graph-%d: %d\n", i, results[i]);
     }
     end_serial_time = clock();
 
     double diff = end_serial_time - begin_serial_time;
     diff = diff / (CLOCKS_PER_SEC / 1000);
 
-    printf("Time for the serial: %f ms\n", diff);
+    printf("Time for the serial: %2.f ms\n", diff);
 
 
     if (printResults)
@@ -483,7 +589,7 @@ void processFiles(int argc, char** argv) {
 
         if (infile) {
             while (getline(infile, line)) {
-                if (line.at(0) != CHARACTER_INIT_COMMENT) {
+                if (line.at(0) != CHARACTER_INIT_COMMENT && line.at(1) != CHARACTER_INIT_COMMENT) {
                     if (strCArray.empty()) {
                         strCArray = line;
                     } else if (strRArray.empty()) {
@@ -528,13 +634,20 @@ void processFiles(int argc, char** argv) {
 
         values.clear();
 
+        if (numVertices < 1) {
+            continue;
+        }
+
         graphCsr* graph = &graphs[contGraph];
         graph->data = data;
         contGraph++;
     }
 
-    if (graphByKernel || graphByThread)
+    printf("Processing: %d graphs\n", contGraph);
+
+    if (graphByKernel || graphByThread || verticesBythread)
         parallelAproxHullNumberGraphs(graphs, contGraph);
+
     if (serial)
         serialAproxHullNumberGraphs(graphs, contGraph);
 
@@ -562,7 +675,7 @@ int main(int argc, char** argv) {
 
     long opt = 0;
 
-    while ((opt = getopt(argc, argv, "svtbn")) != -1) {
+    while ((opt = getopt(argc, argv, "svtbnx")) != -1) {
         switch (opt) {
             case 't':
                 graphByThread = true;
@@ -575,6 +688,9 @@ int main(int argc, char** argv) {
                 break;
             case 'v':
                 verbose = true;
+                break;
+            case 'x':
+                verticesBythread = true;
                 break;
             case 'n':
                 printResults = false;
