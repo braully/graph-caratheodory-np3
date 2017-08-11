@@ -358,7 +358,7 @@
                 $scope.downloadGraphCsr = function () {
                     $http.post('rest/graph/download-graph-csr', $scope.graph).success(function (textContent) {
                         var filename = 'graph-' + $scope.graph.name + '.csr';
-                        var blob = new Blob([textContent], {type: "text/plain;charset=utf-8"});
+                        var blob = new Blob([textContent], {type: "text/plain"});
                         saveAs(blob, filename);
                     });
                 };
