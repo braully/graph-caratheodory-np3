@@ -18,7 +18,7 @@
 
 #define CHARACTER_INIT_COMMENT '#'
 
-#define DEFAULT_THREAD_PER_BLOCK 256
+#define DEFAULT_THREAD_PER_BLOCK 28
 #define DEFAULT_BLOCK 256 
 #define MAX_DEFAULT_SIZE_QUEUE 256
 
@@ -294,6 +294,17 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
     if (verbose) printf("Cuda Malloc Graph\n");
 
+    int device;
+    cudaDeviceProp deviceProp;
+    cudaGetDevice(&device);
+    cudaGetDeviceProperties(&deviceProp, device);
+
+    if ((deviceProp.concurrentKernels == 0)) {
+        perror("not support for concurrent kernel\n");
+    }
+    if (verbose)
+        printf("Compute SM %d.%d with %d multi-processors\n", deviceProp.major, deviceProp.minor, deviceProp.multiProcessorCount);
+
     int* dataGraphsGpu;
     int *graphsGpu;
     int* resultGpu;
@@ -302,7 +313,6 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     cudaMalloc((void**) &dataGraphsGpu, numbytesDataGraph);
     cudaMalloc((void**) &graphsGpu, cont * sizeof (int));
     r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (graphCsr), cudaMemcpyHostToDevice);
-
     int offset = 0;
 
     if (verbose) printf("Cuda Atrib Graph\n");
@@ -424,11 +434,13 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         for (int i = 0; i < cont; i++) {
             graphCsr *graph = &graphs[i];
             int nvertice = graph->data[0];
-            int factor = nvertice / WARP_SIZE;
-            if ((nvertice % WARP_SIZE) > 0) {
-                factor++;
+            int nblocks = nvertice / DEFAULT_THREAD_PER_BLOCK;
+            if ((nvertice % DEFAULT_THREAD_PER_BLOCK) > 0) {
+                nblocks++;
             }
-            kernelAproxHullNumberByVertex << <factor, WARP_SIZE, 0, streams[i]>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
+            //            int nthreads = MIN(DEFAULT_THREAD_PER_BLOCK, nvertice);
+            int nthreads = DEFAULT_THREAD_PER_BLOCK;
+            kernelAproxHullNumberByVertex << <nblocks, nthreads, 0, streams[i]>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
         }
         //        r = cudaDeviceSynchronize();
 
@@ -558,6 +570,7 @@ void processFiles(int argc, char** argv) {
     std::vector<int> values;
 
     int contGraph = 0;
+    int verticesMedian = 0;
 
     for (int x = 1; x < argc; x++) {
         char* strFile = argv[x];
@@ -641,9 +654,11 @@ void processFiles(int argc, char** argv) {
         graphCsr* graph = &graphs[contGraph];
         graph->data = data;
         contGraph++;
+        verticesMedian = verticesMedian + numVertices;
     }
 
-    printf("Processing: %d graphs\n", contGraph);
+    if (contGraph > 0)
+        printf("Processing: %d graphs %dv/g \n", contGraph, verticesMedian/contGraph);
 
     if (graphByKernel || graphByThread || verticesBythread)
         parallelAproxHullNumberGraphs(graphs, contGraph);
