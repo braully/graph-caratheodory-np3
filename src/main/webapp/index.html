@@ -222,7 +222,7 @@
                         </div>
 
                         <div class="panel-body">
-                            <div id="grafo" class="form-group" style="height: 800px;">
+                            <div id="grafo" class="form-group" style="height: 1000px;">
 
                             </div>
                         </div>
@@ -432,21 +432,26 @@
                     var color = d3.scale.category20();
                     var force = d3.layout.force()
                             .charge(-120)
-                            .linkDistance(70)
+                            .linkDistance(250)
                             .size([width, height]);
+
                     var drag = force.drag()
                             .on("dragstart", dragstart);
+
                     var svg = d3.select("#grafo")
                             .append("svg")
                             .attr("width", width)
                             .attr("height", height);
+
                     var vertex = graph.vertices.map(function (d) {
                         return {"name": d, "group": 1};
                     });
+
                     var edges = graph.pairs.map(function (d) {
                         return {"source": d[0], "target": d[1], "value": 2, "origin": d, "left": true, "right": true};
                     });
                     force.nodes(vertex).links(edges).start();
+
                     var link = svg.selectAll(".link")
                             .data(edges)
                             .enter().append("line")
@@ -454,6 +459,7 @@
                             .style("stroke-width", function (d) {
                                 return Math.sqrt(d.value);
                             });
+
                     var nodes = svg.selectAll(".node")
                             .data(vertex)
                             .enter().append("g")

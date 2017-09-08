@@ -449,7 +449,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
         float milliseconds = 0;
         cudaEventElapsedTime(&milliseconds, start, stop);
-        printf("Time for Vertices by Thread kernel(one graph by block): %2.f ms\n", milliseconds);
+        printf("Time for Vt/Thread kernel(one graph by kernel): %2.f ms\n", milliseconds);
 
         if (verbose)
             printf("Read Result\n");
