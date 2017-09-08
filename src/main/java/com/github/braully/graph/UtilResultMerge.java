@@ -151,7 +151,7 @@ public class UtilResultMerge {
             }
         });
         if (files != null) {
-            List<File> listFiles = BatchExecuteOperation.sortFileArray(files);
+            List<File> listFiles = BatchExecuteOperation.sortFileArrayByName(files);
             for (File f : listFiles) {
                 if (verbose) {
                     System.out.println("Process: " + f);

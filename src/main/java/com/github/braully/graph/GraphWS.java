@@ -237,6 +237,7 @@ public class GraphWS {
                 response.setHeader("Content-disposition", "attachment; filename=" + "file.csr");
                 response.setContentType("text/plain");
                 PrintWriter writer = response.getWriter();
+                UtilGraph.saveTmpFileGraphInCsr(graph);
                 UtilGraph.writerGraphToCsr(writer, graph);
                 writer.flush();
             }
