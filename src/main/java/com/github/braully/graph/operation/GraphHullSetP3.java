@@ -45,7 +45,25 @@ public class GraphHullSetP3 implements IGraphOperation {
             hslist.addAll(caratheodoryNumberGraph.convexHull);
             Collections.sort(hslist);
         }
+
+        List<Integer> frontier = new ArrayList<>();
+        List<Integer> unreachable = new ArrayList<>();
+
+        if (caratheodoryNumberGraph.auxProcessor != null && caratheodoryNumberGraph.auxProcessor.length > 0) {
+            for (int i = 0; i < caratheodoryNumberGraph.auxProcessor.length; i++) {
+                int val = caratheodoryNumberGraph.auxProcessor[i];
+                if (val == 0) {
+                    unreachable.add(i);
+                } else if (val == NEIGHBOOR_COUNT_INCLUDED) {
+                    frontier.add(i);
+                }
+            }
+        }
+
         response.put(OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL, hslist);
+        response.put("Frontier H(S)", frontier);
+        response.put("Unreachable", unreachable);
+        response.put("Set(S)", set);
         return response;
     }
 
