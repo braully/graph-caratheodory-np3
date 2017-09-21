@@ -27,12 +27,18 @@ import org.apache.commons.cli.*;
  */
 public class UtilResult {
 
+    public static boolean verbose = false;
+
     public static void main(String... args) throws Exception {
         Options options = new Options();
 
         Option input = new Option("i", "input", true, "input file path");
         input.setRequired(false);
         options.addOption(input);
+
+        Option verb = new Option("v", "verbose", false, "verbose process");
+        input.setRequired(false);
+        options.addOption(verb);
 
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);

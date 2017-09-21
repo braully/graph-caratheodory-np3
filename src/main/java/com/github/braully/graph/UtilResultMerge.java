@@ -5,6 +5,7 @@
  */
 package com.github.braully.graph;
 
+import com.github.braully.graph.operation.IGraphOperation;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -13,7 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,6 +31,9 @@ import org.apache.commons.cli.*;
 public class UtilResultMerge {
 
     public static String OPERACAO_REFERENCIA = "Nº Caratheodory (Binary Java)";
+    public static String OPERACAO_REFERENCIA_2 = "Hull Number (Java)";
+
+    public static boolean verbose = false;
 
     public static void main(String... args) throws Exception {
         Options options = new Options();
@@ -42,6 +45,14 @@ public class UtilResultMerge {
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
+
+        Option verb = new Option("v", "verbose", false, "verbose");
+        output.setRequired(false);
+        options.addOption(verb);
+
+        Option exluces = new Option("x", "exclude", true, "exclude operations");
+        exluces.setRequired(false);
+        options.addOption(exluces);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -57,10 +68,11 @@ public class UtilResultMerge {
             return;
         }
 
+        String[] excludes = cmd.getOptionValues("exclude");
         String[] inputs = cmd.getOptionValues("input");
         if (inputs == null) {
             inputs = new String[]{
-                "/home/strike/Dropbox/documentos/mestrado/grafos-processamento/"
+                "/home/strike/Dropbox/workspace/graph-caratheodory-np3/grafos-processamento/Almost_hypohamiltonian"
 //                "/media/dados/documentos/grafos-processamento/Almost_hypohamiltonian",
 //                "/home/strike/Documentos/grafos-processamento/Cubic",
 //                "/home/strike/Documentos/grafos-processamento/Critical_H-free",
@@ -72,13 +84,20 @@ public class UtilResultMerge {
 //                "/home/strike/Documentos/grafos-processamento/Vertex-transitive",
 //                "/home/strike/Documentos/grafos-processamento/Trees"
             };
+            excludes = new String[]{"carathe"};
+            verbose = true;
         }
+
+        if (cmd.hasOption(verb.getOpt())) {
+            verbose = true;
+        }
+
         if (inputs != null) {
-            processInputs(inputs);
+            processInputs(inputs, excludes);
         }
     }
 
-    private static void processInputs(String[] inputs)
+    private static void processInputs(String[] inputs, String[] excludes)
             throws FileNotFoundException, IOException {
         if (inputs == null || inputs.length == 0) {
             return;
@@ -90,15 +109,15 @@ public class UtilResultMerge {
             }
 
             if ((file = new File(inputFilePath)).isFile()) {
-                processFile(file);
+                processFile(file, excludes);
             } else {
-                processDirectory(file);
+                processDirectory(file, excludes);
             }
         }
         printResultadoConsolidado();
     }
 
-    public static void processDirectory(File file)
+    public static void processDirectory(File file, String[] excludes)
             throws FileNotFoundException, NumberFormatException, IOException {
         if (file == null || file.isFile()) {
             return;
@@ -115,7 +134,7 @@ public class UtilResultMerge {
             });
             if (files != null) {
                 for (File f : files) {
-                    processDirectory(f);
+                    processDirectory(f, excludes);
                 }
             }
             return;
@@ -132,19 +151,22 @@ public class UtilResultMerge {
             }
         });
         if (files != null) {
-            List<File> listFiles = BatchExecuteOperation.sortFileArray(files);
+            List<File> listFiles = BatchExecuteOperation.sortFileArrayByName(files);
             for (File f : listFiles) {
-                System.out.println("Process: " + f);
-                processFile(f, file.getName());
+                if (verbose) {
+                    System.out.println("Process: " + f);
+                }
+                processFile(f, file.getName(), excludes);
             }
         }
     }
 
-    public static void processFile(File file) throws FileNotFoundException, NumberFormatException, IOException {
-        processFile(file, null);
+    public static void processFile(File file, String[] excludes)
+            throws FileNotFoundException, NumberFormatException, IOException {
+        processFile(file, null, excludes);
     }
 
-    public static void processFile(File file, String grupo) throws FileNotFoundException, NumberFormatException, IOException {
+    public static void processFile(File file, String grupo, String[] excludes) throws FileNotFoundException, NumberFormatException, IOException {
         if (file == null) {
             return;
         }
@@ -156,6 +178,21 @@ public class UtilResultMerge {
             r = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
         } else {
             return;
+        }
+
+        Set<String> excludeOperation = new HashSet<>();
+        if (excludes != null) {
+            for (IGraphOperation oper : BatchExecuteOperation.operations) {
+                for (String str : excludes) {
+                    String operName = oper.getName().toLowerCase();
+                    if (operName.contains(str.toLowerCase())) {
+                        excludeOperation.add(oper.getName());
+                        if (verbose) {
+                            System.out.println("Exclude operation: " + operName);
+                        }
+                    }
+                }
+            }
         }
 
         String readLine = null;
@@ -178,8 +215,10 @@ public class UtilResultMerge {
                 if (grupo != null) {
                     grupo1 = grupo;
                 }
-                addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
-                        operacao1, resultado1, tdouble1);
+                if (!excludeOperation.contains(operacao1)) {
+                    addResult(grupo1, idgrafo1, Integer.parseInt(nverticestr1),
+                            operacao1, resultado1, tdouble1);
+                }
             }
         }
     }
@@ -187,6 +226,9 @@ public class UtilResultMerge {
     private static void addResult(String grafo, String id,
             int nvertices, String operacao,
             Integer resultado, double tempo) {
+        if (operacao.contains("arath") && operacao.contains("v1")) {
+            return;
+        }
         String key = String.format("%s-%4d", grafo.trim(), nvertices);
         ResultadoLinha r = resultados.get(key);
         if (r == null) {
@@ -210,13 +252,15 @@ public class UtilResultMerge {
                     if (t != null && t1 != null) {
                         t = t.toLowerCase();
                         t1 = t.toLowerCase();
-                        if (t.contains(OPERACAO_REFERENCIA.toLowerCase())) {
+                        if (t.contains(OPERACAO_REFERENCIA.toLowerCase())
+                                || t.contains(OPERACAO_REFERENCIA_2.toLowerCase())) {
                             t = "a" + t;
                         }
-                        if (t1.contains(OPERACAO_REFERENCIA.toLowerCase())) {
+                        if (t1.contains(OPERACAO_REFERENCIA.toLowerCase())
+                                || t1.contains(OPERACAO_REFERENCIA_2.toLowerCase())) {
                             t1 = "a" + t1;
                         }
-                        return t.compareTo(t1);
+                        return t.compareToIgnoreCase(t1);
                     }
                 } catch (Exception e) {
                 }
@@ -239,9 +283,9 @@ public class UtilResultMerge {
         System.out.print("\t");
 
         List<String> opers = getOperationsSorted();
-
+        int j = 1;
         for (String str : opers) {
-            if (str.equals(OPERACAO_REFERENCIA)) {
+            if (str.equals(OPERACAO_REFERENCIA) || str.equals(OPERACAO_REFERENCIA_2)) {
                 System.out.print(str + " - T(s)");
                 System.out.print("\t");
                 System.out.print("Min");
@@ -249,19 +293,20 @@ public class UtilResultMerge {
                 System.out.print("Max");
                 System.out.print("\t");
             } else {
-                System.out.print(str + " - T(s)");
+                System.out.print(str + " (" + j + ") - T(s)");
                 System.out.print("\t");
-                System.out.print(str + " - Media");
+                System.out.print("Media das Dif");
                 System.out.print("\t");
-                System.out.print(str + " - Pior resultado");
+                System.out.print("Pior resultado");
                 System.out.print("\t");
-                System.out.print(str + " - Acertos exatos ");
+                System.out.print("Acertos exatos ");
                 System.out.print("\t");
-                System.out.print(str + " - Max");
+                System.out.print("Quantidade");
                 System.out.print("\t");
-//                System.out.print(str + " - Erro");
-//                System.out.print("\t");
+                System.out.print("Desconto");
+                System.out.print("\t");
             }
+            j++;
         }
 
         for (int i = 2; i <= maxCarat; i++) {
@@ -280,6 +325,7 @@ public class UtilResultMerge {
 
     static class ResultadoColuna {
 
+        Map<String, Integer> resultadosComputados = new HashMap<>();
         Map<Integer, Integer> totalPorNum = new HashMap<>();
         double totalTime;
         int max;
@@ -290,6 +336,7 @@ public class UtilResultMerge {
         long diff;
         long worst;
         long best;
+        long disconto;
 
         private void addResultadoReferencia(String id, Integer ncarat, double tempo) {
             totalTime += tempo;
@@ -319,6 +366,14 @@ public class UtilResultMerge {
             if (ncarat == null || ncarat == 0) {
                 erros++;
             } else {
+                Integer resultadoAnterior = resultadosComputados.put(id, ncarat);
+                if (resultadoAnterior != null) {
+                    if (verbose) {
+                        System.out.println("Repetido " + id + " --ignorando");
+                    }
+                    //Repetido
+                    return;
+                }
                 cont++;
                 totalTime += tempo;
                 if (ncarat > max) {
@@ -337,12 +392,14 @@ public class UtilResultMerge {
 
                 if (ref != null) {
                     addDiference(ncarat, ref);
+                } else {
+                    disconto++;
                 }
             }
         }
 
         public void addDiference(int r1, int r2) {
-            long tmpdiff = (r2 - r1);
+            long tmpdiff = Math.abs(r2 - r1);
             if (tmpdiff > worst) {
                 worst = tmpdiff;
             }
@@ -354,6 +411,16 @@ public class UtilResultMerge {
         }
 
         public void printResultado(ResultadoColuna ref) {
+//            System.out.print(str + " - T(s)");
+//            System.out.print("\t");
+//            System.out.print(str + " - Media");
+//            System.out.print("\t");
+//            System.out.print(str + " - Pior resultado");
+//            System.out.print("\t");
+//            System.out.print(str + " - Acertos exatos ");
+//            System.out.print("\t");
+//            System.out.print(str + " - Max");
+
             if (cont > 0) {
                 String strMedia = "--";
                 if (diff > 0) {
@@ -362,6 +429,10 @@ public class UtilResultMerge {
                 }
                 System.out.print(String.format("%.2f", totalTime));
                 System.out.print("\t");
+
+                System.out.print(strMedia);
+                System.out.print("\t");
+
                 if (diff > 0) {
                     System.out.print(worst);
                 } else {
@@ -374,16 +445,16 @@ public class UtilResultMerge {
                     System.out.print("--");
                 }
                 System.out.print("\t");
-                System.out.print(strMedia);
-                System.out.print("\t");
-                if (diff > 0) {
-                    System.out.print(ref.max - max);
-                } else {
-                    System.out.print("--");
-                }
-                System.out.print("\t");
-//                System.out.print(erros);
+//                if (diff > 0) {
+//                    System.out.print(ref.max - max);
+//                } else {
+//                    System.out.print("--");
+//                }
 //                System.out.print("\t");
+                System.out.print(cont);
+                System.out.print("\t");
+                System.out.print(disconto);
+                System.out.print("\t");
             } else {
                 System.out.print("--");
                 System.out.print("\t");
@@ -395,8 +466,10 @@ public class UtilResultMerge {
                 System.out.print("\t");
                 System.out.print("--");
                 System.out.print("\t");
-//                System.out.print("--");
-//                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
+                System.out.print("--");
+                System.out.print("\t");
             }
         }
 
@@ -492,9 +565,8 @@ public class UtilResultMerge {
             if (resultado != null && resultado > maxCarat) {
                 maxCarat = resultado;
             }
-            if (OPERACAO_REFERENCIA.equals(operacao)) {
-                if (resultado != null) {
-                    resultadoReferencia.put(id, resultado);
+            if (OPERACAO_REFERENCIA.equals(operacao) || OPERACAO_REFERENCIA_2.equals(operacao)) {
+                if (resultado != null && resultadoReferencia.put(id, resultado) == null) {
                     r.addResultadoReferencia(id, resultado, tempo);
                 }
             } else {

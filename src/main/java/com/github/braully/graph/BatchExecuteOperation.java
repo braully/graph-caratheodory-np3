@@ -12,6 +12,7 @@ import com.github.braully.graph.operation.GraphCaratheodoryHeuristicHybrid;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV2;
 import com.github.braully.graph.operation.GraphCaratheodoryHeuristicV3;
 import com.github.braully.graph.operation.GraphHullNumber;
+import com.github.braully.graph.operation.GraphHullNumberHeuristicV1;
 import com.github.braully.graph.operation.IGraphOperation;
 import com.github.braully.graph.operation.OperationConvexityGraphResult;
 import java.io.BufferedReader;
@@ -54,6 +55,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         new GraphCaratheodoryHeuristicV3(),
         new GraphCaratheodoryHeuristicHybrid(),
         new GraphHullNumber(),
+        new GraphHullNumberHeuristicV1(),
         new GraphCaratheodoryBFSErika()
     };
 
@@ -206,8 +208,9 @@ public class BatchExecuteOperation implements IBatchExecute {
             File dir = new File(directory);
             String dirname = dir.getName();
             File[] files = dir.listFiles();
-            Arrays.sort(files);
-//            List<File> filesList = sortFileArray(files);
+//            Arrays.sort(files);
+            List<File> filesList = sortFileArrayBySize(files);
+            Collections.reverse(filesList);
 //            for (File file : filesList) {
 
             long continueOffset = -1;
@@ -227,7 +230,7 @@ public class BatchExecuteOperation implements IBatchExecute {
                     }
                 }
 
-                for (File file : files) {
+                for (File file : filesList) {
                     String name = null;
                     long graphCount = 0;
                     try {
@@ -472,8 +475,8 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         return ret;
     }
-
-    static List<File> sortFileArray(File[] files) {
+    
+    static List<File> sortFileArrayBySize(File[] files) {
         List<File> fileList = new ArrayList<>(Arrays.asList(files));
         Collections.sort(fileList, new Comparator<File>() {
             public int compare(File t, File t1) {
@@ -483,10 +486,45 @@ public class BatchExecuteOperation implements IBatchExecute {
                     if (t != null && t1 != null) {
                         String tname = t.getName().toLowerCase();
                         String t1name = t1.getName().toLowerCase();
-                        if (tname.contains("binary") || tname.contains("-00-ref")) {
+                        if (tname.contains("binary")
+                                || tname.contains("-00-ref")
+                                || tname.contains("hull_number_java")) {
                             tname = "a" + tname;
                         }
-                        if (t1name.contains("binary") || t1name.contains("-00-ref")) {
+                        if (t1name.contains("binary")
+                                || t1name.contains("-00-ref")
+                                || t1name.contains("hull_number_java")) {
+                            t1name = "a" + t1name;
+                        }
+                        ret = Long.compare(t.length(), t1.length());
+                    }
+                } catch (Exception e) {
+
+                }
+                return ret;
+            }
+        });
+        return fileList;
+    }
+
+    static List<File> sortFileArrayByName(File[] files) {
+        List<File> fileList = new ArrayList<>(Arrays.asList(files));
+        Collections.sort(fileList, new Comparator<File>() {
+            public int compare(File t, File t1) {
+                int ret = 0;
+                try {
+
+                    if (t != null && t1 != null) {
+                        String tname = t.getName().toLowerCase();
+                        String t1name = t1.getName().toLowerCase();
+                        if (tname.contains("binary")
+                                || tname.contains("-00-ref")
+                                || tname.contains("hull_number_java")) {
+                            tname = "a" + tname;
+                        }
+                        if (t1name.contains("binary")
+                                || t1name.contains("-00-ref")
+                                || t1name.contains("hull_number_java")) {
                             t1name = "a" + t1name;
                         }
                         ret = tname.compareToIgnoreCase(t1name);

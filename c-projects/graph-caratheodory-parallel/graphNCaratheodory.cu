@@ -254,6 +254,112 @@ void kernelFindCaratheodoryNumber(int nvertices, int *csrColIdxs, int sizeCsrCol
     free(memspace);
 }
 
+bool checkIfCaratheodorySet() {
+    for (int i = 0; i < nvertices; i++) {
+        aux[i] = 0;
+        auxc[i] = 0;
+    }
+
+    int headQueue = nvertices;
+    int tailQueue = 0;
+
+    for (int i = 0; i < k; i++) {
+        int idi = currentCombinations[i];
+        aux[idi] = INCLUDED;
+        auxc[idi] = 1;
+        headQueue = MIN(headQueue, idi);
+        tailQueue = MAX(tailQueue, idi);
+    }
+
+    while (headQueue <= tailQueue) {
+        int verti = headQueue;
+        if (verti >= nvertices || aux[verti] != INCLUDED) {
+            headQueue++;
+            continue;
+        }
+
+        int end = csrColIdxs[verti + 1];
+        for (int i = csrColIdxs[verti]; i < end; i++) {
+            int vertn = csrRowOffset[i];
+            if (vertn >= nvertices) continue;
+            if (vertn != verti && aux[vertn] < INCLUDED) {
+                aux[vertn] = aux[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                if (aux[vertn] == INCLUDED) {
+                    headQueue = MIN(headQueue, vertn);
+                    tailQueue = MAX(tailQueue, vertn);
+                }
+                auxc[vertn] = auxc[vertn] + auxc[verti];
+            }
+        }
+        aux[verti] = PROCESSED;
+    }
+
+    bool checkDerivated = false;
+    bool isCaratheodory = false;
+
+    for (int i = 0; i < nvertices; i++)
+        if (auxc[i] >= k && aux[i] == PROCESSED) {
+            checkDerivated = true;
+            break;
+        }
+
+    if (checkDerivated) {
+        for (int i = 0; i < k; i++) {
+            int p = currentCombinations[i];
+            headQueue = nvertices;
+            tailQueue = -1;
+
+            for (int j = 0; j < nvertices; j++) {
+                auxc[j] = 0;
+            }
+
+            for (int j = 0; j < k; j++) {
+                int v = currentCombinations[j];
+                if (v != p) {
+                    auxc[v] = INCLUDED;
+                    headQueue = MIN(headQueue, v);
+                    tailQueue = MAX(tailQueue, v);
+                }
+            }
+            while (headQueue <= tailQueue) {
+                int verti = headQueue;
+
+                if (verti >= nvertices || auxc[verti] != INCLUDED) {
+                    headQueue++;
+                    continue;
+                }
+                aux[verti] = 0;
+                int end = csrColIdxs[verti + 1];
+                for (int x = csrColIdxs[verti]; x < end; x++) {
+                    int vertn = csrRowOffset[x];
+                    if (vertn != verti && auxc[vertn] < INCLUDED) {
+                        auxc[vertn] = auxc[vertn] + NEIGHBOOR_COUNT_INCLUDED;
+                        if (auxc[vertn] == INCLUDED) {
+                            headQueue = MIN(headQueue, vertn);
+                            tailQueue = MAX(tailQueue, vertn);
+                        }
+                    }
+                }
+                auxc[verti] = PROCESSED;
+            }
+        }
+        sizederivated = 0;
+        for (int i = 0; i < nvertices; i++)
+            if (aux[i] >= INCLUDED) sizederivated++;
+    }
+
+    if (sizederivated == 0) {
+        nextCombination(nvertices, k, currentCombinations);
+        k_i++;
+    } else {
+        result_d = k_i + 1;
+        found = true;
+        printf("\nCartheodory Find - Thread-%d: sizederivated=%d k=%d k_i=%d",
+                idx, sizederivated, k, k_i);
+    }
+    return isCaratheodory;
+}
+
 void findParallelCaratheodoryNumberBinaryStrategy(int verticesCount, int* csrColIdxs,
         int csrColIdxsSize, int* csrRowOffset, int sizeRowOffset) {
     int* csrColIdxsGpu;

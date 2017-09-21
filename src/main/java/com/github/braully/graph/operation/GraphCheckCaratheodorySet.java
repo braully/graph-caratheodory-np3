@@ -115,6 +115,8 @@ public class GraphCheckCaratheodorySet implements IGraphOperation {
         return processedHullSet;
     }
 
+
+
     /**
      * ∂H(S)=H(S)\⋃p∈SH(S\{p})
      *

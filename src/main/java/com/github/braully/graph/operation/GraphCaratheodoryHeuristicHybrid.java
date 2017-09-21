@@ -1,8 +1,6 @@
 package com.github.braully.graph.operation;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import org.apache.log4j.Logger;
 
@@ -15,6 +13,7 @@ public class GraphCaratheodoryHeuristicHybrid
     
     GraphCaratheodoryHeuristicV3 caratheodoryHeuristicV3 = new GraphCaratheodoryHeuristicV3();
     
+    @Override
     void beforeReturnSFind(UndirectedSparseGraphTO<Integer, Integer> graph, Set<Integer> s, int[] aux) {
         caratheodoryHeuristicV3.expandCaratheodorySet(graph, s, aux);
     }

@@ -2,7 +2,7 @@ package com.github.braully.graph.operation;
 
 import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.INCLUDED;
+import static com.github.braully.graph.operation.GraphCaratheodoryHeuristic.INCLUDED;
 import static com.github.braully.graph.operation.GraphCheckCaratheodorySet.PROCESSED;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -52,6 +52,37 @@ public class GraphHullNumber implements IGraphOperation {
         return response;
     }
 
+    public int addVertToS(Integer verti, Set<Integer> s,
+            UndirectedSparseGraphTO<Integer, Integer> graph,
+            int[] aux) {
+        int countIncluded = 0;
+        if (verti == null || aux[verti] >= INCLUDED) {
+            return countIncluded;
+        }
+
+        aux[verti] = aux[verti] + INCLUDED;
+        if (s != null) {
+            s.add(verti);
+        }
+
+        Queue<Integer> mustBeIncluded = new ArrayDeque<>();
+        mustBeIncluded.add(verti);
+        while (!mustBeIncluded.isEmpty()) {
+            verti = mustBeIncluded.remove();
+            Collection<Integer> neighbors = graph.getNeighbors(verti);
+            for (int vertn : neighbors) {
+                if (vertn == verti) {
+                    continue;
+                }
+                if (vertn != verti && ++aux[vertn] == INCLUDED) {
+                    mustBeIncluded.add(vertn);
+                }
+            }
+            countIncluded++;
+        }
+        return countIncluded;
+    }
+
     private Set<Integer> calcMinHullNumberGraph(UndirectedSparseGraphTO<Integer, Integer> graph) {
         Set<Integer> ceilling = calcCeillingHullNumberGraph(graph);
         Set<Integer> hullSet = ceilling;
@@ -60,7 +91,17 @@ public class GraphHullNumber implements IGraphOperation {
         }
         int maxSizeSet = ceilling.size();
         int currentSize = 1;
+        int countOneNeigh = 0;
+
         Collection<Integer> vertices = graph.getVertices();
+
+        for (Integer i : vertices) {
+            if (graph.degree(i) == 1) {
+                countOneNeigh++;
+            }
+        }
+        currentSize = Math.max(currentSize, countOneNeigh);
+
         while (currentSize < maxSizeSet) {
             Set<Integer> hs = findHullSetBruteForce(graph, currentSize);
             if (hs != null && !hs.isEmpty()) {
