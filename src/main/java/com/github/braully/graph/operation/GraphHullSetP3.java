@@ -58,10 +58,24 @@ public class GraphHullSetP3 implements IGraphOperation {
             }
         }
 
+        Set<Integer> closed = new HashSet();
+        for (Integer i : set) {
+            closed.add(i);
+            closed.addAll((Collection<Integer>) graphRead.getNeighbors(i));
+        }
+        List<Integer> closedNeighbor = new ArrayList<Integer>(closed);
+        Collections.sort(closedNeighbor);
+
+        List<Integer> complement = new ArrayList<Integer>(graphRead.getVertices());
+        complement.removeAll(closedNeighbor);
+        Collections.sort(complement);
+
         response.put(OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL, hslist);
         response.put("Frontier H(S)", frontier);
         response.put("Unreachable", unreachable);
         response.put("Set(S)", set);
+        response.put("N[" + set + "]", closedNeighbor);
+        response.put("V(G)-N[" + set + "]", complement);
         return response;
     }
 
