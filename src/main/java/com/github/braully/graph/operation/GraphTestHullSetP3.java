@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class GraphHullSetP3 implements IGraphOperation {
+public class GraphTestHullSetP3 implements IGraphOperation {
 
     static final String type = "P3-Convexity";
-    static final String description = "H(S)";
+    static final String description = "H(S) Test Hull Frontier";
 
     public static final int NEIGHBOOR_COUNT_INCLUDED = 1;
     public static final int INCLUDED = 2;
@@ -47,6 +47,9 @@ public class GraphHullSetP3 implements IGraphOperation {
         List<Integer> frontier = new ArrayList<>();
         List<Integer> unreachable = new ArrayList<>();
 
+        List<Integer> frontierFail = new ArrayList<>();
+        List<Integer> unreachableFail = new ArrayList<>();
+
         if (caratheodoryNumberGraph.auxProcessor != null && caratheodoryNumberGraph.auxProcessor.length > 0) {
             for (int i = 0; i < caratheodoryNumberGraph.auxProcessor.length; i++) {
                 int val = caratheodoryNumberGraph.auxProcessor[i];
@@ -56,12 +59,34 @@ public class GraphHullSetP3 implements IGraphOperation {
                     frontier.add(i);
                 }
             }
+
+            int remain = frontier.size() + unreachable.size();
+            int[] auxb = caratheodoryNumberGraph.auxProcessor.clone();
+            if (remain > 0) {
+                for (Integer i : unreachable) {
+                    int added = addVertToAux(auxb, graphRead, i);
+                    if (added < remain) {
+                        unreachableFail.add(i);
+                    }
+                    System.arraycopy(caratheodoryNumberGraph.auxProcessor, 0, auxb, 0, auxb.length);
+                }
+                for (Integer i : frontier) {
+                    int added = addVertToAux(auxb, graphRead, i);
+                    if (added < remain) {
+                        frontierFail.add(i);
+                    }
+                    System.arraycopy(caratheodoryNumberGraph.auxProcessor, 0, auxb, 0, auxb.length);
+                }
+            }
         }
 
         response.put(OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL, hslist);
         response.put("Frontier H(S)", frontier);
         response.put("Unreachable", unreachable);
         response.put("Set(S)", set);
+        response.put("Frontier-Fail", frontierFail);
+        response.put("Unreachable-Fail", unreachableFail);
+
         return response;
     }
 
@@ -74,22 +99,45 @@ public class GraphHullSetP3 implements IGraphOperation {
 
     public OperationConvexityGraphResult hsp3aux(UndirectedSparseGraphTO<Integer, Integer> graph, int[] currentSet) {
         OperationConvexityGraphResult processedHullSet = null;
-        Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
-        int[] auxc = new int[graph.getVertexCount()];
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
-            auxc[i] = 0;
         }
+        addVertToAux(aux, graph, currentSet);
+
+        Set<Integer> hsp3g = new HashSet<>();
+        for (int i = 0; i < aux.length; i++) {
+            if (aux[i] >= PROCESSED) {
+                hsp3g.add(i);
+            }
+        }
+
+        processedHullSet = new OperationConvexityGraphResult();
+        processedHullSet.auxProcessor = aux;
+        processedHullSet.convexHull = hsp3g;
+        return processedHullSet;
+    }
+
+    public int addVertToAux(int[] aux, UndirectedSparseGraphTO<Integer, Integer> graph, int v) {
+        return addVertToAux(aux, graph, new int[]{v});
+    }
+
+    public int addVertToAux(int[] aux, UndirectedSparseGraphTO<Integer, Integer> graph, int[] currentSet) {
+        int cont = 0;
+        if (currentSet == null || currentSet.length == 0) {
+            return cont;
+        }
+
         Queue<Integer> mustBeIncluded = new ArrayDeque<>();
         for (Integer v : currentSet) {
-            mustBeIncluded.add(v);
-            aux[v] = INCLUDED;
-            auxc[v] = 1;
+            if (aux[v] < INCLUDED) {
+                mustBeIncluded.add(v);
+                aux[v] = INCLUDED;
+            }
         }
+
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
-            hsp3g.add(verti);
             Collection<Integer> neighbors = graph.getNeighbors(verti);
 
             for (int vertn : neighbors) {
@@ -101,20 +149,12 @@ public class GraphHullSetP3 implements IGraphOperation {
                     if (aux[vertn] == INCLUDED) {
                         mustBeIncluded.add(vertn);
                     }
-                    auxc[vertn] = auxc[vertn] + auxc[verti];
                 }
             }
             aux[verti] = PROCESSED;
+            cont++;
         }
-
-        Set<Integer> setCurrent = new HashSet<>();
-        for (int i : currentSet) {
-            setCurrent.add(i);
-        }
-        processedHullSet = new OperationConvexityGraphResult();
-        processedHullSet.auxProcessor = aux;
-        processedHullSet.convexHull = hsp3g;
-        return processedHullSet;
+        return cont;
     }
 
     public OperationConvexityGraphResult hsp3(UndirectedSparseGraphTO<Integer, Integer> graphRead, Collection<Integer> set) {
