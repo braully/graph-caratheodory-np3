@@ -23,90 +23,44 @@ public class GraphAlgorithmHullSet implements IGraphOperation {
 
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graphRead) {
         Collection<Integer> set = graphRead.getSet();
+        List<Integer> setC = new ArrayList<>(set);
+        List<Integer> setN = new ArrayList<>();
+        List<Integer> setE = new ArrayList<>();
 
-        List<Integer> sugestions = new ArrayList<>(set);
-        List<Integer> vlinha = new ArrayList<Integer>(graphRead.getVertices());
-        List<Integer> hspresumido = new ArrayList<Integer>();
-        List<Integer> union = new ArrayList();
-        List<Integer> intersection = new ArrayList<>();
+        for (Integer v : set) {
+            setN.addAll(graphRead.getNeighbors(v));
+        }
+        setE.addAll(graphRead.getVertices());
+        setE.removeAll(setN);
+        setN.removeAll(set);
 
-        List<Integer> s = new ArrayList<>();
+        OperationConvexityGraphResult caratheodoryNumberGraph = hsp3(graphRead, set);
 
-        Integer v = 0;
-        if (sugestions.isEmpty()) {
-            v = (int) Math.random() * graphRead.getVertexCount();
-        } else {
-            v = sugestions.get(0);
+        List<Integer> hslist = new ArrayList<Integer>();
+        if (caratheodoryNumberGraph.convexHull != null) {
+            hslist.addAll(caratheodoryNumberGraph.convexHull);
+            Collections.sort(hslist);
         }
 
-        int[] aux = new int[graphRead.getVertexCount()];
-        for (int i = 0; i < aux.length; i++) {
-            aux[i] = 0;
-        }
-
-        List<Integer> hsreal = new ArrayList<>();
         List<Integer> frontier = new ArrayList<>();
         List<Integer> unreachable = new ArrayList<>();
 
-        int j = 0;
-        boolean acabou = false;
-
-        while (!acabou) {
-            frontier.clear();
-            hsreal.clear();
-            unreachable.clear();
-
-            System.out.println("Passo-" + j);
-            System.out.println("\tv=" + v);
-            addVertToAux(aux, graphRead, v);
-            s.add(v);
-
-            hspresumido.add(v);
-
-            for (int i = 0; i < aux.length; i++) {
-                int val = aux[i];
+        if (caratheodoryNumberGraph.auxProcessor != null && caratheodoryNumberGraph.auxProcessor.length > 0) {
+            for (int i = 0; i < caratheodoryNumberGraph.auxProcessor.length; i++) {
+                int val = caratheodoryNumberGraph.auxProcessor[i];
                 if (val == 0) {
                     unreachable.add(i);
                 } else if (val == NEIGHBOOR_COUNT_INCLUDED) {
                     frontier.add(i);
-                } else if (val >= INCLUDED) {
-                    hsreal.add(i);
                 }
             }
-            Collection neighbors = graphRead.getNeighbors(v);
-            List tmp = new ArrayList(neighbors);
-            tmp.add(v);
-            tmp.retainAll(union);
-            intersection.addAll(tmp);
-
-            union.addAll(neighbors);
-            union.add(v);
-
-            vlinha.removeAll(union);
-
-            System.out.println("\tUnion:|" + union + "|=" + union.size());
-            System.out.println("\tV-Union:|" + vlinha + "|=" + vlinha.size());
-            System.out.println("\tIntersection:|" + intersection + "|" + intersection.size());
-            System.out.println("\tH(S) Real:" + hsreal);
-            System.out.println("\tH(S) Linh:" + hspresumido);
-
-            List<Integer> possiblesNextVertices = new ArrayList<>();
-
-            for (Integer vi : vlinha) {
-                if (!union.containsAll(graphRead.getNeighbors(vi))) {
-                    possiblesNextVertices.add(vi);
-                }
-            }
-            System.out.println("\tV's não saturados:" + possiblesNextVertices);
-            if (possiblesNextVertices.isEmpty()) {
-                acabou = true;
-                System.out.println("\t--Fim todos vértices saturado ");
-            }
-            j++;
         }
-
         Map response = new HashMap();
-        response.put(OperationConvexityGraphResult.PARAM_NAME_CONVEX_HULL, "");
+        response.put("Frontier H(S)", frontier);
+        response.put("Unreachable", unreachable);
+        response.put("C(S)", set);
+        response.put("N(C)", setN);
+        response.put("E", setE);
         return response;
     }
 
