@@ -27,12 +27,18 @@ public class GraphAlgorithmHullSet implements IGraphOperation {
         List<Integer> setN = new ArrayList<>();
         List<Integer> setE = new ArrayList<>();
 
+        Set<Integer> setNset = new HashSet<>();
         for (Integer v : set) {
-            setN.addAll(graphRead.getNeighbors(v));
+            setNset.addAll(graphRead.getNeighbors(v));
         }
+
+        setN.addAll(setNset);
+        Collections.sort(setN);
         setE.addAll(graphRead.getVertices());
         setE.removeAll(setN);
+        setE.removeAll(set);
         setN.removeAll(set);
+        Collections.sort(setE);
 
         OperationConvexityGraphResult caratheodoryNumberGraph = hsp3(graphRead, set);
 
@@ -44,10 +50,11 @@ public class GraphAlgorithmHullSet implements IGraphOperation {
 
         List<Integer> frontier = new ArrayList<>();
         List<Integer> unreachable = new ArrayList<>();
+        int[] aux = caratheodoryNumberGraph.auxProcessor;
 
-        if (caratheodoryNumberGraph.auxProcessor != null && caratheodoryNumberGraph.auxProcessor.length > 0) {
-            for (int i = 0; i < caratheodoryNumberGraph.auxProcessor.length; i++) {
-                int val = caratheodoryNumberGraph.auxProcessor[i];
+        if (aux != null && aux.length > 0) {
+            for (int i = 0; i < aux.length; i++) {
+                int val = aux[i];
                 if (val == 0) {
                     unreachable.add(i);
                 } else if (val == NEIGHBOOR_COUNT_INCLUDED) {
@@ -55,12 +62,41 @@ public class GraphAlgorithmHullSet implements IGraphOperation {
                 }
             }
         }
+        List<Integer> unreachableFail = new ArrayList<>();
+        if (!unreachable.isEmpty()) {
+            int[] auxb = aux.clone();
+
+            for (Integer i : unreachable) {
+                addVertToAux(auxb, graphRead, i);
+                for (Integer j : aux) {
+                    if (auxb[j] == 0) {
+                        unreachableFail.add(i);
+                        break;
+                    }
+                }
+                System.arraycopy(aux, 0, auxb, 0, auxb.length);
+            }
+        }
+
+        List<String> unreachableDetail = new ArrayList<>();
+
+        for (Integer u : unreachable) {
+            setNset.clear();
+            setNset.addAll(graphRead.getNeighbors(u));
+            setNset.retainAll(frontier);
+            String key = "" + u + "(" + setNset.size() + "," + (graphRead.getNeighborCount(u) - setNset.size()) + ")";
+            unreachableDetail.add(key);
+        }
+
         Map response = new HashMap();
-        response.put("Frontier H(S)", frontier);
-        response.put("Unreachable", unreachable);
-        response.put("C(S)", set);
-        response.put("N(C)", setN);
-        response.put("E", setE);
+        response.put("Frontier H(S)|" + frontier.size() + "|", frontier);
+        response.put("Unreachable|" + unreachable.size() + "|", unreachable);
+        response.put("Unreachable-Fail-Dmt", unreachableFail);
+        response.put("Unreachable-Detail", unreachableDetail);
+        response.put("H(S)|" + hslist.size() + "|", hslist);
+        response.put("C(S)|" + set.size() + "|", set);
+        response.put("N(C)|" + setN.size() + "|", setN);
+        response.put("E|" + setE.size() + "|", setE);
         return response;
     }
 
