@@ -156,6 +156,23 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         return clone;
     }
 
+    public String getEdgeString() {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Collection<Pair<V>> pairs = this.getPairs();
+            for (Pair<V> par : pairs) {
+                sb.append(par.getFirst()).append("-").append(par.getSecond()).append(",");
+            }
+        } catch (Exception e) {
+
+        }
+        return sb.toString();
+    }
+
+    public void setEdgeString(String str) {
+
+    }
+
     public Object addEdge(int i, int j) {
         Integer edgeCount = this.getEdgeCount();
         return this.addEdge(edgeCount, i, j) ? edgeCount : null;
