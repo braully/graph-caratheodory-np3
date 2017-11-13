@@ -1,5 +1,6 @@
 package com.github.braully.graph;
 
+import java.math.BigInteger;
 import java.util.Iterator;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
@@ -75,6 +76,38 @@ public class CombinationsFacade {
             ans = (ans * (delta + i)) / i;
         }
         return ans;
+    }
+
+    public static synchronized BigInteger maxCombinationsBig(int n, int k) {
+        if (n == 0 || k == 0) {
+            return BigInteger.ZERO;
+        }
+        if (n < k) {
+            return BigInteger.ZERO;
+        }
+        if (n == k) {
+            return BigInteger.ONE;
+        }
+        long delta, idxMax;
+        if (k < n - k) {
+            delta = n - k;
+            idxMax = k;
+        } else {
+            delta = k;
+            idxMax = n - k;
+        }
+
+        long ans = delta + 1;
+        BigInteger ansbig = new BigInteger("" + ans);
+        for (int i = 2; i <= idxMax; ++i) {
+            ans = (ans * (delta + i)) / i;
+            BigInteger bigi = new BigInteger("" + i);
+            BigInteger deltai = new BigInteger("" + delta);
+            deltai = deltai.add(bigi);
+            ansbig = ansbig.multiply(deltai);
+            ansbig = ansbig.divide(bigi);
+        }
+        return ansbig;
     }
 
     public static synchronized void initialCombination(int n, int k, int[] combinationArray, long idx) {
