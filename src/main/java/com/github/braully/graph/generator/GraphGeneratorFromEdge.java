@@ -36,12 +36,12 @@ public class GraphGeneratorFromEdge extends AbstractGraphGenerator {
         UndirectedSparseGraphTO<Integer, Integer> graph = new UndirectedSparseGraphTO<>();
         graph.setName("ES" + N_VERTICES);
         List<Integer> vertexElegibles = new ArrayList<>(nvertices);
-        Integer[] vertexs = new Integer[nvertices];
-        for (int i = 0; i < nvertices; i++) {
-            vertexElegibles.add(i);
-            vertexs[i] = i;
-            graph.addVertex(vertexs[i]);
-        }
+//        Integer[] vertexs = new Integer[nvertices];
+//        for (int i = 0; i < nvertices; i++) {
+//            vertexElegibles.add(i);
+//            vertexs[i] = i;
+//            graph.addVertex(vertexs[i]);
+//        }
 
         String[] edges = null;
 
@@ -57,7 +57,7 @@ public class GraphGeneratorFromEdge extends AbstractGraphGenerator {
                     }
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
         return graph;
