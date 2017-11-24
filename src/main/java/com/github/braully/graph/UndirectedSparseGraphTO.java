@@ -11,6 +11,7 @@ import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,40 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     @Override
     public Collection getVertices() {
-        return super.getVertices();
+        Collection vals = super.getVertices();
+        List listVals = new ArrayList();
+        listVals.addAll(vals);
+        Collections.sort(listVals);
+        return listVals;
+    }
+
+    public Collection<Pair<V>> getNormalizedPairs() {
+        Collection values = this.edges.values();
+        Collection pairNormalized = new ArrayList();
+        List listvals = (List) getVertices();
+
+        Collection<Pair<V>> pairs = this.getPairs();
+        for (Pair<V> par : pairs) {
+            pairNormalized.add(new Pair<Integer>(listvals.indexOf(par.getFirst()), listvals.indexOf(par.getSecond())));
+        }
+        return pairNormalized;
+    }
+
+    public void setNormalizedPairs(Collection pairs) {
+
+    }
+
+    public Collection getNormalizedVertices() {
+        Collection vertexs = this.getVertices();
+        List vetsNormalized = new ArrayList();
+        for (int i = 0; i < vertexs.size(); i++) {
+            vetsNormalized.add(i);
+        }
+        return vetsNormalized;
+    }
+
+    public void setNormalizedVertices(Collection v) {
+
     }
 
     public void setVertices(Collection cs) {

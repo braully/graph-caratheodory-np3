@@ -443,13 +443,11 @@
                             .attr("width", width)
                             .attr("height", height);
 
-                    var vertLabels = graph.labels;
-
-                    var vertex = graph.vertices.map(function (d) {
-                        return {"name": !vertLabels && !vertLabels[d] ? vertLabels[d] : d, "group": 1};
+                    var vertex = graph.normalizedVertices.map(function (d) {
+                        return {"name": graph.vertices[d], "group": 1};
                     });
 
-                    var edges = graph.pairs.map(function (d) {
+                    var edges = graph.normalizedPairs.map(function (d) {
                         return {"source": d[0], "target": d[1], "value": 2, "origin": d, "left": true, "right": true};
                     });
                     force.nodes(vertex).links(edges).start();
