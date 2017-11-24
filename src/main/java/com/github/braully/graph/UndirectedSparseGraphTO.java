@@ -110,6 +110,8 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     private Collection set;
 
+    private Collection labels;
+
     public Collection getSet() {
         return set;
     }
@@ -177,4 +179,13 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         Integer edgeCount = this.getEdgeCount();
         return this.addEdge(edgeCount, i, j) ? edgeCount : null;
     }
+
+    public Collection getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Collection labels) {
+        this.labels = labels;
+    }
+
 }

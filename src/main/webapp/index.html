@@ -443,8 +443,10 @@
                             .attr("width", width)
                             .attr("height", height);
 
+                    var vertLabels = graph.labels;
+
                     var vertex = graph.vertices.map(function (d) {
-                        return {"name": d, "group": 1};
+                        return {"name": !vertLabels && !vertLabels[d] ? vertLabels[d] : d, "group": 1};
                     });
 
                     var edges = graph.pairs.map(function (d) {
