@@ -21,12 +21,21 @@ public class GraphNeighborhoodSet implements IGraphOperation {
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         Collection<Integer> set = graph.getSet();
+        List<Integer> setx = new ArrayList<>();
         List<Integer> setN = new ArrayList<>();
         List<Integer> setV = new ArrayList<>();
+        List<Integer> intersection = new ArrayList<>();
 
         for (Integer v : set) {
             setN.addAll(graph.getNeighbors(v));
+            setx.add(v);
         }
+
+        intersection.addAll(graph.getNeighbors(setx.get(0)));
+        for (int i = 1; i < setx.size(); i++) {
+            intersection.retainAll(graph.getNeighbors(setx.get(i)));
+        }
+
         setV.addAll(graph.getVertices());
         setV.removeAll(setN);
 
@@ -35,6 +44,7 @@ public class GraphNeighborhoodSet implements IGraphOperation {
 
         try {
             response.put("N" + set + "|" + setN.size() + "|", setN);
+            response.put("∩|" + intersection.size() + "|", intersection);
             response.put("V-N|" + setV.size() + "|", setV);
         } catch (Exception ex) {
             log.error(null, ex);

@@ -444,7 +444,7 @@
                             .attr("height", height);
 
                     var vertex = graph.normalizedVertices.map(function (d) {
-                        return {"name": graph.vertices[d], "group": 1};
+                        return {"name": graph.vertices[d] + (graph.vertices[d] != d ? " (" + d + ")" : ""), "group": 1};
                     });
 
                     var edges = graph.normalizedPairs.map(function (d) {
