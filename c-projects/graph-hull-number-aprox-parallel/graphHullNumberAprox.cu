@@ -312,7 +312,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     cudaMalloc((void**) &resultGpu, cont * sizeof (int));
     cudaMalloc((void**) &dataGraphsGpu, numbytesDataGraph);
     cudaMalloc((void**) &graphsGpu, cont * sizeof (int));
-    r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (graphCsr), cudaMemcpyHostToDevice);
+    r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (int), cudaMemcpyHostToDevice);
     int offset = 0;
 
     if (verbose) printf("Cuda Atrib Graph\n");
@@ -658,7 +658,7 @@ void processFiles(int argc, char** argv) {
     }
 
     if (contGraph > 0)
-        printf("Processing: %d graphs %dv/g \n", contGraph, verticesMedian/contGraph);
+        printf("Processing: %d graphs  %dv/g (avg) \n", contGraph, verticesMedian / contGraph);
 
     if (graphByKernel || graphByThread || verticesBythread)
         parallelAproxHullNumberGraphs(graphs, contGraph);
@@ -677,6 +677,9 @@ void runTest() {
     //    int colIdx[] = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30};
     //    int sizeRowOffset = numVertices + 1;
     //    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
+
+    printf("graphHullNumberAprox -[svtbnx] dir");
+
     int data[] = {10, 30,
         0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30,
         2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};

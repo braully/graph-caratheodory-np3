@@ -2,12 +2,14 @@ package com.github.braully.graph.hn;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
+import com.github.braully.graph.operation.GraphStatistics;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import junit.framework.TestCase;
 
@@ -56,7 +58,7 @@ public class GeracaoGrafoMooreTest extends TestCase {
             graph.addEdge(countEdge++, source, target);
         }
         graph.addEdge(countEdge++, graph.getVertexCount() - 1, 0);
-        int limite = 10;
+        int limite = 3250;
         //Criação da instabilidade
         graph.addVertex(5);
         graph.addEdge(countEdge++, 0, 5);
@@ -125,6 +127,14 @@ public class GeracaoGrafoMooreTest extends TestCase {
             FileWriter fileWriter = new FileWriter("/home/braully/tmp.csr");
             UtilGraph.writerGraphToCsr(fileWriter, graph);
             fileWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            System.out.println("Statistics");
+            GraphStatistics operation = new GraphStatistics();
+            Map<String, Object> result = operation.doOperation(graph);
+            System.out.println(result);
         } catch (Exception e) {
             e.printStackTrace();
         }
