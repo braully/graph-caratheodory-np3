@@ -76,6 +76,7 @@ public class GraphHullSetP3 implements IGraphOperation {
         response.put("Set(S)", set);
         response.put("N[" + set + "]", closedNeighbor);
         response.put("V(G)-N[" + set + "]", complement);
+        response.put(OperationConvexityGraphResult.PARAM_NAME_INCLUDED_SEQUENCE, caratheodoryNumberGraph.includedSequence);
         return response;
     }
 
@@ -91,6 +92,8 @@ public class GraphHullSetP3 implements IGraphOperation {
         Set<Integer> hsp3g = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
         int[] auxc = new int[graph.getVertexCount()];
+        List<Integer> includedSequence = new ArrayList<>();
+
         for (int i = 0; i < aux.length; i++) {
             aux[i] = 0;
             auxc[i] = 0;
@@ -104,6 +107,7 @@ public class GraphHullSetP3 implements IGraphOperation {
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
             hsp3g.add(verti);
+            includedSequence.add(verti);
             Collection<Integer> neighbors = graph.getNeighbors(verti);
 
             for (int vertn : neighbors) {
@@ -128,6 +132,7 @@ public class GraphHullSetP3 implements IGraphOperation {
         processedHullSet = new OperationConvexityGraphResult();
         processedHullSet.auxProcessor = aux;
         processedHullSet.convexHull = hsp3g;
+        processedHullSet.includedSequence = includedSequence;
         return processedHullSet;
     }
 
