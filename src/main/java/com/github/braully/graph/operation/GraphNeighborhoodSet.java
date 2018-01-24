@@ -4,6 +4,7 @@ import com.github.braully.graph.GraphWS;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +44,9 @@ public class GraphNeighborhoodSet implements IGraphOperation {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            Collections.sort(setN);
+            Collections.sort(intersection);
+            Collections.sort(setV);
             response.put("N" + set + "|" + setN.size() + "|", setN);
             response.put("∩|" + intersection.size() + "|", intersection);
             response.put("V-N|" + setV.size() + "|", setV);
