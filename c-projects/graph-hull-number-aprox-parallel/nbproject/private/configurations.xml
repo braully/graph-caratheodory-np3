@@ -17,6 +17,10 @@
       </df>
       <df name="csr">
       </df>
+      <df name="csr-2">
+      </df>
+      <df name="csr-3">
+      </df>
       <df name="graph-test">
       </df>
       <in>graphHullNumberAprox.cu</in>
