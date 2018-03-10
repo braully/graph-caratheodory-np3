@@ -53,6 +53,7 @@ public class UtilGraph {
         if (undGraph == null || writer == null) {
             return;
         }
+        List<Integer> vertices = (List<Integer>) undGraph.getVertices();
         int vertexCount = undGraph.getVertexCount();
         writer.write("#Graph |V| = " + vertexCount + "\n");
 
@@ -60,14 +61,14 @@ public class UtilGraph {
         List<Integer> rowOffset = new ArrayList<>();
 
         int idx = 0;
-        for (Integer i = 0; i < vertexCount; i++) {
+        for (Integer i : vertices) {
             csrColIdxs.add(idx);
             Collection<Integer> neighbors = undGraph.getNeighbors(i);
             Set<Integer> neighSet = new HashSet<>();
             neighSet.addAll(neighbors);
             for (Integer vn : neighSet) {
                 if (!vn.equals(i)) {
-                    rowOffset.add(vn);
+                    rowOffset.add(vertices.indexOf(vn));
                     idx++;
                 }
             }
@@ -90,12 +91,12 @@ public class UtilGraph {
         if (undGraph == null) {
             return null;
         }
-        int vertexCount = undGraph.getVertexCount();
+        Collection<Integer> vertices = undGraph.getVertices();
         List<Integer> csrColIdxs = new ArrayList<>();
         List<Integer> rowOffset = new ArrayList<>();
 
         int idx = 0;
-        for (Integer i = 0; i < vertexCount; i++) {
+        for (Integer i : vertices) {
             csrColIdxs.add(idx);
             Collection<Integer> neighbors = undGraph.getNeighbors(i);
             Set<Integer> neighSet = new HashSet<>();

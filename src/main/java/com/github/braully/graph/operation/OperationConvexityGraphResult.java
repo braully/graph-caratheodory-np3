@@ -6,6 +6,7 @@
 package com.github.braully.graph.operation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,11 +21,13 @@ public class OperationConvexityGraphResult {
     public static final String PARAM_NAME_CONVEX_HULL = "Convex hull(H(S))";
     public static final String PARAM_NAME_TOTAL_TIME_MS = "Time(s)";
     public static final String PARAM_NAME_PARTIAL_DERIVATED = "∂H(S)=H(S)\\⋃p∈SH(S\\{p})";
+    public static final String PARAM_NAME_INCLUDED_SEQUENCE = "Included sequence";
 
     Set<Integer> caratheodorySet;
     Set<Integer> convexHull;
     int[] auxProcessor;
     Set<Integer> partial;
+    List<Integer> includedSequence;
     long totalTimeMillis;
     Integer caratheodoryNumber;
 
