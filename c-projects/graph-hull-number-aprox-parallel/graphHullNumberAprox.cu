@@ -315,9 +315,9 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (int), cudaMemcpyHostToDevice);
     int offset = 0;
 
-    if (verbose) printf("Cuda Atrib Graph\n");
+    //if (verbose) printf("Cuda Atrib Graph\n");
     for (int i = 0; i < cont; i++) {
-        if (verbose) printf("Cuda Atrib Graph-%d\n", i);
+        //if (verbose) printf("Cuda Atrib Graph-%d\n", i);
         graphCsr *graph = &graphs[i];
         int sizeGraph = graph->data[0] + 3 + graph->data[1];
         int nbytes = sizeGraph * sizeof (int);
