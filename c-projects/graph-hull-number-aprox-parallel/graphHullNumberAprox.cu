@@ -18,6 +18,9 @@
 
 #define CHARACTER_INIT_COMMENT '#'
 
+#define BLOCK_SIZE_OPTIMAL 256
+#define BLOCK_FACTOR_OPTIMAL 2
+
 #define DEFAULT_THREAD_PER_BLOCK 28
 #define DEFAULT_BLOCK 256 
 #define MAX_DEFAULT_SIZE_QUEUE 256
@@ -36,7 +39,8 @@
 
 bool verbose = false;
 bool graphByThread = false;
-bool graphByKernel = false;
+bool graphByBlock = false;
+bool graphByBlockOptimal = false;
 bool verticesBythread = false;
 bool serial = false;
 bool printResults = true;
@@ -131,9 +135,10 @@ int exapandHullSetFromV(int v, int nvertices, unsigned char *aux, unsigned char 
 }
 
 __global__
-void kernelAproxHullNumberIndexed(int offset, int* graphsGpu, int* dataGraphs, int* results) {
+void kernelAproxHullNumberGraphByBlock(int* graphsGpu, int* dataGraphs, int* results) {
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int offset = blockIdx.x * blockDim.x;
+    int idx = threadIdx.x;
     if (verboseKernel) printf("thread-%d\n", idx);
 
     int start = graphsGpu[offset];
@@ -150,22 +155,24 @@ void kernelAproxHullNumberIndexed(int offset, int* graphsGpu, int* dataGraphs, i
     if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
     if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
 
-    unsigned char *aux = new unsigned char [nvertices * 2];
-    unsigned char *auxb = &aux[nvertices];
-    int minHullSet = nvertices;
-    int v = idx;
 
-    int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
+    if (idx < nvertices) {
+        unsigned char *aux = new unsigned char [nvertices * 2];
+        unsigned char *auxb = &aux[nvertices];
+        int minHullSet = nvertices;
+        int v = idx;
 
-    minHullSet = MIN(minHullSet, sSize);
+        int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
 
-    if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
+        minHullSet = MIN(minHullSet, sSize);
 
-    free(aux);
-    //    free(auxb);
-    if (verboseKernel) printf("thread-%d: memory freed\n", idx);
+        if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
 
-    atomicMin(&results[offset], minHullSet);
+        free(aux);
+        //    free(auxb);
+        if (verboseKernel) printf("thread-%d: memory freed\n", idx);
+        atomicMin(&results[offset], minHullSet);
+    }
 }
 
 __global__
@@ -212,7 +219,7 @@ void kernelAproxHullNumberByVertex(int offset, int* graphsGpu,
 }
 
 __global__
-void kernelAproxHullNumber(int* graphsGpu, int* dataGraphs, int* results) {
+void kernelAproxHullNumberGraphByThread(int* graphsGpu, int* dataGraphs, int* results) {
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (verboseKernel)
@@ -355,7 +362,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
         cudaEventRecord(start);
 
-        kernelAproxHullNumber << <1, cont>>>(graphsGpu, dataGraphsGpu, resultGpu);
+        kernelAproxHullNumberGraphByThread << <1, cont>>>(graphsGpu, dataGraphsGpu, resultGpu);
         r = cudaDeviceSynchronize();
 
         cudaEventRecord(stop);
@@ -383,17 +390,23 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             }
     }
 
-    /* Graphs by Block (Kernel) */
-    if (graphByKernel) {
+    /* Graphs by Block */
+    if (graphByBlock) {
         if (verbose)
-            printf("Lauch Kernel One graph by kernel\n");
+            printf("Lauch Kernel One graph by Block Optimal\n");
         cudaEventRecord(start);
 
+        int maxvertice = 0;
         for (int i = 0; i < cont; i++) {
             graphCsr *graph = &graphs[i];
             int nvertice = graph->data[0];
-            kernelAproxHullNumberIndexed << <1, nvertice, 0, streams[i]>>>(i, graphsGpu, dataGraphsGpu, resultGpu);
+            if (nvertice > maxvertice) {
+                maxvertice = nvertice;
+            }
         }
+
+        kernelAproxHullNumberGraphByBlock << <cont, maxvertice>>>(graphsGpu, dataGraphsGpu, resultGpu);
+
         //        r = cudaDeviceSynchronize();
 
         cudaEventRecord(stop);
@@ -401,7 +414,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
         float milliseconds = 0;
         cudaEventElapsedTime(&milliseconds, start, stop);
-        printf("Time for the kernel(one graph by block): %2.f ms\n", milliseconds);
+        printf("Time for the (one graph by block): %2.f ms\n", milliseconds);
 
         if (verbose)
             printf("Read Result\n");
@@ -425,7 +438,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             }
     }
 
-    /* Vertices by Thread */
+    /* Graph by Grid and Vertices by Thread */
     if (verticesBythread) {
         if (verbose)
             printf("Vertices by Thread One graph by kernel\n");
@@ -470,6 +483,69 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         if (printResults)
             for (int i = 0; i < cont; i++) {
                 printf("MinHullNumberAprox-Vertices Thread-%d: %d\n", i, resultLocal[i]);
+            }
+    }
+
+    /* Graphs by Block Optimal */
+    if (graphByBlockOptimal) {
+        if (verbose)
+            printf("Lauch Kernel graph by Block optimal\n");
+        cudaEventRecord(start);
+
+        int maxvertice = 0;
+        int totalvertices = 0;
+
+        for (int i = 0; i < cont; i++) {
+            graphCsr *graph = &graphs[i];
+            int nvertice = graph->data[0];
+            if (nvertice > maxvertice) {
+                maxvertice = nvertice;
+            }
+            totalvertices = totalvertices + nvertice;
+        }
+
+        //https://devtalk.nvidia.com/default/topic/1026825/how-to-choose-how-many-threads-blocks-to-have-/
+        //Therefore very small block sizes (e.g. 32 threads per block) may limit performance due to occupancy. 
+        //Very large block sizes for example 1024 threads per block, may also limit performance, if there are resource limits 
+        //(e.g. registers per thread usage, or shared memory usage) which prevent 2 threadblocks (in this example of 1024 threads per block) from being resident on a SM
+        //Threadblock size choices in the range of 128 - 512 are less likely to run into the aforementioned issues
+
+
+        int numblocks = totalvertices / BLOCK_SIZE_OPTIMAL;
+        if ((totalvertices % BLOCK_SIZE_OPTIMAL) > 0) {
+            numblocks++;
+        }
+
+        int nthreads = BLOCK_SIZE_OPTIMAL / BLOCK_FACTOR_OPTIMAL;
+        //kernelAproxHullNumberGraphByBlock <<<numblocks, nthreads>>>(graphsGpu, dataGraphsGpu, resultGpu);
+        //        r = cudaDeviceSynchronize();
+
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+
+        float milliseconds = 0;
+        cudaEventElapsedTime(&milliseconds, start, stop);
+        printf("Time for the kernel(graph by block optimal): %2.f ms\n", milliseconds);
+
+        if (verbose)
+            printf("Read Result\n");
+
+
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed cudaDeviceSynchronize \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+
+        r = cudaMemcpy(resultLocal, resultGpu, sizeof (int)*cont, cudaMemcpyDeviceToHost);
+        if (r != cudaSuccess) {
+            fprintf(stderr, "Failed to copy memory 4 \nError: %s\n", cudaGetErrorString(r));
+            exit(EXIT_FAILURE);
+        }
+
+        if (printResults)
+            for (int i = 0; i < cont; i++) {
+                printf("MinHullNumberAprox-Block Graph  optimal-%d: %d\n", i, resultLocal[i]);
             }
     }
 
@@ -660,7 +736,7 @@ void processFiles(int argc, char** argv) {
     if (contGraph > 0)
         printf("Processing: %d graphs  %dv/g (avg) \n", contGraph, verticesMedian / contGraph);
 
-    if (graphByKernel || graphByThread || verticesBythread)
+    if (graphByBlock || graphByThread || verticesBythread)
         parallelAproxHullNumberGraphs(graphs, contGraph);
 
     if (serial)
@@ -693,13 +769,13 @@ int main(int argc, char** argv) {
 
     long opt = 0;
 
-    while ((opt = getopt(argc, argv, "svtbnx")) != -1) {
+    while ((opt = getopt(argc, argv, "svtbnxo")) != -1) {
         switch (opt) {
             case 't':
                 graphByThread = true;
                 break;
             case 'b':
-                graphByKernel = true;
+                graphByBlock = true;
                 break;
             case 's':
                 serial = true;
@@ -709,6 +785,9 @@ int main(int argc, char** argv) {
                 break;
             case 'x':
                 verticesBythread = true;
+                break;
+            case 'o':
+                graphByBlockOptimal = true;
                 break;
             case 'n':
                 printResults = false;
