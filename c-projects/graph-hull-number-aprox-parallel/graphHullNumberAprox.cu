@@ -475,11 +475,11 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
 
 
-    //    r = cudaGetLastError();
-    //    if (r != cudaSuccess) {
-    //        fprintf(stderr, "Failed in kernelAproxHullNumber \nError: %s\n", cudaGetErrorString(r));
-    //        exit(EXIT_FAILURE);
-    //    }
+    r = cudaGetLastError();
+    if (r != cudaSuccess) {
+        fprintf(stderr, "Failed in kernelAproxHullNumber \nError: %s\n", cudaGetErrorString(r));
+        exit(EXIT_FAILURE);
+    }
 
 
     free(streams);
@@ -678,7 +678,7 @@ void runTest() {
     //    int sizeRowOffset = numVertices + 1;
     //    int rowOffset[] = {2, 5, 6, 3, 4, 6, 0, 4, 7, 1, 5, 7, 1, 2, 9, 0, 3, 9, 0, 1, 8, 2, 3, 8, 6, 7, 9, 4, 5, 8};
 
-    printf("graphHullNumberAprox -[svtbnx] dir");
+    printf("graphHullNumberAprox -[svtbnx] dir\n");
 
     int data[] = {10, 30,
         0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30,

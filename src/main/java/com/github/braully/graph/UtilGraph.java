@@ -7,6 +7,9 @@ package com.github.braully.graph;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +31,43 @@ public class UtilGraph {
 
     private static final Logger logWebconsole = Logger.getLogger("WEBCONSOLE");
     private static final Logger log = Logger.getLogger(UtilGraph.class);
+
+    private static String inputFilePath = "/home/strike/tmp/grafos/converter";
+    private static String outputFilePath = "/home/strike/tmp/grafos/convertidos";
+
+    public static void main(String... args) throws Exception {
+        processDirectory(null, null);
+    }
+
+    public static void processDirectory(File file, String[] excludes)
+            throws FileNotFoundException, NumberFormatException, IOException {
+
+        File ftmp = new File(inputFilePath);
+        if (ftmp.exists() && ftmp.isDirectory()) {
+            File[] files = ftmp.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    if (file != null && !file.isDirectory()) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            if (files != null) {
+                for (File f : files) {
+                    try {
+                        UndirectedSparseGraphTO<Integer, Integer> undGraph = loadGraphAdjMatrix(new FileInputStream(f));
+                        FileWriter filew = new FileWriter(new File(outputFilePath, f.getName() + ".csr"));
+                        writerGraphToCsr(filew, undGraph);
+                        filew.flush();
+                        filew.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return;
+        }
+    }
 
     public static synchronized String saveTmpFileGraphInCsr(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
         String strFile = null;
