@@ -14,6 +14,7 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <time.h>
+#include <limits.h>
 #include "nvgraph.h"
 
 #define CHARACTER_INIT_COMMENT '#'
@@ -493,6 +494,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         cudaEventRecord(start);
 
         int maxvertice = 0;
+        int minvertice = INT_MAX;
         int totalvertices = 0;
 
         for (int i = 0; i < cont; i++) {
@@ -500,6 +502,9 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             int nvertice = graph->data[0];
             if (nvertice > maxvertice) {
                 maxvertice = nvertice;
+            }
+            if(nvertice < minvertice){
+                minvertice = nvertice;
             }
             totalvertices = totalvertices + nvertice;
         }
@@ -515,10 +520,16 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         if ((totalvertices % BLOCK_SIZE_OPTIMAL) > 0) {
             numblocks++;
         }
-
         int nthreads = BLOCK_SIZE_OPTIMAL / BLOCK_FACTOR_OPTIMAL;
-        //kernelAproxHullNumberGraphByBlock <<<numblocks, nthreads>>>(graphsGpu, dataGraphsGpu, resultGpu);
+        
+        int maxgraphsbyblock  = BLOCK_SIZE_OPTIMAL/minvertice;
+        if ((BLOCK_SIZE_OPTIMAL%minvertice;L) > 0) {
+            maxgraphsbyblock++;
+        }
+        
+        //kernelAproxHullNumberGraphByBlock <<<numblocks, nthreads,maxgraphsbyblock*sizeof(int)>>>(graphsGpu, dataGraphsGpu, resultGpu,minvertice,maxvertice,totalvertices,maxgraphsbyblock);
         //        r = cudaDeviceSynchronize();
+
 
         cudaEventRecord(stop);
         cudaEventSynchronize(stop);
