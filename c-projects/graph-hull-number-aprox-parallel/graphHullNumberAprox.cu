@@ -138,7 +138,7 @@ int exapandHullSetFromV(int v, int nvertices, unsigned char *aux, unsigned char 
 __global__
 void kernelAproxHullNumberGraphByBlock(int* graphsGpu, int* dataGraphs, int* results) {
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
-    int offset = blockIdx.x * blockDim.x;
+    int offset = blockIdx.x;
     int idx = threadIdx.x;
     if (verboseKernel) printf("thread-%d\n", idx);
 
@@ -160,19 +160,18 @@ void kernelAproxHullNumberGraphByBlock(int* graphsGpu, int* dataGraphs, int* res
     if (idx < nvertices) {
         unsigned char *aux = new unsigned char [nvertices * 2];
         unsigned char *auxb = &aux[nvertices];
-        int minHullSet = nvertices;
+
         int v = idx;
-
+        int minHullSet = nvertices;
         int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
-
         minHullSet = MIN(minHullSet, sSize);
+        atomicMin(&results[offset], minHullSet);
 
         if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
 
         free(aux);
         //    free(auxb);
         if (verboseKernel) printf("thread-%d: memory freed\n", idx);
-        atomicMin(&results[offset], minHullSet);
     }
 }
 
@@ -281,7 +280,7 @@ void kernelAproxHullNumberGraphByThread(int* graphsGpu, int* dataGraphs, int* re
             if (verboseKernel) printf("thread-%d: add Vert %d to S\n", idx, bv);
             sizeHs = sizeHs + addVertToS(bv, aux, graphData);
             sSize++;
-        } while (sizeHs < nvertices);
+        } while (sizeHs < nvertices && sSize < minHullSet);
         minHullSet = MIN(minHullSet, sSize);
         if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
     }
@@ -289,6 +288,49 @@ void kernelAproxHullNumberGraphByThread(int* graphsGpu, int* dataGraphs, int* re
     //    free(auxb);
     if (verboseKernel) printf("thread-%d: memory freed\n", idx);
     results[idx] = minHullSet;
+}
+
+
+//kernelAproxHullNumberGraphByBlockOptimal<<<numblocks,nthreads,maxgraphsbyblock*sizeof(int)>>>(graphsGpu, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
+
+__global__
+void kernelAproxHullNumberGraphByBlockOptimal(int* graphsGpu, int* dataGraphs, int* results, int minvertice, int maxvertice, int totalvertices, int maxgraphsbyblock) {
+    //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
+    int offset = blockIdx.x;
+    int idx = threadIdx.x;
+    if (verboseKernel) printf("thread-%d\n", idx);
+
+    int start = graphsGpu[offset];
+    if (verboseKernel) printf("thread-%d Graph-start: %d\n", idx, start);
+
+    int *graphData = &dataGraphs[start];
+    int nvertices = graphData[0];
+
+    if (idx == 0) {
+        results[offset] = nvertices;
+    }
+    __syncthreads();
+
+    if (verboseKernel) printf("thread-%d Graph-nvertices: %d\n", idx, nvertices);
+    if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
+
+
+    if (idx < nvertices) {
+        unsigned char *aux = new unsigned char [nvertices * 2];
+        unsigned char *auxb = &aux[nvertices];
+
+        int v = idx;
+        int minHullSet = nvertices;
+        int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graphData, idx);
+        minHullSet = MIN(minHullSet, sSize);
+        atomicMin(&results[offset], minHullSet);
+
+        if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
+
+        free(aux);
+        //    free(auxb);
+        if (verboseKernel) printf("thread-%d: memory freed\n", idx);
+    }
 }
 
 int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
@@ -394,7 +436,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     /* Graphs by Block */
     if (graphByBlock) {
         if (verbose)
-            printf("Lauch Kernel One graph by Block Optimal\n");
+            printf("Lauch Kernel One graph by Block\n");
         cudaEventRecord(start);
 
         int maxvertice = 0;
@@ -503,7 +545,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             if (nvertice > maxvertice) {
                 maxvertice = nvertice;
             }
-            if(nvertice < minvertice){
+            if (nvertice < minvertice) {
                 minvertice = nvertice;
             }
             totalvertices = totalvertices + nvertice;
@@ -521,13 +563,13 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
             numblocks++;
         }
         int nthreads = BLOCK_SIZE_OPTIMAL / BLOCK_FACTOR_OPTIMAL;
-        
-        int maxgraphsbyblock  = BLOCK_SIZE_OPTIMAL/minvertice;
-        if ((BLOCK_SIZE_OPTIMAL%minvertice;L) > 0) {
+
+        int maxgraphsbyblock = BLOCK_SIZE_OPTIMAL / minvertice;
+        if ((BLOCK_SIZE_OPTIMAL % minvertice) > 0) {
             maxgraphsbyblock++;
         }
-        
-        //kernelAproxHullNumberGraphByBlock <<<numblocks, nthreads,maxgraphsbyblock*sizeof(int)>>>(graphsGpu, dataGraphsGpu, resultGpu,minvertice,maxvertice,totalvertices,maxgraphsbyblock);
+
+        kernelAproxHullNumberGraphByBlockOptimal << <numblocks, nthreads, maxgraphsbyblock * sizeof (int)>>>(graphsGpu, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        r = cudaDeviceSynchronize();
 
 
@@ -619,7 +661,7 @@ int serialAproxHullNumber(int *graphData) {
             }
             sizeHs = sizeHs + addVertToS(bv, aux, graphData);
             sSize++;
-        } while (sizeHs < nvertices);
+        } while (sizeHs < nvertices && sSize < minHullSet);
         minHullSet = MIN(minHullSet, sSize);
     }
     free(aux);
