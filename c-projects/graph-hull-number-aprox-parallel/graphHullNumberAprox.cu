@@ -337,7 +337,7 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
     graphData = &dataGraphs[offset];
     nvertices = graphData[0];
 
-    if (verboseKernel) printf("thread-%d\n", idx);
+    if (verboseKernel) printf("thread-%d in block %d operate in graph %d\n", idx, blockIdx.x, cache[idx]);
 
     int start = graphsGpu[offset];
     if (verboseKernel) printf("thread-%d Graph-start: %d\n", idx, start);
@@ -351,7 +351,7 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
     if (verboseKernel) printf("thread-%d Graph-edges: %d\n", idx, graphData[1]);
 
 
-    if (idx < nvertices) {
+    if (false && idx < nvertices) {
         unsigned char *aux = new unsigned char [nvertices * 2];
         unsigned char *auxb = &aux[nvertices];
 
