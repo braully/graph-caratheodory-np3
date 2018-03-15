@@ -299,6 +299,9 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
     int offset = blockIdx.x;
     int idx = threadIdx.x;
+    int *graphData;
+    int nvertices;
+    __shared__ int cache[BLOCK_WINDOWS];
 
     if (idx == 0) {
         int cont = blockIdx.x;
@@ -306,45 +309,33 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
             cont++;
         }
         offset = graphsGpu[idxGraphsGpu[cont]];
-        int *graphData = &dataGraphs[offset];
-        int nvertices = graphData[0];
+        *graphData = &dataGraphs[offset];
+        nvertices = graphData[0];
         int proxcont = cont;
         int i = 0;
-        g[i] = idxGraphsGpu[proxcont];
+        cache[i] = idxGraphsGpu[proxcont];
         results[proxcont] = nvertices;
         proxcont++;
 
+        for (i = 0; i < BLOCK_WINDOWS; i++) {
+            cache[i] = idxGraphsGpu[proxcont];
+        }
+
+        i = 0;
         while (idxGraphsGpu[cont] == idxGraphsGpu[proxcont]) {
             offset = graphsGpu[idxGraphsGpu[proxcont]];
             graphData = &dataGraphs[offset];
             nvertices = graphData[0];
             results[proxcont] = nvertices;
-            g[i] = idxGraphsGpu[proxcont];
+            cache[i] = idxGraphsGpu[proxcont];
             proxcont++;
         }
     }
     __syncthreads();
 
-
-
-
-    //Search position graph
-    //    int idxvert = threadIdx.x;
-    //    int f = 0;
-    //    int l = ngraphs - 1;
-    //    int m = (f + l) / 2;
-    //
-    //    while (f <= l) {
-    //        if (graphsGpu[m] < search)
-    //            first = middle + 1;
-    //        else if (array[middle] == search) {
-    //            printf("%d found at location %d.\n", search, middle + 1);
-    //            break;
-    //        } else
-    //            last = middle - 1;
-    //
-    //        middle = (first + last) / 2;
-    //    }
+    offset = graphsGpu[cache[idx]];
+    graphData = &dataGraphs[offset];
+    nvertices = graphData[0];
 
     if (verboseKernel) printf("thread-%d\n", idx);
 
