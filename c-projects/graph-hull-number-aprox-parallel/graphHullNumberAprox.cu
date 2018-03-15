@@ -299,14 +299,13 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
     //void kernelAproxHullNumber(graphCsr *graphs, int* results) {
     int offset = blockIdx.x;
     int idx = threadIdx.x;
-    __shared__ int g[64];
 
     if (idx == 0) {
         int cont = blockIdx.x;
         while (idxGraphsGpu[cont] < blockIdx.x) {
             cont++;
         }
-        offset = cont;
+        offset = graphsGpu[idxGraphsGpu[cont]];
         int *graphData = &dataGraphs[offset];
         int nvertices = graphData[0];
         int proxcont = cont;
@@ -316,7 +315,8 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
         proxcont++;
 
         while (idxGraphsGpu[cont] == idxGraphsGpu[proxcont]) {
-            graphData = &dataGraphs[proxcont];
+            offset = graphsGpu[idxGraphsGpu[proxcont]];
+            graphData = &dataGraphs[offset];
             nvertices = graphData[0];
             results[proxcont] = nvertices;
             g[i] = idxGraphsGpu[proxcont];
@@ -324,8 +324,8 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
         }
     }
     __syncthreads();
-    
-    
+
+
 
 
     //Search position graph
