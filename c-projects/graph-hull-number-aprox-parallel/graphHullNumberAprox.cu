@@ -309,7 +309,7 @@ void kernelAproxHullNumberGraphByBlockOptimal(int *idxGraphsGpu, int* graphsGpu,
             cont++;
         }
         offset = graphsGpu[idxGraphsGpu[cont]];
-        *graphData = &dataGraphs[offset];
+        graphData = &dataGraphs[offset];
         nvertices = graphData[0];
         int proxcont = cont;
         int i = 0;
@@ -841,7 +841,7 @@ void processFiles(int argc, char** argv) {
     if (contGraph > 0)
         printf("Processing: %d graphs  %dv/g (avg) \n", contGraph, verticesMedian / contGraph);
 
-    if (graphByBlock || graphByThread || verticesBythread)
+    if (graphByBlock || graphByThread || verticesBythread || graphByBlockOptimal)
         parallelAproxHullNumberGraphs(graphs, contGraph);
 
     if (serial)
