@@ -15,11 +15,16 @@ import java.util.Arrays;
 public class StrategyTest extends TestCase {
 
     public static final int BLOCK_WINDOWS = 32;
-    private static int BLOCK_SIZE_OPTIMAL;
-    private static int BLOCK_FACTOR_OPTIMAL;
+    private static int BLOCK_SIZE_OPTIMAL = 128;
+    private static int BLOCK_FACTOR_OPTIMAL = 2;
 
-    private static void kernelAproxHullNumberGraphByBlockOptimal(int numblocks, int nthreads, int maxgraphsbyblock, int[] idxGraphsGpu, int[] graphsGpu, int cont, int[] dataGraphsGpu, int[] resultGpu, int minvertice, int maxvertice, int totalvertices, int maxgraphsbyblock0) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static void kernelAproxHullNumberGraphByBlockOptimal(int numblocks, int nthreads, int maxgraphsbyblock, int[] idxGraphsGpu, int[] graphsGpu, int cont, int[] dataGraphsGpu, int[] resultGpu, int minvertice, int maxvertice, int totalvertices) {
+        int[] cache = new int[numblocks];
+        for (int i = 0; i < numblocks; i++) {
+            for (int j = 0; j < nthreads; j++) {
+                kernelMerge(idxGraphsGpu, graphsGpu, dataGraphsGpu, resultGpu, cache, i, j);
+            }
+        }
     }
 
 //    @Test
@@ -27,7 +32,7 @@ public class StrategyTest extends TestCase {
 
     }
 
-    public void kernelMerge(int[] idxGraphsGpu, int[] graphsGpu, int[] dataGraphs, int cache[], int blockIdx, int threadIdx) {
+    public static void kernelMerge(int[] idxGraphsGpu, int[] graphsGpu, int[] dataGraphs, int[] resultGpu, int cache[], int blockIdx, int threadIdx) {
         int offset = blockIdx;
         int idx = threadIdx;
         int[] graphData;
@@ -40,12 +45,12 @@ public class StrategyTest extends TestCase {
             }
             offset = graphsGpu[idxGraphsGpu[cont]];
 //            graphData =  &dataGraphs[offset];
-            graphData = dataGraphs[offset];
+            graphData = subarray(dataGraphs, offset);
             nvertices = graphData[0];
             int proxcont = cont;
             int i = 0;
             cache[i] = idxGraphsGpu[proxcont];
-            results[proxcont] = nvertices;
+            resultGpu[proxcont] = nvertices;
             proxcont++;
 
             for (i = 0; i < BLOCK_WINDOWS; i++) {
@@ -58,7 +63,7 @@ public class StrategyTest extends TestCase {
 //                graphData =  & dataGraphs[offset];
                 graphData = subarray(dataGraphs, offset);
                 nvertices = graphData[0];
-                results[proxcont] = nvertices;
+                resultGpu[proxcont] = nvertices;
                 cache[i] = idxGraphsGpu[proxcont];
                 proxcont++;
             }
@@ -66,12 +71,10 @@ public class StrategyTest extends TestCase {
 
         offset = graphsGpu[cache[idx]];
 //        graphData =  dataGraphs[offset];
-        graphData = dataGraphs[offset];
+        graphData = subarray(dataGraphs, offset);
         nvertices = graphData[0];
 
-        if (verboseKernel) {
-            printf("thread-%d in block %d operate in graph %d\n", idx, blockIdx, cache[idx]);
-        }
+        System.out.printf("thread-%d in block %d operate in graph %d\n", idx, blockIdx, cache[idx]);
     }
 
     public static synchronized int[] subarray(int[] arr, int start) {
@@ -101,7 +104,7 @@ public class StrategyTest extends TestCase {
         if ((BLOCK_SIZE_OPTIMAL % minvertice) > 0) {
             maxgraphsbyblock++;
         }
-        kernelAproxHullNumberGraphByBlockOptimal(numblocks, nthreads, maxgraphsbyblock, idxGraphsGpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
+        kernelAproxHullNumberGraphByBlockOptimal(numblocks, nthreads, maxgraphsbyblock, idxGraphsGpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices);
     }
 
 }
