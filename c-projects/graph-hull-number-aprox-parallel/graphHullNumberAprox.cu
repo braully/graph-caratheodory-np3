@@ -19,7 +19,9 @@
 
 #define CHARACTER_INIT_COMMENT '#'
 
+
 #define BLOCK_WINDOWS 32
+#define BLOCK_WINDOWS_TRUNK 64
 #define BLOCK_SIZE_OPTIMAL 256
 #define BLOCK_FACTOR_OPTIMAL 2
 
@@ -37,7 +39,7 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define COPY_ARRAY(SRC,DST,LEN) { memcpy((DST), (SRC), LEN); }
 
-#define verboseKernel true
+#define verboseKernel false
 
 bool verbose = false;
 bool graphByThread = false;
@@ -341,14 +343,34 @@ void kernelAproxHullNumberGraphByBlockOptimal(int* graphsGpu, int* dataGraphs, i
     free(aux);
 }
 
-//kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS>>>(graphsGpu, dataGraphsGpu, resultGpu, nvertstrunk, mapworkGpu);
+//        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS>>>(graphsGpu, dataGraphsGpu, resultGpu, nvertstrunk, mapworkgpu);
 
 __global__
-void kernelAproxHullNumberGraphByBlockOptimalTrunk(int* graphsGpu, int* dataGraphs, int* results, int nvertstrunk, int *mapworkGpu) {
+void kernelAproxHullNumberGraphByBlockOptimalTrunk(int* graphsGpu, int* dataGraphs, int* results, int *mapworkGpu, int nvertstrunk) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
+
+    //    if (idx == 0) {
+    //        printf("\nigraph-initial=%d, offset=%d, maxn-vertices=%d", igraph, offset, nvertices);
+    //        printf("\nmapk-work-gpu={");
+    //        for (int a = 0; a < 2 * nvertstrunk; a++) {
+    //            printf("%d, ", mapworkGpu[a]);
+    //        }
+    //        printf("}\n");
+    //
+    //        printf("\ngraphs-gpu={");
+    //        for (int a = 0; a <= 3; a++) {
+    //            printf("%d, ", graphsGpu[a]);
+    //        }
+    //        printf("}\n");
+    //    }
+    //
+    //    __syncthreads();
+
     if (idx < nvertstrunk) {
-        int *graph = &dataGraphs[graphsGpu[mapworkGpu[0]]];
+        int igraph = mapworkGpu[0];
+        int offset = graphsGpu[igraph];
+        int *graph = &dataGraphs[offset];
         int nvertices = graph[0];
 
         unsigned char *aux = new unsigned char [nvertices * 2];
@@ -357,26 +379,22 @@ void kernelAproxHullNumberGraphByBlockOptimalTrunk(int* graphsGpu, int* dataGrap
         int i = 0;
         while (idx < nvertstrunk) {
             int id = idx * 2;
-            int igraph = mapworkGpu[id];
+            igraph = mapworkGpu[id];
             int v = mapworkGpu[id + 1];
 
-            graph = &dataGraphs[graphsGpu[igraph]];
+            if (verboseKernel) printf("thread-%d in graph %d and vertice %d/%d \n", idx, igraph, v, nvertices);
+            offset = graphsGpu[igraph];
+            graph = &dataGraphs[offset];
 
             nvertices = graph[0];
             int minHullSet = nvertices;
-
-            if (verboseKernel) printf("thread-%d in graph %d and vertice %d/%d \n", idx, igraph, v, nvertices);
-
 
             int sSize = exapandHullSetFromV(v, nvertices, aux, auxb, graph, idx);
             minHullSet = MIN(minHullSet, sSize);
             atomicMin(&results[igraph], minHullSet);
             if (verboseKernel) printf("thread-%d: minHullSet %d\n", idx, minHullSet);
-            //    free(auxb);
-
-            idx = idx + ((++i) * BLOCK_WINDOWS);
+            idx = idx + ((++i) * BLOCK_WINDOWS_TRUNK);
         }
-        //    if (verboseKernel) printf("thread-%d: memory freed\n", idx);
         free(aux);
     }
 }
@@ -411,7 +429,6 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     cudaMalloc((void**) &resultGpu, cont * sizeof (int));
     cudaMalloc((void**) &dataGraphsGpu, numbytesDataGraph);
     cudaMalloc((void**) &graphsGpu, cont * sizeof (int));
-    r = cudaMemcpy(graphsGpu, graphs, cont * sizeof (int), cudaMemcpyHostToDevice);
     int offset = 0;
     int totalVert = 0;
     int currentCont = 0;
@@ -451,6 +468,14 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
     }
     if (verbose) {
         printf("}\n");
+    }
+
+    r = cudaMemcpy(graphsGpu, graphsHost, cont * sizeof (int),
+            cudaMemcpyHostToDevice);
+    if (r != cudaSuccess) {
+        fprintf(stderr, "Failed to copy memory 2 \nError: %s\n",
+                cudaGetErrorString(r));
+        exit(EXIT_FAILURE);
     }
 
 
@@ -648,7 +673,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
                     mapwork[j] = i;
                     int v = (nvertice / BLOCK_WINDOWS) * BLOCK_WINDOWS + x;
                     mapwork[j + 1] = v;
-                    printf("%d, %d, ", i, v);
+                    //                    printf("%d, %d, ", i, v);
                     j = j + 2;
                 }
             }
@@ -670,20 +695,20 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
         //Threadblock size choices in the range of 128 - 512 are less likely to run into the aforementioned issues
 
 
-        int numblocks = nvertstrunk / BLOCK_WINDOWS;
-        if ((nvertstrunk % BLOCK_WINDOWS) > 0) {
+        int numblocks = nvertstrunk / BLOCK_WINDOWS_TRUNK;
+        if ((nvertstrunk % BLOCK_WINDOWS_TRUNK) > 0) {
             numblocks++;
         }
 
         printf("Starting kernel optimal: <%d,%d>\n", nblocksoptimal, BLOCK_WINDOWS);
-        printf("Starting kernel turnk: <%d,%d>\n", numblocks, BLOCK_WINDOWS);
+        printf("Starting kernel turnk: <%d,%d>\n", numblocks, BLOCK_WINDOWS_TRUNK);
 
 
         cudaEventRecord(start);
 
 
-        //        kernelAproxHullNumberGraphByBlockOptimal << <nblocksoptimal, BLOCK_WINDOWS>>>(graphsGpu, dataGraphsGpu, resultGpu);
-        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS>>>(graphsGpu, dataGraphsGpu, resultGpu, nvertstrunk, mapworkgpu);
+        kernelAproxHullNumberGraphByBlockOptimal << <nblocksoptimal, BLOCK_WINDOWS, 0, streams[0]>>>(graphsGpu, dataGraphsGpu, resultGpu);
+        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS_TRUNK, 0, streams[0]>>>(graphsGpu, dataGraphsGpu, resultGpu, mapworkgpu, nvertstrunk);
         //        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, nthreads>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        kernelAproxHullNumberGraphByBlockOptimal << <numblocks, nthreads, maxgraphsbyblock * sizeof (int)>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        r = cudaDeviceSynchronize();
