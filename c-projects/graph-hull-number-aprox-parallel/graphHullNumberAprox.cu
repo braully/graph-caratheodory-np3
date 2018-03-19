@@ -708,7 +708,7 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
 
         kernelAproxHullNumberGraphByBlockOptimal << <nblocksoptimal, BLOCK_WINDOWS, 0, streams[0]>>>(graphsGpu, dataGraphsGpu, resultGpu);
-        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS_TRUNK, 0, streams[0]>>>(graphsGpu, dataGraphsGpu, resultGpu, mapworkgpu, nvertstrunk);
+        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS_TRUNK, 0, streams[1]>>>(graphsGpu, dataGraphsGpu, resultGpu, mapworkgpu, nvertstrunk);
         //        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, nthreads>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        kernelAproxHullNumberGraphByBlockOptimal << <numblocks, nthreads, maxgraphsbyblock * sizeof (int)>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        r = cudaDeviceSynchronize();
