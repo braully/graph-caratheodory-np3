@@ -56,10 +56,12 @@ public class UtilGraph {
                 for (File f : files) {
                     try {
                         UndirectedSparseGraphTO<Integer, Integer> undGraph = loadGraphAdjMatrix(new FileInputStream(f));
-                        FileWriter filew = new FileWriter(new File(outputFilePath, f.getName() + ".csr"));
-                        writerGraphToCsr(filew, undGraph);
-                        filew.flush();
-                        filew.close();
+                        if (undGraph.getVertexCount() > 0) {
+                            FileWriter filew = new FileWriter(new File(outputFilePath, f.getName() + ".csr"));
+                            writerGraphToCsr(filew, undGraph);
+                            filew.flush();
+                            filew.close();
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
