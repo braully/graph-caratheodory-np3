@@ -26,7 +26,7 @@
 #define BLOCK_SIZE_OPTIMAL 256
 #define BLOCK_FACTOR_OPTIMAL 2
 
-#define DEFAULT_THREAD_PER_BLOCK 28
+#define DEFAULT_THREAD_PER_BLOCK 32
 #define DEFAULT_BLOCK 256 
 #define MAX_DEFAULT_SIZE_QUEUE 256
 
@@ -790,13 +790,11 @@ int parallelAproxHullNumberGraphs(graphCsr *graphs, int cont) {
 
         cudaEventRecord(start);
 
-
         kernelAproxHullNumberGraphByBlockOptimal << <nblocksoptimal, BLOCK_WINDOWS, nblocksoptimal * sizeof (int), streams[0]>>>(graphsGpu, dataGraphsGpu, resultGpu);
         kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, BLOCK_WINDOWS_TRUNK, 0, streams[1]>>>(graphsGpu, dataGraphsGpu, resultGpu, mapworkgpu, nvertstrunk);
         //        kernelAproxHullNumberGraphByBlockOptimalTrunk << <numblocks, nthreads>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        kernelAproxHullNumberGraphByBlockOptimal << <numblocks, nthreads, maxgraphsbyblock * sizeof (int)>>>(mapworkgpu, graphsGpu, cont, dataGraphsGpu, resultGpu, minvertice, maxvertice, totalvertices, maxgraphsbyblock);
         //        r = cudaDeviceSynchronize();
-
 
         cudaEventRecord(stop);
         cudaEventSynchronize(stop);
