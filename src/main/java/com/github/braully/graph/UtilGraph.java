@@ -28,20 +28,20 @@ import org.apache.log4j.Logger;
  * @author Braully
  */
 public class UtilGraph {
-    
+
     private static final Logger logWebconsole = Logger.getLogger("WEBCONSOLE");
     private static final Logger log = Logger.getLogger(UtilGraph.class);
-    
+
     private static String inputFilePath = "/home/strike/tmp/grafos/converter";
     private static String outputFilePath = "/home/strike/tmp/grafos/convertidos";
-    
+
     public static void main(String... args) throws Exception {
         processDirectory(null, null);
     }
-    
+
     public static void processDirectory(File file, String[] excludes)
             throws FileNotFoundException, NumberFormatException, IOException {
-        
+
         File ftmp = new File(inputFilePath);
         if (ftmp.exists() && ftmp.isDirectory()) {
             File[] files = ftmp.listFiles(new FileFilter() {
@@ -70,7 +70,7 @@ public class UtilGraph {
             return;
         }
     }
-    
+
     public static synchronized String saveTmpFileGraphInCsr(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
         String strFile = null;
         if (undGraph != null && undGraph.getVertexCount() > 0) {
@@ -78,7 +78,7 @@ public class UtilGraph {
                 int vertexCount = undGraph.getVertexCount();
                 File file = File.createTempFile("graph-csr-", ".txt");
                 file.deleteOnExit();
-                
+
                 strFile = file.getAbsolutePath();
                 FileWriter writer = new FileWriter(file);
                 writerGraphToCsr(writer, undGraph);
@@ -90,7 +90,7 @@ public class UtilGraph {
         log.info("File tmp graph: " + strFile);
         return strFile;
     }
-    
+
     public static synchronized void writerGraphToCsr(Writer writer, UndirectedSparseGraphTO<Integer, Integer> undGraph) throws IOException {
         if (undGraph == null || writer == null) {
             return;
@@ -98,10 +98,10 @@ public class UtilGraph {
         List<Integer> vertices = (List<Integer>) undGraph.getVertices();
         int vertexCount = undGraph.getVertexCount();
         writer.write("#Graph |V| = " + vertexCount + "\n");
-        
+
         List<Integer> csrColIdxs = new ArrayList<>();
         List<Integer> rowOffset = new ArrayList<>();
-        
+
         int idx = 0;
         for (Integer i : vertices) {
             csrColIdxs.add(idx);
@@ -116,7 +116,7 @@ public class UtilGraph {
             }
         }
         csrColIdxs.add(idx);
-        
+
         for (Integer i : csrColIdxs) {
             writer.write("" + i);
             writer.write(" ");
@@ -128,7 +128,7 @@ public class UtilGraph {
         }
         writer.write("\n");
     }
-    
+
     public static synchronized List<Integer> csrColIdxs(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
         if (undGraph == null) {
             return null;
@@ -136,7 +136,7 @@ public class UtilGraph {
         Collection<Integer> vertices = undGraph.getVertices();
         List<Integer> csrColIdxs = new ArrayList<>();
         List<Integer> rowOffset = new ArrayList<>();
-        
+
         int idx = 0;
         for (Integer i : vertices) {
             csrColIdxs.add(idx);
@@ -153,7 +153,7 @@ public class UtilGraph {
         csrColIdxs.add(idx);
         return csrColIdxs;
     }
-    
+
     public static synchronized List<Integer> rowOffset(UndirectedSparseGraphTO<Integer, Integer> undGraph) {
         if (undGraph == null) {
             return null;
@@ -161,7 +161,7 @@ public class UtilGraph {
         int vertexCount = undGraph.getVertexCount();
         List<Integer> csrColIdxs = new ArrayList<>();
         List<Integer> rowOffset = new ArrayList<>();
-        
+
         int idx = 0;
         for (Integer i = 0; i < vertexCount; i++) {
             csrColIdxs.add(idx);
@@ -178,7 +178,7 @@ public class UtilGraph {
         csrColIdxs.add(idx);
         return rowOffset;
     }
-    
+
     static String saveTmpFileGraphInAdjMatrix(UndirectedSparseGraphTO<Integer, Integer> graph) {
         String strFile = null;
         if (graph != null && graph.getVertexCount() > 0) {
@@ -186,7 +186,7 @@ public class UtilGraph {
                 int vertexCount = graph.getVertexCount();
                 File file = File.createTempFile("graph-csr-", ".txt");
                 file.deleteOnExit();
-                
+
                 strFile = file.getAbsolutePath();
                 FileWriter writer = new FileWriter(file);
                 writerGraphToAdjMatrix(writer, graph);
@@ -198,7 +198,7 @@ public class UtilGraph {
         log.info("File tmp graph: " + strFile);
         return strFile;
     }
-    
+
     public static synchronized void writerGraphToAdjMatrix(Writer writer, UndirectedSparseGraphTO<Integer, Integer> undGraph) throws IOException {
         if (undGraph == null || writer == null) {
             return;
@@ -224,7 +224,7 @@ public class UtilGraph {
         }
         writer.write("\n");
     }
-    
+
     static UndirectedSparseGraphTO<Integer, Integer> loadGraphCsr(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO<Integer, Integer> ret = null;
         try {
@@ -232,7 +232,7 @@ public class UtilGraph {
                 BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
                 String csrColIdxsStr = null;
                 String rowOffsetStr = null;
-                
+
                 String readLine = null;
                 while ((readLine = r.readLine()) == null || readLine.trim().isEmpty() || readLine.trim().startsWith("#")) {
                 }
@@ -270,7 +270,7 @@ public class UtilGraph {
         }
         return ret;
     }
-    
+
     public static UndirectedSparseGraphTO<Integer, Integer> loadGraphAdjMatrix(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO<Integer, Integer> ret = null;
         try {
@@ -280,7 +280,7 @@ public class UtilGraph {
                 String readLine = null;
                 Integer verticeCount = 0;
                 ret = new UndirectedSparseGraphTO<>();
-                
+
                 while ((readLine = r.readLine()) != null) {
                     if (!readLine.trim().isEmpty()
                             && !readLine.trim().startsWith("#")
@@ -333,14 +333,14 @@ public class UtilGraph {
         if (strGraph.charAt(0) == ':') {
             return loadGraphS6(strGraph.substring(1));
         }
-        
+
         ByteReader6 br6 = new ByteReader6(strGraph);
         int n = br6.get_number();
-        
+
         int numEdge = 0;
-        
+
         graph = new UndirectedSparseGraphTO();
-        
+
         for (int j = 1; j < n; ++j) {
             for (int i = 0; i < j; ++i) {
                 int e = br6.get_bit();
@@ -351,7 +351,7 @@ public class UtilGraph {
         }
         return graph;
     }
-    
+
     public static UndirectedSparseGraphTO<Integer, Integer> loadGraphG6(InputStream uploadedInputStream) throws IOException {
         UndirectedSparseGraphTO ret = null;
         if (uploadedInputStream != null) {
@@ -363,12 +363,12 @@ public class UtilGraph {
         }
         return ret;
     }
-    
+
     static class ByteReader6 {
-        
+
         private byte[] mBytes;
         private int mSize, mPos, mBit;
-        
+
         public ByteReader6(String s6) {
             mBytes = s6.getBytes();
             mSize = s6.length();
@@ -383,16 +383,16 @@ public class UtilGraph {
         // ! return the next integer encoded in graph6
         int get_number() {
             assert (mPos < mSize);
-            
+
             byte c = mBytes[mPos];
             assert (c >= 63);
             c -= 63;
             ++mPos;
-            
+
             if (c < 126) {
                 return c;
             }
-            
+
             assert (false);
             return 0;
         }
@@ -400,63 +400,63 @@ public class UtilGraph {
         // ! return the next bit encoded in graph6
         int get_bit() {
             assert (mPos < mSize);
-            
+
             byte c = mBytes[mPos];
             assert (c >= 63);
             c -= 63;
             c >>= (5 - mBit);
-            
+
             mBit++;
             if (mBit == 6) {
                 mPos++;
                 mBit = 0;
             }
-            
+
             return (c & 0x01);
         }
 
         // ! return the next bits as an integer
         int get_bits(int k) {
             int v = 0;
-            
+
             for (int i = 0; i < k; ++i) {
                 v *= 2;
                 v += get_bit();
             }
-            
+
             return v;
         }
     }
-    
+
     static UndirectedSparseGraphTO<Integer, Integer> loadGraphS6(String str) {
         ByteReader6 br6 = new ByteReader6(str);
-        
+
         int numVertex = br6.get_number();
         int k = (int) Math.ceil(Math.log(numVertex) / Math.log(2));
-        
+
         UndirectedSparseGraphTO g = new UndirectedSparseGraphTO();
-        
+
         for (int i = 0; i < numVertex; ++i) {
             g.addVertex(i);
         }
-        
+
         int v = 0, numEdge = 0;
-        
+
         while (br6.have_bits(1 + k)) {
             int b = br6.get_bit();
             int x = br6.get_bits(k);
-            
+
             if (x >= numVertex) {
                 break;
             }
-            
+
             if (b != 0) {
                 v = v + 1;
             }
             if (v >= numVertex) {
                 break;
             }
-            
+
             if (x > v) {
                 v = x;
             } else {
@@ -464,5 +464,34 @@ public class UtilGraph {
             }
         }
         return g;
+    }
+
+    public static UndirectedSparseGraphTO<Integer, Integer> loadGraphES(InputStream uploadedInputStream) throws IOException {
+        UndirectedSparseGraphTO<Integer, Integer> ret = null;
+        if (uploadedInputStream != null) {
+            ret = new UndirectedSparseGraphTO<>();
+            BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
+            String readLine = null;
+            int countEdge = 0;
+            while ((readLine = r.readLine()) == null || !readLine.isEmpty()) {
+                String[] edges = null;
+                if (readLine != null && (edges = readLine.trim().split(",")) != null) {
+                    try {
+                        for (String stredge : edges) {
+                            String[] vs = stredge.split("-");
+                            if (vs != null && vs.length >= 2) {
+                                Integer source = Integer.parseInt(vs[0].trim());
+                                Integer target = Integer.parseInt(vs[1].trim());
+                                ret.addEdge(countEdge++, source, target);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
+        return ret;
     }
 }

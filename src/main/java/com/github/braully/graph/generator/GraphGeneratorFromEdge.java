@@ -45,7 +45,7 @@ public class GraphGeneratorFromEdge extends AbstractGraphGenerator {
 
         String[] edges = null;
 
-        if (strEdges != null && (edges = strEdges.split(",")) != null) {
+        if (strEdges != null && (edges = strEdges.trim().split(",")) != null) {
             try {
                 int countEdge = 0;
                 for (String stredge : edges) {

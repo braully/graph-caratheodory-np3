@@ -434,6 +434,8 @@ public class GraphWS {
                     ret = UtilGraph.loadGraphAdjMatrix(uploadedInputStream);
                 } else if (tmpFileName.endsWith("g6")) {
                     ret = UtilGraph.loadGraphG6(uploadedInputStream);
+                } else if (tmpFileName.endsWith("es")) {
+                    ret = UtilGraph.loadGraphES(uploadedInputStream);
                 }
                 if (ret != null) {
                     ret.setName(fileName);
