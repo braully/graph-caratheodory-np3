@@ -6,6 +6,9 @@
 package com.github.braully.graph;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import static java.util.Map.Entry;
 import junit.framework.TestCase;
 
 /**
@@ -39,4 +42,20 @@ public class BatchExecuteHeuristicTest extends TestCase {
 //        System.out.println(inicio + meio + fim);
     }
 
+    public HashMap<String, Float> calculcaValores(HashMap<String, Float> leiturasAtuais,
+            HashMap<String, Float> leiturasAnteriores, Float fator) {
+        HashMap<String, Float> resultado = new HashMap<>();
+
+        for (Entry<String, Float> valorAtual : leiturasAtuais.entrySet()) {
+            //
+            String codigoCliente = valorAtual.getKey();
+            Float valor = valorAtual.getValue();
+            Float valorAnterior = leiturasAnteriores.get(codigoCliente);
+            if (valorAnterior != null) {
+                Float valorFinal = (valor - valorAnterior) * fator;
+                resultado.put(codigoCliente, valorFinal);
+            }
+        }
+        return resultado;
+    }
 }
