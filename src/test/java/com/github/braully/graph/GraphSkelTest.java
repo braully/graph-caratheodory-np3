@@ -14,13 +14,24 @@ import junit.framework.TestCase;
 public class GraphSkelTest extends TestCase {
 
     public void testSkelGraphMoore() {
-        int k = 57;
+        int k = 7;
         int cont = 1;
         for (int i = 0; i < k * k; i = k + i) {
             for (int j = 0; j < k - 1; j++) {
                 System.out.printf("%d-%d,", i, cont + j);
             }
             cont = cont + k;
+            System.out.println();
+        }
+
+        System.out.println();
+
+        for (int j = 1; j < k; j++) {
+            int ant = j;
+            for (int i = k + j; i < k * k; i = k + i) {
+                System.out.printf("%d-%d,", ant, i);
+                ant = i;
+            }
             System.out.println();
         }
     }

@@ -473,9 +473,9 @@ public class UtilGraph {
             BufferedReader r = new BufferedReader(new InputStreamReader(uploadedInputStream));
             String readLine = null;
             int countEdge = 0;
-            while ((readLine = r.readLine()) == null || !readLine.isEmpty()) {
+            while ((readLine = r.readLine()) != null) {
                 String[] edges = null;
-                if (readLine != null && (edges = readLine.trim().split(",")) != null) {
+                if (readLine != null && !readLine.isEmpty() && (edges = readLine.trim().split(",")) != null) {
                     try {
                         for (String stredge : edges) {
                             String[] vs = stredge.split("-");
