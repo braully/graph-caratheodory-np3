@@ -13,8 +13,6 @@
           </df>
         </df>
       </df>
-      <df name="common">
-      </df>
       <df name="csr">
       </df>
       <df name="csr-2">
@@ -22,6 +20,8 @@
       <df name="csr-3">
       </df>
       <df name="csr-4">
+      </df>
+      <df name="csr-5">
       </df>
       <df name="graph-test">
       </df>

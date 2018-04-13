@@ -49,11 +49,15 @@ public class GraphSkelTest extends TestCase {
         cont = k;
 
         for (int j = 0; j < k - 1; j++) {
-            System.out.printf("%d-%d,", j, j + k - 1);
+            int esquerda = j;
+            int direita = j + k - 1;
+            System.out.printf("%d-%d,", esquerda, direita);
+            int offset = k;
             for (int i = j; i < k - 1; i++) {
                 int x = i + (2 + j) * (k - 1);
                 int y = i + (2 + j) * (k - 1) + 1;
                 System.out.printf("%d-%d,", j, x);
+                System.out.printf("%d-%d,", x, j + (offset++));
                 System.out.printf("%d-%d,", j + k - 1, y);
             }
             System.out.println();
