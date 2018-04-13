@@ -40,28 +40,26 @@ public class GraphSkelTest extends TestCase {
     public void testSkelGraphMoore2() {
         System.out.println();
         System.out.println("Estrategia-2");
-
         int k = 7;
 
-        int cont = 1;
-        int lastVert = k * k + 1;
-
-        cont = k;
+        for (int j = 0; j < k - 1; j++) {
+            System.out.printf("%d-%d,", j, j + k - 1);
+        }
+        System.out.println();
 
         for (int j = 0; j < k - 1; j++) {
-            int esquerda = j;
-            int direita = j + k - 1;
-            System.out.printf("%d-%d,", esquerda, direita);
-            int offset = k;
-            for (int i = j; i < k - 1; i++) {
-                int x = i + (2 + j) * (k - 1);
-                int y = i + (2 + j) * (k - 1) + 1;
-                System.out.printf("%d-%d,", j, x);
-                System.out.printf("%d-%d,", x, j + (offset++));
-                System.out.printf("%d-%d,", j + k - 1, y);
+            int u = j;
+            int v = j + k - 1;
+            //System.out.printf("%d-%d,", j, j + k - 1);
+            int offset = (2 + j) * (k - 1);
+            for (int i = j; i < k - 2; i++) {
+                System.out.printf("%d-%d,", u, i * 2 + offset);
+            }
+            System.out.println();
+            for (int i = j; i < k - 2; i++) {
+                System.out.printf("%d-%d,", v, i * 2 + offset + 1);
             }
             System.out.println();
         }
-        System.out.println();
     }
 }
