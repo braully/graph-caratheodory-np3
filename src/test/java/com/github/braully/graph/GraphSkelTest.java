@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 public class GraphSkelTest extends TestCase {
 
     public void testSkelGraphMoore() {
+        System.out.println("Estrategia-1");
         int k = 7;
         int cont = 1;
         for (int i = 0; i < k * k; i = k + i) {
@@ -34,5 +35,29 @@ public class GraphSkelTest extends TestCase {
             }
             System.out.println();
         }
+    }
+
+    public void testSkelGraphMoore2() {
+        System.out.println();
+        System.out.println("Estrategia-2");
+
+        int k = 7;
+
+        int cont = 1;
+        int lastVert = k * k + 1;
+
+        cont = k;
+
+        for (int j = 0; j < k - 1; j++) {
+            System.out.printf("%d-%d,", j, j + k - 1);
+            for (int i = j; i < k - 1; i++) {
+                int x = i + (2 + j) * (k - 1);
+                int y = i + (2 + j) * (k - 1) + 1;
+                System.out.printf("%d-%d,", j, x);
+                System.out.printf("%d-%d,", j + k - 1, y);
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 }
