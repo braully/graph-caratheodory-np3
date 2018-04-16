@@ -66,6 +66,7 @@ public class GraphSkelTest extends TestCase {
 
                 System.out.printf("%d-%d,", v, offset);
                 if (j == 0) {
+                    System.out.printf("%d-%d,", maxvert, join);
                     System.out.printf("%d-%d,", offset, join++);
                 }
                 System.out.printf("%d-%d,", offset++, ++tu);
@@ -73,5 +74,15 @@ public class GraphSkelTest extends TestCase {
             System.out.println();
         }
 
+        System.out.printf("%d-%d,", join, maxvert);
+        System.out.printf("%d-%d,", maxvert, join + 1);
+        System.out.println();
+        for (int j = 0; j < k - 1; j++) {
+            int u = j;
+            int v = j + k - 1;
+            System.out.printf("%d-%d,", join, u);
+            System.out.printf("%d-%d,", join + 1, v);
+        }
+        System.out.println();
     }
 }
