@@ -130,6 +130,11 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>edu.ucdenver.ccp</groupId>
+            <artifactId>esm</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>        
@@ -279,4 +284,11 @@
             </plugin>
         </plugins>
     </build>
+    
+    <repositories>
+        <repository>
+            <id>bionlp-sourceforge</id>
+            <url>http://svn.code.sf.net/p/bionlp/code/repo/</url>
+        </repository>
+    </repositories>
 </project>

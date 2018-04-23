@@ -85,4 +85,23 @@ public class GraphSkelTest extends TestCase {
         }
         System.out.println();
     }
+
+    public void testCombinacao() {
+        int k = 7;
+        int ko = k - 2;
+        int len = ((ko + 1) * ko) / 2;
+        int idx = len;
+        int arr[] = new int[len];
+
+        for (int i = 0; i < ko; i++) {
+            arr[i] = idx++;
+        }
+
+        int pos = ko;
+
+        while (pos <= len) {
+            arr[pos] = 0;
+            pos++;
+        }
+    }
 }
