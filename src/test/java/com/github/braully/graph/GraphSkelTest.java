@@ -5,6 +5,10 @@
  */
 package com.github.braully.graph;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import junit.framework.TestCase;
 
 /**
@@ -92,9 +96,12 @@ public class GraphSkelTest extends TestCase {
         int len = ((ko + 1) * ko) / 2;
         int idx = len;
         int arr[] = new int[len];
+        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
 
         for (int i = 0; i < ko; i++) {
             arr[i] = idx++;
+            List<Integer> listaPossiveis = new ArrayList<>(len);
+            possibilidades.put(i, listaPossiveis);
         }
 
         int pos = ko;
