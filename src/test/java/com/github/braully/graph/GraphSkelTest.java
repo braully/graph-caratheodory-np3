@@ -106,7 +106,7 @@ public class GraphSkelTest extends TestCase {
 
         int pos = ko;
 
-        while (pos <= len) {
+        while (pos < len) {
             arr[pos] = 0;
             pos++;
         }
