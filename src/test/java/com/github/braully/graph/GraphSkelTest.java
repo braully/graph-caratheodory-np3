@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.braully.graph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,9 +94,16 @@ public class GraphSkelTest extends TestCase {
         int arr[] = new int[len];
         Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
 
+        Integer[] targetv = new Integer[ko];
+
+        for (int j = 0; j < ko; j++) {
+            targetv[j] = j;
+        }
+
         for (int i = 0; i < ko; i++) {
             arr[i] = idx++;
             List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
             possibilidades.put(i, listaPossiveis);
         }
 
