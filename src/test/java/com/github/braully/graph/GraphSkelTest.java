@@ -106,10 +106,20 @@ public class GraphSkelTest extends TestCase {
             possibilidades.put(i, listaPossiveis);
         }
 
+        for (int i = ko; i < len; i++) {
+            List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
+            possibilidades.put(i, listaPossiveis);
+        }
+
         int pos = ko;
 
         while (pos < len) {
-            int val = (int) Math.round(ko * Math.random());
+            List<Integer> list = possibilidades.get(pos);
+            if (list.isEmpty());//rollback
+            int size = list.size() - 1;
+            int idx = (int) Math.round(size * Math.random());
+            int val = list.get(idx);
             arr[pos] = val;
             pos++;
         }
