@@ -90,7 +90,6 @@ public class GraphSkelTest extends TestCase {
         int k = 7;
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
-        int idx = len;
         int arr[] = new int[len];
         Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
 
@@ -101,7 +100,7 @@ public class GraphSkelTest extends TestCase {
         }
 
         for (int i = 0; i < ko; i++) {
-            arr[i] = idx++;
+            arr[i] = i;
             List<Integer> listaPossiveis = new ArrayList<>(len);
             listaPossiveis.addAll(Arrays.asList(targetv));
             possibilidades.put(i, listaPossiveis);
@@ -110,8 +109,19 @@ public class GraphSkelTest extends TestCase {
         int pos = ko;
 
         while (pos < len) {
-            arr[pos] = 0;
+            int val = (int) Math.round(ko * Math.random());
+            arr[pos] = val;
             pos++;
         }
+
+        System.out.println("\nCombinação:");
+        System.out.print("[");
+        for (int i = 0; i < len; i++) {
+            System.out.print(arr[i]);
+            if (i < len - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("]");
     }
 }
