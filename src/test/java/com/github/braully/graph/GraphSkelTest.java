@@ -91,8 +91,9 @@ public class GraphSkelTest extends TestCase {
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
         int arr[] = new int[len];
-        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
+        int count[] = new int[len];
 
+        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
         Integer[] targetv = new Integer[ko];
 
         for (int j = 0; j < ko; j++) {
@@ -100,6 +101,7 @@ public class GraphSkelTest extends TestCase {
         }
 
         for (int i = 0; i < ko; i++) {
+            count[i] = 0;
             arr[i] = i;
             List<Integer> listaPossiveis = new ArrayList<>(len);
             listaPossiveis.addAll(Arrays.asList(targetv));
@@ -116,12 +118,13 @@ public class GraphSkelTest extends TestCase {
 
         while (pos < len) {
             List<Integer> list = possibilidades.get(pos);
-            if (list.isEmpty()) {
+            if (!list.isEmpty()) {
                 //rollback
             }
+            count[pos]++;
             int size = list.size() - 1;
             int idx = (int) Math.round(size * Math.random());
-            int val = list.get(idx);
+            int val = list.get(idx);            
             arr[pos] = val;
             pos++;
         }
@@ -136,4 +139,31 @@ public class GraphSkelTest extends TestCase {
         }
         System.out.println("]");
     }
+
+//    public static synchronized void nextCombination(int n,
+//            int k,
+//            int[] currentCombination) {
+//        if (currentCombination[0] == n - k) {
+//            return;
+//        }
+//        int i;
+//        for (i = k - 1; i > 0 && currentCombination[i] == n - k + i; --i);
+//        ++currentCombination[i];
+//        for (int j = i; j < k - 1; ++j) {
+//            currentCombination[j + 1] = currentCombination[j] + 1;
+//        }
+//    }
+//    public static synchronized void nextCombination(int n,
+//            int k,
+//            int[] currentCombination) {
+//        if (currentCombination[0] == n - k) {
+//            return;
+//        }
+//        int i;
+//        for (i = k - 1; i > 0 && currentCombination[i] == n - k + i; --i);
+//        ++currentCombination[i];
+//        for (int j = i; j < k - 1; ++j) {
+//            currentCombination[j + 1] = currentCombination[j] + 1;
+//        }
+//    }
 }
