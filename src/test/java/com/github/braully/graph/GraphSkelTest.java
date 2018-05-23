@@ -116,7 +116,9 @@ public class GraphSkelTest extends TestCase {
 
         while (pos < len) {
             List<Integer> list = possibilidades.get(pos);
-            if (list.isEmpty());//rollback
+            if (list.isEmpty()) {
+                //rollback
+            }
             int size = list.size() - 1;
             int idx = (int) Math.round(size * Math.random());
             int val = list.get(idx);
