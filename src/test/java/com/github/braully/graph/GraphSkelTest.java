@@ -167,3 +167,16 @@ public class GraphSkelTest extends TestCase {
 //        }
 //    }
 }
+
+//        int pos = ko;
+//
+//        int i;
+//        for (i = len - 1; i > 0 && arr[i] == ko + i; --i);
+//        ++arr[i];
+//        for (int j = i; j < len - 1; ++j) {
+//            arr[j + 1] = arr[j] + 1;
+//        }
+//        while (pos <= len) {
+//            arr[pos] = 0;
+//            pos++;
+//        }
