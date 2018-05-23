@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.braully.graph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,15 +90,51 @@ public class GraphSkelTest extends TestCase {
         int k = 7;
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
-        int idx = len;
         int arr[] = new int[len];
         Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
 
+        Integer[] targetv = new Integer[ko];
+
+        for (int j = 0; j < ko; j++) {
+            targetv[j] = j;
+        }
+
         for (int i = 0; i < ko; i++) {
-            arr[i] = idx++;
+            arr[i] = i;
             List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
             possibilidades.put(i, listaPossiveis);
         }
+
+        for (int i = ko; i < len; i++) {
+            List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
+            possibilidades.put(i, listaPossiveis);
+        }
+
+        int pos = ko;
+
+        while (pos < len) {
+            List<Integer> list = possibilidades.get(pos);
+            if (list.isEmpty()) {
+                //rollback
+            }
+            int size = list.size() - 1;
+            int idx = (int) Math.round(size * Math.random());
+            int val = list.get(idx);
+            arr[pos] = val;
+            pos++;
+        }
+
+        System.out.println("\nCombinação:");
+        System.out.print("[");
+        for (int i = 0; i < len; i++) {
+            System.out.print(arr[i]);
+            if (i < len - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("]");
     }
 }
 
