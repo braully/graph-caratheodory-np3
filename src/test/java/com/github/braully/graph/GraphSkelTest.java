@@ -144,16 +144,18 @@ public class GraphSkelTest extends TestCase {
         while (pos < len) {
             List<Integer> list = possibilidades.get(pos);
             if (countpos[pos] > list.size()) {
+                System.err.println("deadlock: empty list break--need rollback in: " + pos);
                 //rollback
                 break;
             }
             int lsize = list.size();
             int idx = countpos[pos];
             int val = list.get(idx);
-            while ((countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val)) && idx++ <= lsize * 2) {
+            while ((countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val)) && idx <= lsize * 2) {
                 val = list.get(idx++ % lsize);
             }
             if (countval[val] >= max_val_count) {
+                System.err.println("deadlock: val unavaiable break--need rollback in: " + pos);
                 //rollback
                 break;
             }
@@ -168,7 +170,15 @@ public class GraphSkelTest extends TestCase {
     }
 
     private boolean exclude(int[] arrup, int[] arrdown, int[] arr, int pos, int val) {
-        return false;
+        int up = arrup[pos];
+        int down = arrdown[pos];
+        boolean ret = false;
+        for (int i = 0; i < pos && !ret; i++) {
+            if (arrdown[i] == up || arrdown[i] == down) {
+                ret = ret || arr[i] == val;
+            }
+        }
+        return ret;
     }
 
 //    public static synchronized void nextCombination(int n,
