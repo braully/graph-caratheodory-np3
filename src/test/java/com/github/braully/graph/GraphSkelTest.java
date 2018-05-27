@@ -143,26 +143,30 @@ public class GraphSkelTest extends TestCase {
 
         while (pos < len && pos >= ko) {
             List<Integer> list = possibilidades.get(pos);
-            if (countpos[pos] > list.size()) {
-                System.err.println("deadlock: empty list break--need rollback in: " + pos);
+            if (countpos[pos] > ko || list.isEmpty()) {
+                System.err.print("deadlock: empty-list in: " + pos);
                 //rollback
-                break;
+                list.addAll(Arrays.asList(targetv));
+                countpos[pos] = 0;
+                pos--;
+                System.err.println(" rollback to: " + pos);
+//                break;
+                continue;
             }
             int lsize = list.size();
             int idx = countpos[pos];
-            int val = list.get(idx);
+            int val = list.get(idx % lsize);
             while ((countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val)) && idx <= lsize * 2) {
                 val = list.get(idx++ % lsize);
             }
-            countpos[pos]++;
             if (countval[val] >= max_val_count || idx > lsize * 2) {
-                System.err.println("deadlock: val unavaiable break--need rollback in: " + pos);
+                System.err.println("deadlock: val " + val + " unav in " + pos);
                 //rollback
                 //break;
-                countpos[pos] = 0;
-                pos--;
+                list.remove((Integer) val);
                 continue;
             }
+            countpos[pos]++;
             arr[pos] = val;
             countval[val]++;
             pos++;
