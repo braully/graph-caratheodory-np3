@@ -162,15 +162,18 @@ public class GraphSkelTest extends TestCase {
             }
             int lsize = list.size();
             int idx = countpos[pos];
-            int val = list.get(idx % lsize);
-            while ((countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val)) && idx <= lsize * 2) {
-                val = list.get(idx++ % lsize);
+            int val = -1;
+            boolean excluded = true;
+            while (excluded && idx < lsize) {
+                val = list.get(idx++);
+                excluded = countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val);
             }
-            if (countval[val] >= max_val_count || idx > lsize * 2) {
+            if (excluded) {
                 System.err.println("deadlock: val " + val + " unav in " + pos);
                 //rollback
                 //break;
                 list.remove((Integer) val);
+                countpos[pos] = 0;
                 continue;
             }
             countpos[pos]++;
