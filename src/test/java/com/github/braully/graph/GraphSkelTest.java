@@ -63,7 +63,6 @@ public class GraphSkelTest extends TestCase {
                     System.out.printf("%d-%d,", offset, join);
                 }
                 System.out.printf("%d-%d,", offset++, ++tv);
-
                 System.out.printf("%d-%d,", v, offset);
                 if (j == 0) {
                     System.out.printf("%d-%d,", maxvert, join);
@@ -92,6 +91,61 @@ public class GraphSkelTest extends TestCase {
 
         System.out.println("\nComb-" + k + ":");
         printArray(arr);
+    }
+
+    public void testSkelGraphMoore3() {
+        System.out.println();
+        System.out.println("Estrategia-3");
+        int k = 7;
+
+        int ko = k - 2;
+        int maxvert = k * k;
+        for (int j = 0; j < k - 1; j++) {
+            System.out.printf("%d-%d,", j, j + k - 1);
+        }
+        System.out.println();
+
+        int offset = 2 * (k - 1);
+        int join = k * (k - 1);
+
+        int[] comb = getCombincaoInterna(k);
+        int idx = 0;
+
+        for (int j = 0; j < k - 1; j++) {
+            int u = j;
+            int v = j + k - 1;
+            //System.out.printf("%d-%d,", j, j + k - 1);
+            int tu = u;
+            int tv = v;
+            for (int i = 0; i < k - (2 + j); i++) {
+                System.out.printf("%d-%d,", u, offset);
+//                if (j == 0) {
+//                    System.out.printf("%d-%d,", offset, join);
+//                }
+                System.out.printf("%d-%d,", offset, join + comb[idx]);
+                System.out.printf("%d-%d,", offset++, ++tv);
+                System.out.printf("%d-%d,", v, offset);
+//                if (j == 0) {
+//                    System.out.printf("%d-%d,", maxvert, join);
+//                    System.out.printf("%d-%d,", offset, join++);
+//                }
+                System.out.printf("%d-%d,", maxvert, join + comb[idx]);
+                System.out.printf("%d-%d,", offset, join + comb[idx++]);
+                System.out.printf("%d-%d,", offset++, ++tu);
+            }
+            System.out.println();
+        }
+        join = join + ko;
+        System.out.printf("%d-%d,", join, maxvert);
+        System.out.printf("%d-%d,", maxvert, join + 1);
+        System.out.println();
+        for (int j = 0; j < k - 1; j++) {
+            int u = j;
+            int v = j + k - 1;
+            System.out.printf("%d-%d,", join, u);
+            System.out.printf("%d-%d,", join + 1, v);
+        }
+        System.out.println();
     }
 
     private boolean exclude(int[] arrup, int[] arrdown, int[] arr, int pos, int val) {
