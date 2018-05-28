@@ -109,6 +109,7 @@ public class GraphSkelTest extends TestCase {
         int up = 0;
         int down = 1;
         for (int i = 0; i < len; i++) {
+            arr[i] = -1;
             arrup[i] = up;
             arrdown[i] = down++;
             if (i == offsetup) {
@@ -147,7 +148,13 @@ public class GraphSkelTest extends TestCase {
                 System.err.print("deadlock: empty-list in: " + pos);
                 //rollback
                 list.addAll(Arrays.asList(targetv));
-                countpos[pos] = 0;
+                for (int i = pos; i < len; i++) {
+                    countpos[pos] = 0;
+                    if (arr[i] >= 0) {
+                        countval[arr[i]]--;
+                        arr[i] = -1;
+                    }
+                }
                 pos--;
                 System.err.println(" rollback to: " + pos);
 //                break;
