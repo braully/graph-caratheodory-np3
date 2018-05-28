@@ -144,13 +144,15 @@ public class GraphSkelTest extends TestCase {
 
         while (pos < len && pos >= ko) {
             List<Integer> list = possibilidades.get(pos);
-            if (countpos[pos] > ko || list.isEmpty()) {
+            if (countpos[pos] >= ko) {
+                rollback:
                 System.err.print("deadlock: empty-list in: " + pos);
                 //rollback
-                list.addAll(Arrays.asList(targetv));
+//                list.addAll(Arrays.asList(targetv));
                 for (int i = pos; i < len; i++) {
-                    countpos[pos] = 0;
-                    if (arr[i] >= 0) {
+                    countpos[i] = 0;
+                    int val = arr[i];
+                    if (val >= 0) {
                         countval[arr[i]]--;
                         arr[i] = -1;
                     }
@@ -161,25 +163,17 @@ public class GraphSkelTest extends TestCase {
                 continue;
             }
             int lsize = list.size();
-            int idx = countpos[pos];
             int val = -1;
             boolean excluded = true;
-            while (excluded && idx < lsize) {
-                val = list.get(idx++);
+            while (excluded && countpos[pos] < lsize) {
+                val = list.get(countpos[pos]++);
                 excluded = countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val);
             }
-            if (excluded) {
-                System.err.println("deadlock: val " + val + " unav in " + pos);
-                //rollback
-                //break;
-                list.remove((Integer) val);
-                countpos[pos] = 0;
-                continue;
+            if (!excluded) {
+                arr[pos] = val;
+                countval[val]++;
+                pos++;
             }
-            countpos[pos]++;
-            arr[pos] = val;
-            countval[val]++;
-            pos++;
         }
 
         System.out.println("\nCombinação:");
