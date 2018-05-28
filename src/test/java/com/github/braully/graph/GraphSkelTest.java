@@ -145,7 +145,8 @@ public class GraphSkelTest extends TestCase {
         while (pos < len && pos >= ko) {
             List<Integer> list = possibilidades.get(pos);
             if (countpos[pos] >= ko) {
-                rollback:
+                System.out.println("arr");
+                printArray(arr);
                 System.err.print("deadlock: empty-list in: " + pos);
                 //rollback
 //                list.addAll(Arrays.asList(targetv));
@@ -153,23 +154,28 @@ public class GraphSkelTest extends TestCase {
                     countpos[i] = 0;
                     int val = arr[i];
                     if (val >= 0) {
-                        countval[arr[i]]--;
+                        countval[val]--;
                         arr[i] = -1;
                     }
                 }
                 pos--;
+                countval[arr[pos]]--;
                 System.err.println(" rollback to: " + pos);
 //                break;
                 continue;
             }
             int lsize = list.size();
             int val = -1;
+            boolean skip = true;
             boolean excluded = true;
-            while (excluded && countpos[pos] < lsize) {
+            boolean overflow = true;
+            while (skip && countpos[pos] < lsize) {
                 val = list.get(countpos[pos]++);
-                excluded = countval[val] >= max_val_count || exclude(arrup, arrdown, arr, pos, val);
+                overflow = countval[val] >= max_val_count;
+                excluded = exclude(arrup, arrdown, arr, pos, val);
+                skip = overflow || excluded;
             }
-            if (!excluded) {
+            if (!skip) {
                 arr[pos] = val;
                 countval[val]++;
                 pos++;
@@ -185,7 +191,7 @@ public class GraphSkelTest extends TestCase {
         int down = arrdown[pos];
         boolean ret = false;
         for (int i = 0; i < pos && !ret; i++) {
-            if (arrdown[i] == up || arrdown[i] == down) {
+            if (arrdown[i] == up || arrdown[i] == down || arrup[i] == up) {
                 ret = ret || arr[i] == val;
             }
         }
