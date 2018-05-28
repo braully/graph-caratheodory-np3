@@ -91,6 +91,10 @@ public class GraphSkelTest extends TestCase {
 
         System.out.println("\nComb-" + k + ":");
         printArray(arr);
+        k = 57;
+        arr = getCombincaoInterna(k);
+        System.out.println("\nComb-" + k + ":");
+        printArray(arr);
     }
 
     public void testSkelGraphMoore3() {
