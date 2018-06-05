@@ -100,7 +100,7 @@ public class GraphCombTest extends TestCase {
     }
 
     public void testEstrategiaCombinacao() {
-        int k = 7;
+        int k = 57;
         int ko = k - 2;
         boolean roolback = false;
         int len = ((ko + 1) * ko) / 2;
@@ -132,6 +132,8 @@ public class GraphCombTest extends TestCase {
             clearEmptyCombination(i, i, countval, maxValCount, possibilidades, posicoesExcluidas);
         }
 
+        int longest = 0;
+
         while (arr.size() < len && arr.size() >= ko) {
             int pos = arr.size();
             LinkedList<Integer> list = (LinkedList<Integer>) possibilidades.get(pos);
@@ -139,11 +141,16 @@ public class GraphCombTest extends TestCase {
             if (roolback || list.isEmpty()) {
                 Integer valRollback = arr.pollLast();
                 /*  rollback */
-                if (verbose) {
-                    System.out.print("arr: ");
-                    System.out.println(arr);
-                    System.err.print("deadlock: empty-list in: " + pos);
-                }
+//                if (verbose) {
+//                    System.out.print("deadlock: ");
+//                    try {
+//                        System.out.print(arr.get(ko));
+//                    } catch (Exception e) {
+//                    }
+//                    System.out.print(" empty-list in: ");
+//                    System.out.print(pos);
+//                    System.out.println();
+//                }
                 //rest-countval
                 for (int j = 0; j < ko; j++) {
                     countval.put(j, 0);
@@ -159,7 +166,7 @@ public class GraphCombTest extends TestCase {
                     int post = i;
                     int valt = arr.get(i);
                     //roolback está vindo true... Verificar isso
-                    clearEmptyCombination(post, valt, countval, maxValCount, possibilidades, posicoesExcluidas);
+                    clearEmptyCombination(post, valt, countval, maxValCount, possibilidades, posicoesExcluidas, false);
                 }
                 possibilidades.get(arr.size()).remove(valRollback);
                 roolback = false;
@@ -168,6 +175,14 @@ public class GraphCombTest extends TestCase {
             Integer val = list.poll();
             arr.add(val);
             roolback = clearEmptyCombination(pos, val, countval, maxValCount, possibilidades, posicoesExcluidas);
+            if (pos >= longest) {
+                longest = pos;
+                System.out.print("arr[");
+                System.out.print(longest);
+                System.out.print("]: ");
+                System.out.print(arr);
+                System.out.println();
+            }
         }
 
         if (arr.size() < len) {
@@ -185,7 +200,11 @@ public class GraphCombTest extends TestCase {
         assertTrue("Combination invalid", test);
     }
 
-    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int max_val_count, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas) {
+    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int maxValCount, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas) {
+        return clearEmptyCombination(pos, val, countval, maxValCount, possibilidades, posicoesExcluidas, true);
+    }
+
+    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int max_val_count, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas, boolean failEmpty) {
         boolean roolback = false;
         int len = possibilidades.size();
         int divPoint = Collections.binarySearch(posicoesExcluidas, pos);
@@ -198,9 +217,9 @@ public class GraphCombTest extends TestCase {
             for (int i = pos; i < len; i++) {
                 List<Integer> possiPosi = possibilidades.get(i);
                 possiPosi.remove(val);
-                if (possiPosi.isEmpty()) {
+                if (failEmpty && possiPosi.isEmpty()) {
                     roolback = true;
-//                    break;
+                    break;
                 }
             }
         }
@@ -208,9 +227,9 @@ public class GraphCombTest extends TestCase {
             Integer posicao = posicoesExcluidas.get(i);
             List<Integer> possiPosi = possibilidades.get(posicao);
             possiPosi.remove(val);
-            if (possiPosi.isEmpty()) {
+            if (failEmpty && possiPosi.isEmpty()) {
                 roolback = true;
-//                break;
+                break;
             }
         }
         return roolback;
