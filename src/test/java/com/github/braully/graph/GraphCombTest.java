@@ -200,7 +200,7 @@ public class GraphCombTest extends TestCase {
                 possiPosi.remove(val);
                 if (possiPosi.isEmpty()) {
                     roolback = true;
-                    break;
+//                    break;
                 }
             }
         }
@@ -210,7 +210,7 @@ public class GraphCombTest extends TestCase {
             possiPosi.remove(val);
             if (possiPosi.isEmpty()) {
                 roolback = true;
-                break;
+//                break;
             }
         }
         return roolback;
