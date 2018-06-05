@@ -317,6 +317,53 @@ public class GraphSkelTest extends TestCase {
         return ret;
     }
 
+    public void testInvalidPositions() {
+        int k = 57;
+        int ko = k - 2;
+        int len = ((ko + 1) * ko) / 2;
+        int[] arrup = new int[len];
+        int[] arrdown = new int[len];
+        int offsetup = ko - 1;
+        int up = 0;
+        int down = 1;
+
+        for (int i = 0; i < len; i++) {
+            arrup[i] = up;
+            arrdown[i] = down++;
+            if (i == offsetup) {
+                up++;
+                offsetup += (ko - up);
+            }
+            if (down == ko + 1) {
+                down = up + 1;
+            }
+        }
+        System.out.println("Seq: ");
+        for (int i = 0; i < len; i++) {
+            up = arrup[i];
+            down = arrdown[i];
+            int count = 0;
+            int countko = 0;
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%4d ", i));
+            sb.append("|%4d|:");
+            for (int j = 0; j < len; j++) {
+                if (i != j && (arrdown[j] == up || arrdown[j] == down || arrup[j] == up)) {
+                    sb.append(String.format("%4d ", j));
+                    count++;
+                    if (j < ko) {
+                        countko++;
+                    }
+                }
+            }
+            if (countko >= ko) {
+                throw new IllegalStateException("Impossible graph");
+            }
+            System.out.printf(sb.toString(), count);
+            System.out.println();
+        }
+    }
+
     private void printArray(int[] arr) {
         int len = arr.length;
         System.out.print("[");
