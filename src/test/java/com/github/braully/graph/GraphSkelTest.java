@@ -317,7 +317,7 @@ public class GraphSkelTest extends TestCase {
         return ret;
     }
 
-    public Map<Integer, List<Integer>> testInvalidPositions(int k) {
+    public Map<Integer, List<Integer>> mapInvalidPositions(int k) {
 //        int k = 57;
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
@@ -392,10 +392,9 @@ public class GraphSkelTest extends TestCase {
     }
 
     private int[] getCombincaoInterna2(int k) {
-
         int ko = k - 2;
         boolean verbose = false;
-        Map<Integer, List<Integer>> mapExcludePosition = testInvalidPositions(k);
+        Map<Integer, List<Integer>> mapExcludePosition = mapInvalidPositions(k);
         int len = ((ko + 1) * ko) / 2;
         int arr[] = new int[len];
         int arrup[] = new int[len];
