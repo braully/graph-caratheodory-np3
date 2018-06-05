@@ -92,7 +92,7 @@ public class GraphSkelTest extends TestCase {
         System.out.println("\nComb-" + k + ":");
         printArray(arr);
 //        k = 57;
-        arr = getCombincaoInterna(k);
+        arr = getCombincaoInterna2(k);
         System.out.println("\nComb-" + k + ":");
         printArray(arr);
     }
@@ -317,10 +317,13 @@ public class GraphSkelTest extends TestCase {
         return ret;
     }
 
-    public void testInvalidPositions() {
-        int k = 57;
+    public Map<Integer, List<Integer>> testInvalidPositions(int k) {
+//        int k = 57;
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
+        Map<Integer, List<Integer>> excludeMapList = new HashMap<>();
+        boolean verbose = false;
+
         int[] arrup = new int[len];
         int[] arrdown = new int[len];
         int offsetup = ko - 1;
@@ -338,18 +341,27 @@ public class GraphSkelTest extends TestCase {
                 down = up + 1;
             }
         }
-        System.out.println("Seq: ");
+        if (verbose) {
+            System.out.println("Seq: ");
+        }
         for (int i = 0; i < len; i++) {
             up = arrup[i];
             down = arrdown[i];
             int count = 0;
             int countko = 0;
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("%4d ", i));
-            sb.append("|%4d|:");
+            if (verbose) {
+                sb.append(String.format("%4d ", i));
+                sb.append("|%4d|:");
+            }
+            List<Integer> listExclude = new ArrayList<>();
+            excludeMapList.put(i, listExclude);
             for (int j = 0; j < len; j++) {
                 if (i != j && (arrdown[j] == up || arrdown[j] == down || arrup[j] == up)) {
-                    sb.append(String.format("%4d ", j));
+                    if (verbose) {
+                        sb.append(String.format("%4d ", j));
+                    }
+                    listExclude.add(j);
                     count++;
                     if (j < ko) {
                         countko++;
@@ -359,9 +371,12 @@ public class GraphSkelTest extends TestCase {
             if (countko >= ko) {
                 throw new IllegalStateException("Impossible graph");
             }
-            System.out.printf(sb.toString(), count);
-            System.out.println();
+            if (verbose) {
+                System.out.printf(sb.toString(), count);
+                System.out.println();
+            }
         }
+        return excludeMapList;
     }
 
     private void printArray(int[] arr) {
@@ -374,6 +389,120 @@ public class GraphSkelTest extends TestCase {
             }
         }
         System.out.println("]");
+    }
+
+    private int[] getCombincaoInterna2(int k) {
+
+        int ko = k - 2;
+        boolean verbose = false;
+        Map<Integer, List<Integer>> mapExcludePosition = testInvalidPositions(k);
+        int len = ((ko + 1) * ko) / 2;
+        int arr[] = new int[len];
+        int arrup[] = new int[len];
+        int arrdown[] = new int[len];
+        int[] countpos = new int[len];
+        int[] countval = new int[ko];
+
+        int max_val_count = 0;
+        if (ko != 0) {
+            max_val_count = len / ko;
+        }
+
+        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
+        Integer[] targetv = new Integer[ko];
+
+        for (int j = 0; j < ko; j++) {
+            targetv[j] = j;
+            countval[j]++;
+        }
+
+        int offsetup = ko - 1;
+        int up = 0;
+        int down = 1;
+        for (int i = 0; i < len; i++) {
+            arr[i] = -1;
+            arrup[i] = up;
+            arrdown[i] = down++;
+            if (i == offsetup) {
+                up++;
+                offsetup += (ko - up);
+            }
+            if (down == ko + 1) {
+                down = up + 1;
+            }
+        }
+
+        if (verbose) {
+            System.out.println("\nUp:");
+            printArray(arrup);
+            System.out.println("\nDown:");
+            printArray(arrdown);
+        }
+
+        for (int i = 0; i < ko; i++) {
+            countpos[i] = 0;
+            arr[i] = i;
+            List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
+            possibilidades.put(i, listaPossiveis);
+        }
+
+        for (int i = ko; i < len; i++) {
+            List<Integer> listaPossiveis = new ArrayList<>(len);
+            listaPossiveis.addAll(Arrays.asList(targetv));
+            possibilidades.put(i, listaPossiveis);
+        }
+
+        int pos = ko;
+
+        while (pos < len && pos >= ko) {
+            List<Integer> list = possibilidades.get(pos);
+            if (countpos[pos] >= ko) {
+                if (verbose) {
+                    System.out.println("arr");
+                    printArray(arr);
+                    System.err.print("deadlock: empty-list in: " + pos);
+                }
+                for (int i = pos; i < len; i++) {
+                    countpos[i] = 0;
+                    int val = arr[i];
+                    if (val >= 0) {
+                        countval[val]--;
+                        arr[i] = -1;
+                    }
+                }
+                pos--;
+                countval[arr[pos]]--;
+                if (verbose) {
+                    System.err.println(" rollback to: " + pos);
+                }
+                continue;
+            }
+            int lsize = list.size();
+            int val = -1;
+            boolean skip = true;
+            boolean excluded = true;
+            boolean overflow = true;
+            while (skip && countpos[pos] < lsize) {
+                val = list.get(countpos[pos]++);
+                overflow = countval[val] >= max_val_count;
+                excluded = exclude(arrup, arrdown, arr, pos, val);
+                skip = overflow || excluded;
+            }
+            if (!skip) {
+                arr[pos] = val;
+                countval[val]++;
+                pos++;
+            }
+        }
+        if (verbose) {
+            System.out.println("\nCombinação:");
+            printArray(arr);
+        }
+        if (pos < len) {
+            throw new IllegalStateException("Combination impossible");
+        }
+        return arr;
     }
 
     private int[] getCombincaoInterna(int k) {
