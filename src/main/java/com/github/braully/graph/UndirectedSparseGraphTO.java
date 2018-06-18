@@ -12,6 +12,7 @@ import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -222,4 +223,48 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         this.labels = labels;
     }
 
+    @JsonIgnore
+    public boolean equalStrict(UndirectedSparseGraphTO<V, E> graph) {
+        boolean ret = true;
+        graph.getEdges();
+        graph.getVertices();
+        return ret;
+    }
+
+    @JsonIgnore
+    public boolean containStrict(UndirectedSparseGraphTO<V, E> graph, List<V> remap) {
+        boolean ret = true;
+        List<V> vertices1 = (List<V>) this.getVertices();
+        Collection<Pair<V>> pairs = graph.getPairs();
+        Collection<Pair<V>> thispairs = this.getPairs();
+        Iterator<Pair<V>> iterator = pairs.iterator();
+        Pair<V> pair = null;
+        if (remap != null && remap.isEmpty()) {
+            remap = null;
+        }
+        while (iterator.hasNext() && ret) {
+            Pair<V> edge = iterator.next();
+            V first = edge.getFirst();
+            V second = edge.getSecond();
+            if (remap != null) {
+                int indexOf = remap.indexOf(first);
+                first = vertices1.get(indexOf);
+                indexOf = remap.indexOf(second);
+                second = vertices1.get(indexOf);
+            }
+            pair = new Pair<V>(first, second);
+            boolean contains = thispairs.contains(pair);
+            if (!contains) {
+                pair = new Pair<V>(second, first);
+                contains = thispairs.contains(pair);
+            }
+            ret = ret && contains;
+        }
+        return ret;
+    }
+
+    @JsonIgnore
+    public boolean containStrict(UndirectedSparseGraphTO subgraph) {
+        return containStrict(subgraph, null);
+    }
 }

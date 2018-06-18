@@ -12,8 +12,6 @@ import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
 
@@ -24,7 +22,6 @@ import java.util.Set;
 public class P3Convexity {
 
     public Set<Integer> convexHullP3(UndirectedSparseGraph<Integer, Integer> graph, Set<Integer> S) {
-        int currentSetSize = 0;
         Set<Integer> convexHullP3 = new HashSet<>();
         int[] aux = new int[graph.getVertexCount()];
         int[] auxc = new int[graph.getVertexCount()];
@@ -37,7 +34,6 @@ public class P3Convexity {
             mustBeIncluded.add(v);
             aux[v] = INCLUDED;
             auxc[v] = 1;
-            currentSetSize++;
         }
         while (!mustBeIncluded.isEmpty()) {
             Integer verti = mustBeIncluded.remove();
