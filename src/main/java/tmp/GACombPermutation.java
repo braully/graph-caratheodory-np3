@@ -133,7 +133,7 @@ public class GACombPermutation {
                 System.out.print(generationsEvolved);
                 System.out.print("-");
                 bestfit = atualfit;
-                String strbest = bestFinal.toString();
+                String strbest = bestFinal.toString() + "\n";
                 dumpString(strbest);
                 System.out.print(strbest);
                 System.out.println();
