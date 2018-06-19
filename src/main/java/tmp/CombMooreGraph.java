@@ -202,6 +202,7 @@ public class CombMooreGraph {
                 System.out.print(arr);
                 System.out.println();
                 dumpArray(arr, "");
+
             }
             if (System.currentTimeMillis() - lastime > HOUR) {
                 lastime = System.currentTimeMillis();

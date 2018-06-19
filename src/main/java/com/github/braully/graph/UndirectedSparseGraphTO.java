@@ -215,6 +215,12 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         return this.addEdge(edgeCount, i, j) ? edgeCount : null;
     }
 
+    public UndirectedSparseGraphTO addEdgeC(int i, int j) {
+        Integer edgeCount = this.getEdgeCount();
+        this.addEdge(edgeCount, i, j);
+        return this;
+    }
+
     public Collection getLabels() {
         return labels;
     }
@@ -232,10 +238,10 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
     }
 
     @JsonIgnore
-    public boolean containStrict(UndirectedSparseGraphTO<V, E> graph, List<V> remap) {
+    public boolean containStrict(UndirectedSparseGraphTO<V, E> subgraph, List<V> remap) {
         boolean ret = true;
         List<V> vertices1 = (List<V>) this.getVertices();
-        Collection<Pair<V>> pairs = graph.getPairs();
+        Collection<Pair<V>> pairs = subgraph.getPairs();
         Collection<Pair<V>> thispairs = this.getPairs();
         Iterator<Pair<V>> iterator = pairs.iterator();
         Pair<V> pair = null;
