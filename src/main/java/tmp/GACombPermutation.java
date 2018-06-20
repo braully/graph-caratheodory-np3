@@ -130,6 +130,7 @@ public class GACombPermutation {
 //            System.out.print(bestFinal);
             double atualfit = bestFinal.getFitness();
             if (atualfit > bestfit || System.currentTimeMillis() - lastime > HOUR) {
+                lastime = System.currentTimeMillis();
                 System.out.print(generationsEvolved);
                 System.out.print("-");
                 bestfit = atualfit;
@@ -162,7 +163,7 @@ public class GACombPermutation {
             if (args.length == DIMENSION || ((args = args[0].split(",")) != null && args.length == DIMENSION)) {
                 List<Integer> start = new ArrayList<>();
                 for (String str : args) {
-                    start.add(Integer.parseInt(str));
+                    start.add(Integer.parseInt(str.trim().replaceAll("\\D", "")));
                 }
                 Chromosome randChrom = new MinPermutations(RandomKey.inducedPermutation(sequence, start));
                 popList.add(randChrom);
