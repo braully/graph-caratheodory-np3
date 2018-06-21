@@ -241,6 +241,11 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     @JsonIgnore
     public boolean containStrict(UndirectedSparseGraphTO<V, E> subgraph, List<V> remap) {
+        return containStrictInternal(subgraph, remap);
+    }
+
+    @JsonIgnore
+    private boolean containStrictInternal(UndirectedSparseGraphTO<V, E> subgraph, List<V> remap) {
         boolean ret = true;
         List<V> vertices1 = (List<V>) this.getVertices();
         Collection<Pair<V>> pairs = subgraph.getPairs();
