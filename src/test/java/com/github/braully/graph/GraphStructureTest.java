@@ -22,8 +22,12 @@ public class GraphStructureTest extends TestCase {
         subgraph.addEdge(2, 3);
         subgraph.addEdge(3, 1);
 
-        assertTrue(graph.containStrict(subgraph, Arrays.asList(new Integer[]{0, 1, 3, 2})));
+        int[] comb = new int[]{0, 1, 3, 2};
+        assertTrue(graph.containStrict(subgraph, comb));
+
+        assertTrue(graph.containStrict(subgraph, Arrays.asList(comb)));
 
         assertFalse(graph.containStrict(subgraph));
+
     }
 }

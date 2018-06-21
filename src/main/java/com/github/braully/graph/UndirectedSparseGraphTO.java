@@ -271,6 +271,43 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     @JsonIgnore
     public boolean containStrict(UndirectedSparseGraphTO subgraph) {
-        return containStrict(subgraph, null);
+        return containStrict(subgraph, (List) null);
+    }
+
+    @JsonIgnore
+    public boolean containStrict(UndirectedSparseGraphTO subgraph, int[] perm) {
+        boolean ret = true;
+        List<V> vertices1 = (List<V>) this.getVertices();
+        Collection<Pair<V>> pairs = subgraph.getPairs();
+        Collection<Pair<V>> thispairs = this.getPairs();
+        Iterator<Pair<V>> iterator = pairs.iterator();
+        Pair<V> pair = null;
+        while (iterator.hasNext() && ret) {
+            Pair<V> edge = iterator.next();
+            V first = edge.getFirst();
+            V second = edge.getSecond();
+            int indexOf = indexOf(first, perm);
+            first = vertices1.get(indexOf);
+            indexOf = indexOf(second, perm);
+            second = vertices1.get(indexOf);
+            pair = new Pair<V>(first, second);
+            boolean contains = thispairs.contains(pair);
+            if (!contains) {
+                pair = new Pair<V>(second, first);
+                contains = thispairs.contains(pair);
+            }
+            ret = ret && contains;
+        }
+        return ret;
+    }
+
+    public static int indexOf(Object nee, int[] haystack) {
+        int needle = ((Integer) nee);
+        for (int i = 0; i < haystack.length; i++) {
+            if (haystack[i] == needle) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

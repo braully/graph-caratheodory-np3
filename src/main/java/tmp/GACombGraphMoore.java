@@ -5,16 +5,10 @@
  */
 package tmp;
 
-import com.github.braully.graph.UndirectedSparseGraphTO;
-import edu.uci.ics.jung.graph.util.Pair;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import tmp.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

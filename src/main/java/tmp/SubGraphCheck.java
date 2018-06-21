@@ -5,9 +5,8 @@ import com.github.braully.graph.UtilGraph;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import org.apache.commons.collections4.iterators.PermutationIterator;
 
 /**
  *
@@ -30,9 +29,19 @@ public class SubGraphCheck {
         }
         boolean found = false;
 
+        int[] currentPermutation = null;
+
+        if (args != null && args.length > 2) {
+            String args2[] = Arrays.copyOfRange(args, 2, args.length);
+            currentPermutation = UtilTmp.args2intarr(args2);
+        }
         Collection vertices = graph.getVertices();
-        PermutationIterator combination = new PermutationIterator(vertices);
-        List next = null;
+        if (currentPermutation == null || currentPermutation.length < vertices.size()) {
+            currentPermutation = new int[vertices.size()];
+            for (int i = 0; i < vertices.size(); i++) {
+                currentPermutation[i] = i;
+            }
+        }
         long lastime = System.currentTimeMillis();
 
         System.out.print("Checking graph ");
@@ -46,18 +55,55 @@ public class SubGraphCheck {
         System.out.print("subgraph: ");
         System.out.println(subgraph);
 
-        while (combination.hasNext() && !found) {
-            next = combination.next();
-            found = graph.containStrict(subgraph, next);
+        System.out.print("starting: ");
+        UtilTmp.printArray(currentPermutation);
+
+        boolean hasnext = true;
+
+        while (hasnext && !found) {
+            found = graph.containStrict(subgraph, currentPermutation);
             if (System.currentTimeMillis() - lastime > HOUR) {
                 lastime = System.currentTimeMillis();
                 System.out.print("h-");
-                System.out.println(next);
+                UtilTmp.printArray(currentPermutation);
             }
+            hasnext = nextPermutation(currentPermutation);
         }
         if (found) {
             System.out.println("Found maped subgraph isomorphic");
-            System.out.println(next);
+            UtilTmp.printArray(currentPermutation);
         }
+    }
+
+    //Reference: https://www.nayuki.io/res/next-lexicographical-permutation-algorithm/nextperm.java
+    public static boolean nextPermutation(int[] currentPerm) {
+        // Find non-increasing suffix
+        int i = currentPerm.length - 1;
+        while (i > 0 && currentPerm[i - 1] >= currentPerm[i]) {
+            i--;
+        }
+        if (i <= 0) {
+            return false;
+        }
+
+        // Find successor to pivot
+        int j = currentPerm.length - 1;
+        while (currentPerm[j] <= currentPerm[i - 1]) {
+            j--;
+        }
+        int temp = currentPerm[i - 1];
+        currentPerm[i - 1] = currentPerm[j];
+        currentPerm[j] = temp;
+
+        // Reverse suffix
+        j = currentPerm.length - 1;
+        while (i < j) {
+            temp = currentPerm[i];
+            currentPerm[i] = currentPerm[j];
+            currentPerm[j] = temp;
+            i++;
+            j--;
+        }
+        return true;
     }
 }
