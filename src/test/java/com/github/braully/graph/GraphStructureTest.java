@@ -25,7 +25,7 @@ public class GraphStructureTest extends TestCase {
         int[] comb = new int[]{0, 1, 3, 2};
         assertTrue(graph.containStrict(subgraph, comb));
 
-        assertTrue(graph.containStrict(subgraph, Arrays.asList(comb)));
+        assertTrue(graph.containStrict(subgraph, Arrays.asList(new Integer[]{0, 1, 3, 2})));
 
         assertFalse(graph.containStrict(subgraph));
 

@@ -12,9 +12,11 @@ import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Transport Object of Graph representation.
@@ -279,7 +281,7 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         boolean ret = true;
         List<V> vertices1 = (List<V>) this.getVertices();
         Collection<Pair<V>> pairs = subgraph.getPairs();
-        Collection<Pair<V>> thispairs = this.getPairs();
+        Collection<Pair<V>> thispairs = this.getPairsSet();
         Iterator<Pair<V>> iterator = pairs.iterator();
         Pair<V> pair = null;
         while (iterator.hasNext() && ret) {
@@ -309,5 +311,16 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
             }
         }
         return -1;
+    }
+
+    @JsonIgnore
+    private Set<Pair<V>> setPairs = null;
+
+    @JsonIgnore
+    private Collection<Pair<V>> getPairsSet() {
+        if (setPairs == null) {
+            setPairs = Collections.unmodifiableSet(new HashSet<>(this.getPairs()));
+        }
+        return setPairs;
     }
 }
