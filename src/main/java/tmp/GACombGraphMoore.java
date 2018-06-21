@@ -33,14 +33,14 @@ import static tmp.CombMooreGraph.mapInvalidPositions;
 public class GACombGraphMoore {
 
     private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
-    private static final long HOUR = 1000 * 60 * 60;
+    private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
     private static final int K = 57;
     private static final int KO = K - 2;
     private static final int LEN = ((KO + 1) * KO) / 2;
     private static final int DIMENSION = LEN;
-    private static final int POPULATION_SIZE = Math.max(DIMENSION * 10, 200);
+    private static final int POPULATION_SIZE = 600;//Math.max(DIMENSION * 10, 200);
     private static final int NUM_GENERATIONS = DIMENSION * 15;
     private static final double ELITISM_RATE = 0.2;
     private static final double CROSSOVER_RATE = 1;
@@ -90,21 +90,22 @@ public class GACombGraphMoore {
         double bestfit = initial.getFittestChromosome().fitness();
         Population current = initial;
         int generationsEvolved = 0;
-        while (!stopCond.isSatisfied(current)) {
-//        while (bestfit != 0.0) {
+//        while (!stopCond.isSatisfied(current)) {
+        while (bestfit != 0.0) {
             current = ga.nextGeneration(current);
             generationsEvolved++;
             Chromosome bestFinal = current.getFittestChromosome();
 //            System.out.print(bestFinal);
             double atualfit = bestFinal.getFitness();
             if (atualfit > bestfit || System.currentTimeMillis() - lastime > HOUR) {
-                System.out.print(generationsEvolved);
-                System.out.print("-");
+//                System.out.print(generationsEvolved);
+//                System.out.print("-");
                 bestfit = atualfit;
-                String strbest = bestFinal.toString() + "\n";
-//                dumpString(strbest);
-                System.out.print(strbest);
-                System.out.println();
+                String strbest = generationsEvolved + "-f=" + atualfit + "-" + ((MinPermutations) bestFinal).decode(sequence).toString().replaceAll(" ", "") + "\n";
+                dumpString(strbest);
+                System.out.println(strbest);
+//                System.out.println();
+                lastime = System.currentTimeMillis();
             }
         }
 

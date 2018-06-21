@@ -30,7 +30,7 @@ import org.apache.commons.math3.genetics.RandomKey;
 public class GACombPermutation {
 
     private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
-    private static final long HOUR = 1000 * 60 * 60;
+    private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
     private static final int DIMENSION = 50;
