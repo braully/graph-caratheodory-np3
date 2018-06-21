@@ -18,7 +18,7 @@ public class SubGraphCheck {
 
     public static void main(String... args) throws FileNotFoundException, IOException {
         if (args.length < 2) {
-            System.err.println("args: file-graphs.es file-subraph.es");
+            System.err.println("args: file-graphs.es file-subraph.es [seq-start]");
             return;
         }
         UndirectedSparseGraphTO graph = UtilGraph.loadGraphES(new FileInputStream(args[0]));
