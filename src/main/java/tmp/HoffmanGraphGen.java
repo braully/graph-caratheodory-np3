@@ -4,7 +4,9 @@ import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  *
@@ -49,13 +51,27 @@ public class HoffmanGraphGen {
 
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
 
+        Integer[] bfs = new Integer[vertices.size()];
+
         for (Integer v : incompletVertices) {
             List<Integer> listPoss = new ArrayList<>();
             bdl.labelDistances(subgraph, v);
+            bfs(subgraph, bfs, v);
             for (Integer i : incompletVertices) {
                 int distance = bdl.getDistance(subgraph, i);
                 if (distance > 3) {
                     listPoss.add(i);
+                }
+                if (distance != bfs[i]) {
+                    System.out.printf("BFS: ");
+                    UtilTmp.printArray(bfs);
+                    System.out.printf("JNG: [");
+                    for (Integer dv : vertices) {
+                        System.out.print(bdl.getDistance(subgraph, dv));
+                        System.out.print(", ");
+                    }
+                    System.out.println("]");
+                    throw new IllegalStateException("Divergencia no BFS na posição " + i);
                 }
             }
             int possv = listPoss.size();
@@ -64,5 +80,33 @@ public class HoffmanGraphGen {
         }
         System.out.print("Total de compinaçcoes possiveis: ");
         System.out.println(totalComb);
+    }
+
+    static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
+        for (int i = 0; i < bfs.length; i++) {
+            bfs[i] = null;
+        }
+
+        bfs[v] = 0;
+        visitVertex(v, bfs, subgraph);
+    }
+
+    private static void visitVertex(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph1) {
+        Queue<Integer> queue = new LinkedList<Integer>();
+        queue.add(v);
+        while (!queue.isEmpty()) {
+            Integer poll = queue.poll();
+            int depth = bfs[poll] + 1;
+            Collection<Integer> ns = (Collection<Integer>) subgraph1.getNeighbors(poll);
+            for (Integer nv : ns) {
+                if (bfs[nv] == null) {
+                    bfs[nv] = depth;
+                    queue.add(nv);
+                } else if (depth < bfs[nv]) {//revisit
+                    bfs[nv] = depth;
+                    queue.add(nv);
+                }
+            }
+        }
     }
 }

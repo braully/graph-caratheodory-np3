@@ -9,6 +9,18 @@ import java.util.List;
  */
 public class UtilTmp {
 
+    public static void printArray(Integer[] arr) {
+        int len = arr.length;
+        System.out.print("[");
+        for (int i = 0; i < len; i++) {
+            System.out.print(arr[i]);
+            if (i < len - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("]");
+    }
+
     public static void printArray(int[] arr) {
         int len = arr.length;
         System.out.print("[");
