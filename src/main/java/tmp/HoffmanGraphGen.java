@@ -2,10 +2,13 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -14,6 +17,8 @@ import java.util.Queue;
  */
 public class HoffmanGraphGen {
 
+    private static final long HOUR = 1000 * 60 * 60 * 12;
+    private static String fileDump = System.getenv("user.dir") + File.separator + ".comb-moore-java.txt";
     private static final int NUM_ARESTAS = 175;
     private static final int K = 7;
 
@@ -38,20 +43,25 @@ public class HoffmanGraphGen {
         Collection<Integer> vertices = subgraph.getVertices();
         Collection pairs = subgraph.getPairs();
         List<Integer> incompletVertices = new ArrayList<>();
+        int len = NUM_ARESTAS - subgraph.getEdgeCount();
 
         for (Integer v : vertices) {
             if (subgraph.degree(v) < K) {
                 incompletVertices.add(v);
             }
         }
+
         System.out.print("Incomplete vertices[" + incompletVertices.size() + "]: ");
         System.out.println(incompletVertices);
 
+        System.out.print("Edges remain: ");
+        System.out.println(len);
+
         int totalComb = 1;
-
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
-
         Integer[] bfs = new Integer[vertices.size()];
+
+        Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
 
         for (Integer v : incompletVertices) {
             List<Integer> listPoss = new ArrayList<>();
@@ -74,19 +84,65 @@ public class HoffmanGraphGen {
                     throw new IllegalStateException("Divergencia no BFS na posição " + i);
                 }
             }
+            mapossibilidades.put(v, listPoss);
             int possv = listPoss.size();
             System.out.println(v + "[" + possv + "]=" + listPoss);
             totalComb = totalComb * possv;
         }
-        System.out.print("Total de compinaçcoes possiveis: ");
+
+        System.out.print("Total de combinaçoes possiveis: ");
         System.out.println(totalComb);
+
+        int nverinc = incompletVertices.size();
+        Integer[] combseq = new Integer[nverinc * 3];
+        Integer[][] edgrests = new Integer[nverinc][3];
+        int count = 0;
+        Integer[] comb = new Integer[nverinc];
+        Integer[] arr = new Integer[nverinc * 3];
+        int tamListpos = 8;
+        while (count < combseq.length && count >= 0) {
+            int idx = count % 3;
+            Integer v = incompletVertices.get(idx);
+            List<Integer> listPoss = mapossibilidades.get(v);
+            if (combseq[count] >= tamListpos) {
+                combseq[count] = 0;
+                count--;
+                continue;
+            }
+            int val = listPoss.get(combseq[count]);
+            arr[count] = val;
+            arr[count] = 0;
+            combseq[count]++;
+            count++;
+        }
+
+        int maxcount = 8 * 7;
+        boolean hasnext = true;
+        boolean fit = false;
+
+        for (int i = 0; i < nverinc; i++) {
+            comb[i] = maxcount;
+        }
+        comb[nverinc - 1] = maxcount;
+
+        while (hasnext && !fit) {
+            UtilTmp.printArray(comb);
+            hasnext = nextCombination(comb, maxcount);
+            fit = checkCombination(comb);
+            UtilTmp.printArray(comb);
+        }
+
+        if (fit) {
+            System.out.println("Solução encontrada");
+        } else {
+            System.out.println("Solução não encontrada");
+        }
     }
 
     static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
         for (int i = 0; i < bfs.length; i++) {
             bfs[i] = null;
         }
-
         bfs[v] = 0;
         visitVertex(v, bfs, subgraph);
     }
@@ -108,5 +164,18 @@ public class HoffmanGraphGen {
                 }
             }
         }
+    }
+
+    private static boolean nextCombination(Integer[] comb, int maxcount) {
+        int i = comb.length - 1;
+        while (i >= 0 && comb[i]++ >= maxcount) {
+            comb[i] = 0;
+            i--;
+        }
+        return i >= 0;
+    }
+
+    private static boolean checkCombination(Integer[] comb) {
+        return false;
     }
 }
