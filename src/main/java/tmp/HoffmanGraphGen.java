@@ -61,6 +61,10 @@ public class HoffmanGraphGen {
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
         Integer[] bfs = new Integer[vertices.size()];
 
+        Map<Integer, List<Integer>> mapossibilidades = calcPossibilidades(incompletVertices, bdl, bfs, vertices, totalComb);
+    }
+
+    public static Map<Integer, List<Integer>> calcPossibilidades(List<Integer> incompletVertices, BFSDistanceLabeler<Integer, Integer> bdl, Integer[] bfs, Collection<Integer> vertices, int totalComb) throws IllegalStateException {
         Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
 
         for (Integer v : incompletVertices) {
@@ -89,54 +93,7 @@ public class HoffmanGraphGen {
             System.out.println(v + "[" + possv + "]=" + listPoss);
             totalComb = totalComb * possv;
         }
-
-        System.out.print("Total de combinaçoes possiveis: ");
-        System.out.println(totalComb);
-
-        int nverinc = incompletVertices.size();
-        Integer[] combseq = new Integer[nverinc * 3];
-        Integer[][] edgrests = new Integer[nverinc][3];
-        int count = 0;
-        Integer[] comb = new Integer[nverinc];
-        Integer[] arr = new Integer[nverinc * 3];
-        int tamListpos = 8;
-        while (count < combseq.length && count >= 0) {
-            int idx = count % 3;
-            Integer v = incompletVertices.get(idx);
-            List<Integer> listPoss = mapossibilidades.get(v);
-            if (combseq[count] >= tamListpos) {
-                combseq[count] = 0;
-                count--;
-                continue;
-            }
-            int val = listPoss.get(combseq[count]);
-            arr[count] = val;
-            arr[count] = 0;
-            combseq[count]++;
-            count++;
-        }
-
-        int maxcount = 8 * 7;
-        boolean hasnext = true;
-        boolean fit = false;
-
-        for (int i = 0; i < nverinc; i++) {
-            comb[i] = maxcount;
-        }
-        comb[nverinc - 1] = maxcount;
-
-        while (hasnext && !fit) {
-            UtilTmp.printArray(comb);
-            hasnext = nextCombination(comb, maxcount);
-            fit = checkCombination(comb);
-            UtilTmp.printArray(comb);
-        }
-
-        if (fit) {
-            System.out.println("Solução encontrada");
-        } else {
-            System.out.println("Solução não encontrada");
-        }
+        return mapossibilidades;
     }
 
     static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
@@ -178,4 +135,51 @@ public class HoffmanGraphGen {
     private static boolean checkCombination(Integer[] comb) {
         return false;
     }
+//        System.out.print("Total de combinaçoes possiveis: ");
+//        System.out.println(totalComb);
+//
+//        int nverinc = incompletVertices.size();
+//        Integer[] combseq = new Integer[nverinc * 3];
+//        Integer[][] edgrests = new Integer[nverinc][3];
+//        int count = 0;
+//        Integer[] comb = new Integer[nverinc];
+//        Integer[] arr = new Integer[nverinc * 3];
+//        int tamListpos = 8;
+//        while (count < combseq.length && count >= 0) {
+//            int idx = count % 3;
+//            Integer v = incompletVertices.get(idx);
+//            List<Integer> listPoss = mapossibilidades.get(v);
+//            if (combseq[count] >= tamListpos) {
+//                combseq[count] = 0;
+//                count--;
+//                continue;
+//            }
+//            int val = listPoss.get(combseq[count]);
+//            arr[count] = val;
+//            arr[count] = 0;
+//            combseq[count]++;
+//            count++;
+//        }
+//
+//        int maxcount = 8 * 7;
+//        boolean hasnext = true;
+//        boolean fit = false;
+//
+//        for (int i = 0; i < nverinc; i++) {
+//            comb[i] = maxcount;
+//        }
+//        comb[nverinc - 1] = maxcount;
+//
+//        while (hasnext && !fit) {
+//            UtilTmp.printArray(comb);
+//            hasnext = nextCombination(comb, maxcount);
+//            fit = checkCombination(comb);
+//            UtilTmp.printArray(comb);
+//        }
+//
+//        if (fit) {
+//            System.out.println("Solução encontrada");
+//        } else {
+//            System.out.println("Solução não encontrada");
+//        }
 }
