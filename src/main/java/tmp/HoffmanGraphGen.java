@@ -2,6 +2,7 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
+import edu.uci.ics.jung.graph.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,47 +54,87 @@ public class HoffmanGraphGen {
 
         System.out.print("Incomplete vertices[" + incompletVertices.size() + "]: ");
         System.out.println(incompletVertices);
-
         System.out.print("Edges remain: ");
         System.out.println(len);
 
-        int totalComb = 1;
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
-        Integer[] bfs = new Integer[vertices.size()];
+        Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
+        atualizarVerticesMapa(subgraph, incompletVertices, mapossibilidades);
 
-        Map<Integer, List<Integer>> mapossibilidades = calcPossibilidades(incompletVertices, bdl, bfs, vertices, totalComb);
+        Integer[] edgesAdded = new Integer[len];
+        int countEdeges = 0;
+        int[] pos = new int[len];
+        for (int i = 0; i < len; i++) {
+            pos[i] = 0;
+        }
+
+        UndirectedSparseGraphTO hoff = subgraph.clone();
+
+//        while (!incompletVertices.isEmpty() && countEdeges < pos.length) {
+        while (!incompletVertices.isEmpty() && hoff.getEdgeCount() < NUM_ARESTAS) {
+            Integer v = incompletVertices.get(0);
+            List<Integer> poss = mapossibilidades.get(v);
+            if (poss.isEmpty()) {
+                System.out.println("Caminho Impossivel: vertice " + v + " estagnado");
+                System.out.println("Rollback necessário");
+                System.out.println("Removendo ultima aresta ");
+                countEdeges = rollback(countEdeges, pos, edgesAdded, hoff);
+                atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
+                UtilTmp.printArray(pos);
+                continue;
+//                break;
+            }
+            int idx = pos[countEdeges];
+            if (idx >= poss.size()) {
+                System.out.println("Possibilidades esgotadas " + v);
+                System.out.println("Rollback necessário");
+                countEdeges = rollback(countEdeges, pos, edgesAdded, hoff);
+                atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
+                UtilTmp.printArray(pos);
+                continue;
+//                break;
+            }
+            Integer u = poss.get(idx);
+            edgesAdded[countEdeges] = (Integer) hoff.addEdge(v, u);
+            pos[countEdeges]++;
+            countEdeges++;
+
+            bdl.labelDistances(hoff, v);
+            System.out.println("add(" + v + ", " + u + ")");
+            atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
+
+            //Atualizar lista de possibilidades
+//            List<Integer> listPoss = new ArrayList<>();
+//            for (Integer i : incompletVertices) {
+//                int distance = bdl.getDistance(hoff, i);
+//                if (distance > 3) {
+//                    listPoss.add(i);
+//                }
+//            }
+//            mapossibilidades.put(v, listPoss);
+//
+//            if (hoff.degree(v) == K) {
+//                incompletVertices.remove(v);
+//            }
+//
+//            if (hoff.degree(u) == K) {
+//                incompletVertices.remove(u);
+//            }
+        }
+
+        System.out.println("Final Graph: ");
+        System.out.println(hoff.getEdgeString());
     }
 
-    public static Map<Integer, List<Integer>> calcPossibilidades(List<Integer> incompletVertices, BFSDistanceLabeler<Integer, Integer> bdl, Integer[] bfs, Collection<Integer> vertices, int totalComb) throws IllegalStateException {
-        Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
-
-        for (Integer v : incompletVertices) {
-            List<Integer> listPoss = new ArrayList<>();
-            bdl.labelDistances(subgraph, v);
-            bfs(subgraph, bfs, v);
-            for (Integer i : incompletVertices) {
-                int distance = bdl.getDistance(subgraph, i);
-                if (distance > 3) {
-                    listPoss.add(i);
-                }
-                if (distance != bfs[i]) {
-                    System.out.printf("BFS: ");
-                    UtilTmp.printArray(bfs);
-                    System.out.printf("JNG: [");
-                    for (Integer dv : vertices) {
-                        System.out.print(bdl.getDistance(subgraph, dv));
-                        System.out.print(", ");
-                    }
-                    System.out.println("]");
-                    throw new IllegalStateException("Divergencia no BFS na posição " + i);
-                }
-            }
-            mapossibilidades.put(v, listPoss);
-            int possv = listPoss.size();
-            System.out.println(v + "[" + possv + "]=" + listPoss);
-            totalComb = totalComb * possv;
+    public static int rollback(int countEdeges, int[] pos, Integer[] edgesAdded, UndirectedSparseGraphTO hoff) {
+        for (int i = countEdeges; i < pos.length; i++) {
+            pos[i] = 0;
         }
-        return mapossibilidades;
+        countEdeges--;
+        Integer ultima = edgesAdded[countEdeges];
+        hoff.removeEdge(ultima);
+        edgesAdded[countEdeges] = null;
+        return countEdeges;
     }
 
     static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
@@ -182,4 +223,31 @@ public class HoffmanGraphGen {
 //        } else {
 //            System.out.println("Solução não encontrada");
 //        }
+
+    private static Map<Integer, List<Integer>> atualizarVerticesMapa(UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
+        BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
+        Collection<Integer> vertices = subgraph.getVertices();
+        incompletVertices.clear();
+
+        for (Integer v : vertices) {
+            if (subgraph.degree(v) < K) {
+                incompletVertices.add(v);
+            }
+        }
+
+        for (Integer v : incompletVertices) {
+            List<Integer> listPoss = new ArrayList<>();
+            bdl.labelDistances(subgraph, v);
+            for (Integer i : incompletVertices) {
+                int distance = bdl.getDistance(subgraph, i);
+                if (distance > 3) {
+                    listPoss.add(i);
+                }
+            }
+            mapossibilidades.put(v, listPoss);
+            int possv = listPoss.size();
+            System.out.println(v + "[" + possv + "]=" + listPoss);
+        }
+        return mapossibilidades;
+    }
 }

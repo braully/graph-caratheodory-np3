@@ -212,6 +212,12 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
 
     }
 
+    public Pair addEdgeP(int i, int j) {
+        Integer edgeCount = this.getEdgeCount();
+        Pair pair = new Pair(i, j);
+        return this.addEdge(edgeCount, pair) ? pair : null;
+    }
+
     public Object addEdge(int i, int j) {
         Integer edgeCount = this.getEdgeCount();
         return this.addEdge(edgeCount, i, j) ? edgeCount : null;
