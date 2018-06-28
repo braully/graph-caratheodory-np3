@@ -27,6 +27,7 @@ import static tmp.CombMooreGraph.mapInvalidPositions;
 public class GACombGraphMoore {
 
     private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
+    private static int max_length_file = 4000;
     private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
@@ -34,11 +35,11 @@ public class GACombGraphMoore {
     private static final int KO = K - 2;
     private static final int LEN = ((KO + 1) * KO) / 2;
     private static final int DIMENSION = LEN;
-    private static final int POPULATION_SIZE = 600;//Math.max(DIMENSION * 10, 200);
+    private static final int POPULATION_SIZE = 700;//Math.max(DIMENSION * 10, 200);
     private static final int NUM_GENERATIONS = DIMENSION * 15;
     private static final double ELITISM_RATE = 0.2;
     private static final double CROSSOVER_RATE = 1;
-    private static final double MUTATION_RATE = 0.08;
+    private static final double MUTATION_RATE = 0.1;
     private static final int TOURNAMENT_ARITY = 2;
     private static final Map<Integer, List<Integer>> MAP_EXCLUDED_POSITIONS = Collections.unmodifiableMap(mapInvalidPositions(K));
 
@@ -180,7 +181,16 @@ public class GACombGraphMoore {
 
     private static void dumpString(String strt) {
         try {
-            new FileWriter(fileDump, true).append(strt).close();
+            FileWriter fileWriter = new FileWriter(fileDump, true);
+            if (strt.length() > max_length_file) {
+                int length = strt.length();
+                for (int i = 0; i < length; i += max_length_file) {
+                    fileWriter.append(strt.substring(i, Math.min(length, i + max_length_file)));
+                }
+            } else {
+                fileWriter.append(strt);
+            }
+            fileWriter.close();
         } catch (IOException ex) {
             Logger.getLogger(CombMooreGraph.class
                     .getName()).log(Level.SEVERE, null, ex);
