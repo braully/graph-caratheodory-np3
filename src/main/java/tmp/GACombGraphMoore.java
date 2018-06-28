@@ -99,7 +99,9 @@ public class GACombGraphMoore {
                 String strbest = generationsEvolved + "-f=" + atualfit + "-" + ((MinPermutations) bestFinal).decode(sequence).toString().replaceAll(" ", "") + "\n";
                 dumpString(strbest);
                 System.out.println(strbest);
-                System.out.println(bestFinal);
+                strbest = bestFinal.toString();
+                dumpString(strbest);
+                System.out.println(strbest);
 //                System.out.println();
                 lastime = System.currentTimeMillis();
             }
