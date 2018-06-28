@@ -155,7 +155,7 @@ public class CombMooreGraph {
 
         if (args != null && args.length > 0) {
             for (String str : args) {
-                roolback = clearEmptyCombination(arr.size(), Integer.parseInt(str), countval, maxValCount, possibilidades, mapExcludePosition);
+                roolback = clearEmptyCombination(arr.size(), Integer.parseInt(str.replaceAll("\\D", "").trim()), countval, maxValCount, possibilidades, mapExcludePosition);
                 if (roolback) {
                     break;
                 }
