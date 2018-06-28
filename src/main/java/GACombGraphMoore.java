@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tmp;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import static tmp.CombMooreGraph.mapInvalidPositions;
 public class GACombGraphMoore {
 
     private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
-    private static int max_length_file = 4000;
+    private static final int max_length_file = 2000;
     private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
@@ -164,8 +163,10 @@ public class GACombGraphMoore {
             for (int i = 0; i < arr.size(); i++) {
                 int pos = i;
                 List<Integer> posExcl = MAP_EXCLUDED_POSITIONS.get(pos);
+                Integer val = arr.get(i);
                 for (int j = 0; j < posExcl.size(); j++) {
-                    if (arr.get(i).equals(posExcl.get(j))) {
+                    Integer val2 = arr.get(posExcl.get(j));
+                    if (val.equals(val2)) {
                         res++;
                     }
                 }
@@ -194,8 +195,7 @@ public class GACombGraphMoore {
             }
             fileWriter.close();
         } catch (IOException ex) {
-            Logger.getLogger(CombMooreGraph.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
     }
 
@@ -205,8 +205,7 @@ public class GACombGraphMoore {
             new FileWriter(fileDump, true).append(strArra).close();
 
         } catch (IOException ex) {
-            Logger.getLogger(CombMooreGraph.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
     }
 }
