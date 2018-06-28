@@ -185,7 +185,7 @@ public class GACombGraphMoore {
             if (strt.length() > max_length_file) {
                 int length = strt.length();
                 for (int i = 0; i < length; i += max_length_file) {
-                    fileWriter.append(strt.substring(i, Math.min(length, i + max_length_file)));
+                    fileWriter.append(strt.substring(i, Math.min(length, i + max_length_file))).append("\n");
                 }
             } else {
                 fileWriter.append(strt);
