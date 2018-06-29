@@ -5,7 +5,6 @@ package tmp;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,8 +12,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.math3.genetics.*;
 import org.apache.commons.math3.genetics.AbstractListChromosome;
 import org.apache.commons.math3.genetics.ElitisticListPopulation;
@@ -36,7 +33,7 @@ public class GACombGraphMoore {
     private static final int KO = K - 2;
     private static final int LEN = ((KO + 1) * KO) / 2;
     private static final int DIMENSION = LEN;
-    private static final int POPULATION_SIZE = 700;//Math.max(DIMENSION * 10, 200);
+    private static final int POPULATION_SIZE = 300;//Math.max(DIMENSION * 10, 200);
     private static final int NUM_GENERATIONS = DIMENSION * 15;
     private static final double ELITISM_RATE = 0.2;
     private static final double CROSSOVER_RATE = 1;
@@ -49,7 +46,8 @@ public class GACombGraphMoore {
 
     static {
         for (int i = 0; i < DIMENSION; i++) {
-            sequence.add((i % KO));
+            int t = (i % KO);
+            sequence.add(t);
         }
     }
 
@@ -60,7 +58,7 @@ public class GACombGraphMoore {
     public static void main(String... args) {
         // to test a stochastic algorithm is hard, so this will rather be an usage example
 
-        // initialize a new genetic algorithm
+        // initialize a new genetic algorithm   
         GeneticAlgorithm ga = new GeneticAlgorithm(
                 new OnePointCrossover<Integer>(),
                 CROSSOVER_RATE,
@@ -134,7 +132,7 @@ public class GACombGraphMoore {
             if (args.length == DIMENSION || ((args = args[0].split(",")) != null && args.length == DIMENSION)) {
                 List<Integer> start = new ArrayList<>();
                 for (String str : args) {
-                    start.add(Integer.parseInt(str));
+                    start.add(Integer.parseInt(str.replaceAll("\\D", "").trim()));
                 }
                 Chromosome randChrom = new MinPermutations(RandomKey.inducedPermutation(sequence, start));
                 popList.add(randChrom);

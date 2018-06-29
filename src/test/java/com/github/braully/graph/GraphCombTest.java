@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
 import static tmp.CombMooreGraph.mapInvalidPositions;
+import tmp.UtilTmp;
 
 /**
  *
@@ -100,6 +101,127 @@ public class GraphCombTest extends TestCase {
         System.out.println("]");
     }
 
+    public void testIncCombinacao() {
+        int k = 57;
+        int[] initial = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 50, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 52, 51, 54, 53, 0, 4, 2, 3, 7, 5, 6, 10, 8, 9, 13, 11, 12, 16, 14, 15, 19, 17, 18, 22, 20, 21, 25, 23, 24, 28, 26, 27, 31, 29, 30, 34, 32, 33, 37, 35, 36, 40, 38, 39, 43, 41, 42, 46, 44, 45, 49, 47, 48, 53, 54, 51, 52, 5, 6, 7, 3, 4, 9, 11, 12, 8, 10, 14, 15, 13, 17, 18, 16, 20, 21, 19, 23, 24, 22, 26, 27, 25, 29, 30, 28, 32, 33, 31, 35, 36, 34, 38, 39, 37, 41, 42, 40, 44, 45, 43, 47, 48, 46, 50, 51, 54, 53, 52, 49, 0, 1, 8, 9, 10, 6, 7, 12, 14, 15, 11, 17, 13, 19, 20, 16, 22, 18, 24, 25, 21, 27, 23, 29, 30, 26, 32, 28, 34, 35, 31, 37, 33, 39, 40, 36, 42, 38, 44, 45, 41, 47, 43, 49, 52, 53, 54, 46, 48, 50, 51, 8, 1, 10, 5, 7, 11, 13, 9, 16, 17, 12, 18, 14, 15, 21, 23, 24, 19, 20, 26, 22, 28, 30, 25, 31, 27, 33, 29, 36, 37, 32, 38, 34, 35, 41, 43, 44, 39, 40, 46, 42, 48, 51, 53, 54, 52, 45, 47, 49, 50, 0, 2, 11, 12, 6, 14, 15, 9, 10, 18, 19, 13, 21, 22, 16, 17, 25, 26, 20, 28, 29, 23, 24, 32, 33, 27, 35, 30, 36, 31, 39, 40, 34, 42, 37, 43, 38, 46, 47, 41, 49, 52, 54, 51, 53, 44, 50, 45, 48, 11, 2, 4, 13, 15, 16, 10, 9, 19, 12, 20, 14, 23, 17, 25, 18, 27, 28, 21, 22, 24, 31, 33, 26, 34, 36, 29, 30, 38, 32, 41, 42, 35, 44, 37, 45, 39, 40, 48, 53, 54, 51, 52, 43, 50, 49, 46, 47, 0, 1, 3, 16, 8, 17, 18, 20, 21, 12, 13, 14, 15, 23, 26, 19, 27, 29, 30, 22, 32, 24, 25, 35, 28, 37, 38, 39, 31, 33, 41, 34, 36, 45, 46, 47, 51, 52, 54, 53, 50, 40, 42, 49, 43, 48, 44, 3, 1, 4, 17, 18, 16, 21, 20, 22, 12, 13, 14, 15, 27, 28, 19, 30, 31, 32, 23, 25, 24, 26, 37, 38, 29, 40, 41, 42, 33, 43, 34, 35, 49, 51, 53, 54, 52, 50, 36, 39, 44, 48, 45, 47, 46, 0, 2, 5, 19, 20, 22, 23, 21, 24, 15, 13, 14, 16, 17, 18, 31, 32, 33, 34, 35, 36, 25, 26, 27, 28, 29, 30, 43, 44, 45, 48, 49, 50, 52, 54, 53, 51, 37, 38, 41, 39, 47, 46, 40, 42, 5, 2, 4, 19, 23, 22, 24, 25, 26, 27, 16, 14, 15, 17, 18, 20, 21, 33, 34, 35, 36, 38, 28, 39, 30, 29, 31, 32, 44, 49, 48, 53, 54, 52, 51, 50, 40, 37, 46, 47, 41, 42, 43, 45, 0, 1, 3, 6, 7, 23, 22, 24, 25, 26, 17, 18, 29, 19, 21, 20, 35, 36, 34, 37, 27, 39, 40, 28, 42, 30, 47, 48, 51, 52, 54, 53, 49, 50, 31, 32, 33, 45, 46, 38, 41, 44, 43, 3, 1, 4, 6, 7, 23, 25, 24, 27, 28, 29, 30, 20, 18, 19, 21, 22, 37, 38, 39, 26, 41, 42, 40, 46, 51, 47, 53, 54, 52, 48, 50, 49, 32, 31, 34, 33, 45, 43, 44, 35, 36, 0, 2, 5, 6, 7, 8, 26, 28, 29, 30, 31, 32, 33, 34, 20, 21, 22, 23, 24, 25, 27, 41, 46, 47, 49, 52, 54, 53, 51, 50, 48, 35, 36, 43, 45, 44, 37, 39, 38, 42, 40, 5, 2, 4, 6, 7, 8, 29, 30, 31, 32, 33, 34, 35, 22, 23, 21, 24, 25, 40, 26, 48, 54, 52, 45, 46, 50, 51, 47, 49, 27, 28, 37, 36, 44, 43, 38, 42, 39};
+//        int k = 7;
+        int ko = k - 2;
+//        boolean roolback = false;
+        int len = ((ko + 1) * ko) / 2;
+        LinkedList<Integer> arr = new LinkedList<>();
+        Map<Integer, Integer> countval = new HashMap<>();
+        Map<Integer, List<Integer>> mapExcludePosition = mapInvalidPositions(k);
+
+        int maxValCount = 0;
+        if (ko != 0) {
+            maxValCount = len / ko;
+        }
+
+        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
+        Integer[] targetv = new Integer[ko];
+
+        for (int j = 0; j < ko; j++) {
+            targetv[j] = j;
+            countval.put(j, 0);
+        }
+        List<Integer> targetvList = Arrays.asList(targetv);
+
+        for (int i = 0; i < len; i++) {
+            possibilidades.put(i, new LinkedList<>(targetvList));
+        }
+
+        if (initial.length > 0) {
+            for (int i = 0; i < initial.length; i++) {
+                int val = initial[i];
+                arr.add(val);
+                List<Integer> posicoesExcluidas = mapExcludePosition.get(i);
+                clearEmptyCombination(i, val, countval, maxValCount, possibilidades, posicoesExcluidas);
+            }
+        } else {
+            for (int i = 0; i < ko; i++) {
+                arr.add(i);
+                List<Integer> posicoesExcluidas = mapExcludePosition.get(i);
+                clearEmptyCombination(i, i, countval, maxValCount, possibilidades, posicoesExcluidas);
+            }
+        }
+
+        int longest = 0;
+
+        while (arr.size() < len && arr.size() >= ko) {
+            int pos = arr.size();
+            LinkedList<Integer> list = (LinkedList<Integer>) possibilidades.get(pos);
+            List<Integer> posicoesExcluidas = mapExcludePosition.get(pos);
+            Integer val = null;
+            if (!list.isEmpty()) {
+                while ((val = list.poll()) != null && countval.get(val) < maxValCount) {
+
+                }
+            } else {
+
+            }
+            if (val != null && countval.get(val) < maxValCount) {
+                arr.add(val);
+                countval.put(val, countval.get(val) + 1);
+            } else {
+                arr.add(null);
+            }
+            if (val != null) {
+                clearEmptyCombination(pos, val, countval, maxValCount, possibilidades, posicoesExcluidas);
+            }
+
+//            if (pos >= longest) {
+//                longest = pos;
+//                System.out.print("arr[");
+//                System.out.print(longest);
+//                System.out.print("]: ");
+//                System.out.print(arr);
+//                System.out.println();
+//            }
+        }
+
+        for (int j = 0; j < ko; j++) {
+            countval.put(j, 0);
+        }
+
+        Integer[] toArray = arr.toArray(new Integer[0]);
+
+        for (int i = 0; i < toArray.length; i++) {
+            if (toArray[i] != null) {
+                countval.put(toArray[i], countval.get(toArray[i]) + 1);
+            }
+        }
+
+        for (int i = 0; i < toArray.length; i++) {
+            if (toArray[i] == null) {
+                for (int j = 0; j < ko; j++) {
+                    int cont = countval.get(j);
+                    if (cont < maxValCount) {
+                        toArray[i] = j;
+                        countval.put(j, cont + 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.print("\nCount-vals m=" + maxValCount + ": ");
+        System.out.println(countval);
+
+        if (arr.size() < len) {
+            throw new IllegalStateException("Combination impossible");
+        }
+        System.out.print("\nCombinação[" + toArray.length + "]: ");
+        UtilTmp.printArray(toArray);
+
+        boolean test = checkSequence(k, toArray);
+        if (!test) {
+            System.out.println("Invalid sequence");
+        } else {
+            System.out.println("Valid sequence");
+        }
+        assertTrue("Combination invalid", test);
+    }
+
     public void testEstrategiaCombinacao() {
 //        int k = 57;
         int k = 7;
@@ -143,16 +265,6 @@ public class GraphCombTest extends TestCase {
             if (roolback || list.isEmpty()) {
                 Integer valRollback = arr.pollLast();
                 /*  rollback */
-//                if (verbose) {
-//                    System.out.print("deadlock: ");
-//                    try {
-//                        System.out.print(arr.get(ko));
-//                    } catch (Exception e) {
-//                    }
-//                    System.out.print(" empty-list in: ");
-//                    System.out.print(pos);
-//                    System.out.println();
-//                }
                 //rest-countval
                 for (int j = 0; j < ko; j++) {
                     countval.put(j, 0);
@@ -238,14 +350,14 @@ public class GraphCombTest extends TestCase {
         System.out.println("arr[" + seq.length + "]=");
         for (int i = 0; i < seq.length; i++) {
             seq[i] = seq[i] % ko;
-            System.out.print(seq[i]);
-            System.out.print(", ");
+//            System.out.print(seq[i]);
+//            System.out.print(", ");
         }
         System.out.println();
 
         System.out.println("Check sequence 1");
-
-        boolean test = checkSequence(k, seq);
+        boolean test = false;
+//        boolean test = checkSequence(k, seq);
         if (!test) {
             System.out.println("Invalid sequence");
         } else {
@@ -254,7 +366,7 @@ public class GraphCombTest extends TestCase {
 
         System.out.println("Check sequence 2");
         Map<Integer, List<Integer>> mapInvalidPositions = mapInvalidPositions(k);
-        test = checkSequence2(seq, mapInvalidPositions);
+//        test = checkSequence2(seq, mapInvalidPositions);
         if (!test) {
             System.out.println("Invalid sequence");
         } else {
