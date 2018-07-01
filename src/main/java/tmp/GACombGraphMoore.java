@@ -134,7 +134,10 @@ public class GACombGraphMoore {
                 for (String str : args) {
                     start.add(Integer.parseInt(str.replaceAll("\\D", "").trim()));
                 }
+                System.out.println("Induced vector");
+                System.out.println(start);
                 Chromosome randChrom = new MinPermutations(RandomKey.inducedPermutation(sequence, start));
+                System.out.println(randChrom);
                 popList.add(randChrom);
                 i++;
             }
@@ -163,8 +166,12 @@ public class GACombGraphMoore {
             for (int i = 0; i < arr.size(); i++) {
                 int pos = i;
                 List<Integer> posExcl = MAP_EXCLUDED_POSITIONS.get(pos);
+                int divPoint = Collections.binarySearch(posExcl, pos);
+                if (divPoint < 0) {
+                    divPoint = (-(divPoint) - 1);
+                }
                 Integer val = arr.get(i);
-                for (int j = 0; j < posExcl.size(); j++) {
+                for (int j = divPoint; j < posExcl.size(); j++) {
                     Integer val2 = arr.get(posExcl.get(j));
                     if (val.equals(val2)) {
                         res++;
