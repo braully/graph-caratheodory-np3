@@ -3,6 +3,7 @@ package com.github.braully.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,76 +19,6 @@ import tmp.UtilTmp;
 public class GraphCombTest extends TestCase {
 
     private static boolean verbose = true;
-
-    public Map<Integer, List<Integer>> mapInvalidPositions(int k) {
-//        int k = 57;
-        int ko = k - 2;
-        int len = ((ko + 1) * ko) / 2;
-        Map<Integer, List<Integer>> excludeMapList = new HashMap<>();
-        boolean verbose = false;
-
-        int[] arrup = new int[len];
-        int[] arrdown = new int[len];
-        int offsetup = ko - 1;
-        int up = 0;
-        int down = 1;
-
-        for (int i = 0; i < len; i++) {
-            arrup[i] = up;
-            arrdown[i] = down++;
-            if (i == offsetup) {
-                up++;
-                offsetup += (ko - up);
-            }
-            if (down == ko + 1) {
-                down = up + 1;
-            }
-            excludeMapList.put(i, new ArrayList<>());
-        }
-        if (verbose) {
-            System.out.println("Seq: ");
-        }
-        for (int i = 0; i < len; i++) {
-            up = arrup[i];
-            down = arrdown[i];
-            int count = 0;
-            int countko = 0;
-            StringBuilder sb = new StringBuilder();
-            if (verbose) {
-                sb.append(String.format("%4d ", i));
-                sb.append("|%4d|:");
-            }
-            List<Integer> listExclude = excludeMapList.get(i);
-            for (int j = 0; j < len; j++) {
-                if (i != j && (arrdown[j] == up || arrdown[j] == down || arrup[j] == up)) {
-                    if (verbose) {
-                        sb.append(String.format("%4d ", j));
-                    }
-                    listExclude.add(j);
-                    List<Integer> list2 = excludeMapList.get(j);
-                    if (!list2.contains(i)) {
-                        list2.add(i);
-                    }
-                    count++;
-                    if (j < ko) {
-                        countko++;
-                    }
-                }
-            }
-            if (countko >= ko) {
-                throw new IllegalStateException("Impossible graph");
-            }
-            if (verbose) {
-                System.out.printf(sb.toString(), count);
-                System.out.println();
-            }
-        }
-
-        for (int i = 0; i < len; i++) {
-            Collections.sort(excludeMapList.get(i));
-        }
-        return excludeMapList;
-    }
 
     private void printArray(int[] arr) {
         int len = arr.length;
@@ -197,9 +128,9 @@ public class GraphCombTest extends TestCase {
     }
 
     public void testCheckSequence() {
-//        if (true) {
-//            return;
-//        }
+        if (true) {
+            return;
+        }
         System.out.println("check big sequence");
         int k = 57;
         int ko = k - 2;
@@ -264,10 +195,11 @@ public class GraphCombTest extends TestCase {
     }
 
     public void testCombTotal() {
-        if (true) {
-            return;
-        }
+//        if (true) {
+//            return;
+//        }
         int k = 57;
+//        int k = 7;
         int ko = k - 2;
 
         Integer[] startArray = new Integer[ko];
@@ -275,7 +207,8 @@ public class GraphCombTest extends TestCase {
             startArray[i] = i;
         }
 
-        Integer[] arr = fillArray(k, startArray);
+//        Integer[] arr = fillArray(k, startArray);
+        Integer[] arr = fillArray2(k, startArray);
 
         System.out.print("\nCombinação-final:");
         UtilTmp.printArray(arr);
@@ -454,6 +387,196 @@ public class GraphCombTest extends TestCase {
         return arr;
     }
 
+    public Integer[] fillArray2(int k, Integer[] startArray) {
+        int ko = k - 2;
+        int len = ((ko + 1) * ko) / 2;
+        Integer[] arr = new Integer[len];
+        Map<Integer, Integer> countval = new HashMap<>();
+        Map<Integer, List<Integer>> mapExcludePosition = mapInvalidPositions(k);
+
+        int maxValCount = 0;
+        if (ko != 0) {
+            maxValCount = len / ko;
+        }
+
+        Map<Integer, List<Integer>> possibilidades = new HashMap<>(len);
+        Integer[] targetv = new Integer[ko];
+
+        for (int j = 0; j < ko; j++) {
+            targetv[j] = j;
+            countval.put(j, 0);
+        }
+        List<Integer> targetvList = Arrays.asList(targetv);
+
+        for (int i = 0; i < len; i++) {
+            possibilidades.put(i, new LinkedList<>(targetvList));
+        }
+
+        for (int i = 0; i < startArray.length; i++) {
+            arr[i] = startArray[i];
+            List<Integer> posicoesExcluidas = mapExcludePosition.get(i);
+            clearEmptyCombination(i, arr[i], countval, maxValCount, possibilidades, posicoesExcluidas);
+        }
+
+        int[] deltaposition = new int[len];
+
+        List<Integer> remainPositions = new ArrayList<>();
+        for (int i = ko; i < len; i++) {
+            remainPositions.add(i);
+        }
+
+        Comparator<Integer> comPossibis = new Comparator<Integer>() {
+            @Override
+            public int compare(Integer pos1, Integer pos2) {
+                int sizepos1 = possibilidades.get(pos1).size();
+                int sizepos2 = possibilidades.get(pos2).size();
+                if (sizepos1 == 0) {
+                    sizepos1 = Integer.MAX_VALUE;
+                }
+                if (sizepos2 == 0) {
+                    sizepos2 = Integer.MAX_VALUE;
+                }
+                return Integer.compare(sizepos1, sizepos2);
+            }
+        };
+
+        Collections.sort(remainPositions, comPossibis);
+
+        while (!remainPositions.isEmpty()) {
+            Integer i = remainPositions.remove(0);
+            Integer bestVal = null;
+            Integer weight = 0;
+            List<Integer> posicoesExcluidas = mapExcludePosition.get(i);
+            int pesoAtual = 0;
+            int maiorPossi = 0;
+            int menorPossi = 0;
+            for (int j = ko; j < len; j++) {
+                List<Integer> possi = possibilidades.get(j);
+                int posiz = possi.size();
+                pesoAtual = pesoAtual + posiz;
+                if (j == 0) {
+                    maiorPossi = posiz;
+                    menorPossi = posiz;
+                } else {
+                    if (posiz > maiorPossi) {
+                        maiorPossi = posiz;
+                    }
+                    if (posiz < menorPossi) {
+                        menorPossi = posiz;
+                    }
+                }
+            }
+
+            List<Integer> posis = null;
+            List<Integer> listaPossibilidades = possibilidades.get(i);
+
+            if (!listaPossibilidades.isEmpty()) {
+                posis = listaPossibilidades;
+            } else {
+                posis = targetvList;
+            }
+
+            for (Integer j : posis) {
+                int peso = 0;
+                int val = j;
+                int delta = 0;
+                int menorPossiLocal = 0;
+
+                for (int u = 0; u < deltaposition.length; u++) {
+                    deltaposition[u] = 0;
+                }
+
+                // Remover val das futuras listas de possibilidade
+                if (countval.get(val) < maxValCount) {
+                    for (int z = 0; z < posicoesExcluidas.size(); z++) {
+                        Integer posicao = posicoesExcluidas.get(z);
+                        List<Integer> possiPosi = possibilidades.get(posicao);
+                        if (arr[posicao] == null && possiPosi.contains(val)) {
+                            delta++;
+                            deltaposition[z]++;
+                        }
+                    }
+//                    peso = pesoAtual - delta + locmenorPossi;
+
+                    for (int x = i + 1; x < len; x++) {
+                        List<Integer> possi = possibilidades.get(x);
+                        int posiz = possi.size() - deltaposition[x];
+                        if (x == i + 1) {
+                            menorPossiLocal = posiz;
+                        } else {
+                            if (posiz < menorPossiLocal) {
+                                menorPossiLocal = posiz;
+                            }
+                        }
+                    }
+
+                    if (menorPossiLocal < 0) {
+                        menorPossiLocal = 0;
+                    }
+
+                    peso = pesoAtual - delta + menorPossiLocal;
+                }
+                if (peso > weight) {
+                    bestVal = j;
+                    weight = peso;
+                }
+            }
+
+            if (bestVal != null) {
+//                clearEmptyCombination(i, bestVal, countval, maxValCount, possibilidades, posicoesExcluidas);
+                Integer pos = i;
+                Integer cur = countval.get(bestVal);
+                countval.put(bestVal, cur + 1);
+                // Remover val das futuras listas de possibilidade
+                if (countval.get(bestVal) >= maxValCount) {
+                    for (int ii = pos; ii < len; ii++) {
+                        List<Integer> possiPosi = possibilidades.get(ii);
+                        possiPosi.remove(bestVal);
+                    }
+                }
+                for (int ii = 0; ii < posicoesExcluidas.size(); ii++) {
+                    Integer posicao = posicoesExcluidas.get(ii);
+                    if (arr[posicao] == null) {
+                        List<Integer> possiPosi = possibilidades.get(posicao);
+                        possiPosi.remove(bestVal);
+                    }
+                }
+            }
+            arr[i] = bestVal;
+            Collections.sort(remainPositions, comPossibis);
+        }
+
+        System.out.print("\nCombinação-ini:");
+        UtilTmp.printArray(arr);
+
+        for (int j = 0; j < ko; j++) {
+            countval.put(j, 0);
+        }
+
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                countval.put(arr[i], countval.get(arr[i]) + 1);
+            }
+        }
+
+        System.out.print("\nCount-val:");
+        System.out.println(countval);
+
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == null) {
+                for (int j = 0; j < ko; j++) {
+                    int cont = countval.get(j);
+                    if (cont < maxValCount) {
+                        arr[i] = j;
+                        countval.put(j, cont + 1);
+                        break;
+                    }
+                }
+            }
+        }
+        return arr;
+    }
+
     private int checkVal(Integer[] arr, Integer pos, Integer val, Map<Integer, Integer> countval, int maxValCount, Map<Integer, List<Integer>> possibilidades, Map<Integer, List<Integer>> mapExcludePosition) {
         int peso = 0;
         int delta = 0;
@@ -492,10 +615,17 @@ public class GraphCombTest extends TestCase {
         return clearEmptyCombination(pos, val, countval, maxValCount, possibilidades, posicoesExcluidas, true);
     }
 
-    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int max_val_count, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas, boolean failEmpty) {
+    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int maxValCount, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas, boolean failEmpty) {
+        return clearEmptyCombination(pos, val, countval, maxValCount, possibilidades, posicoesExcluidas, failEmpty, false);
+    }
+
+    private boolean clearEmptyCombination(Integer pos, Integer val, Map<Integer, Integer> countval, int max_val_count, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas, boolean failEmpty, boolean backward) {
         boolean roolback = false;
         int len = possibilidades.size();
         int divPoint = Collections.binarySearch(posicoesExcluidas, pos);
+        if (backward) {
+            divPoint = 0;
+        }
         if (divPoint < 0) {
             divPoint = (-(divPoint) - 1);
         }
@@ -503,8 +633,8 @@ public class GraphCombTest extends TestCase {
         countval.put(val, cur + 1);
         // Remover val das futuras listas de possibilidade
         if (countval.get(val) >= max_val_count) {
-            for (int i = pos; i < len; i++) {
-                List<Integer> possiPosi = possibilidades.get(i);
+            for (int ii = pos; ii < len; ii++) {
+                List<Integer> possiPosi = possibilidades.get(ii);
                 possiPosi.remove(val);
                 if (failEmpty && possiPosi.isEmpty()) {
                     roolback = true;
@@ -512,8 +642,8 @@ public class GraphCombTest extends TestCase {
                 }
             }
         }
-        for (int i = divPoint; i < posicoesExcluidas.size(); i++) {
-            Integer posicao = posicoesExcluidas.get(i);
+        for (int ii = divPoint; ii < posicoesExcluidas.size(); ii++) {
+            Integer posicao = posicoesExcluidas.get(ii);
             List<Integer> possiPosi = possibilidades.get(posicao);
             possiPosi.remove(val);
             if (failEmpty && possiPosi.isEmpty()) {

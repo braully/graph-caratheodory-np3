@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +34,8 @@ public class CombMooreGraph {
 //        int k = 57;
         int ko = k - 2;
         int len = ((ko + 1) * ko) / 2;
-        Map<Integer, List<Integer>> excludeMapList = new HashMap<>();
+
+        Map<Integer, Set<Integer>> excludeMapSet = new HashMap<>();
         boolean verbose = false;
 
         int[] arrup = new int[len];
@@ -41,7 +44,7 @@ public class CombMooreGraph {
         int up = 0;
         int down = 1;
 
-        for (int i = 0; i < len; i++) {
+        for (Integer i = 0; i < len; i++) {
             arrup[i] = up;
             arrdown[i] = down++;
             if (i == offsetup) {
@@ -51,12 +54,12 @@ public class CombMooreGraph {
             if (down == ko + 1) {
                 down = up + 1;
             }
-            excludeMapList.put(i, new ArrayList<>());
+            excludeMapSet.put(i, new HashSet<>());
         }
         if (verbose) {
             System.out.println("Seq: ");
         }
-        for (int i = 0; i < len; i++) {
+        for (Integer i = 0; i < len; i++) {
             up = arrup[i];
             down = arrdown[i];
             int count = 0;
@@ -66,17 +69,15 @@ public class CombMooreGraph {
                 sb.append(String.format("%4d ", i));
                 sb.append("|%4d|:");
             }
-            List<Integer> listExclude = excludeMapList.get(i);
+            Set<Integer> listExclude = excludeMapSet.get(i);
             for (int j = 0; j < len; j++) {
                 if (i != j && (arrdown[j] == up || arrdown[j] == down || arrup[j] == up)) {
                     if (verbose) {
                         sb.append(String.format("%4d ", j));
                     }
                     listExclude.add(j);
-                    List<Integer> list2 = excludeMapList.get(j);
-                    if (!list2.contains(i)) {
-                        list2.add(i);
-                    }
+                    Set<Integer> list2 = excludeMapSet.get(j);
+                    list2.add(i);
                     count++;
                     if (j < ko) {
                         countko++;
@@ -92,8 +93,12 @@ public class CombMooreGraph {
             }
         }
 
-        for (int i = 0; i < len; i++) {
-            Collections.sort(excludeMapList.get(i));
+        Map<Integer, List<Integer>> excludeMapList = new HashMap<>();
+
+        for (Integer i = 0; i < len; i++) {
+            List<Integer> list = new ArrayList<>(excludeMapSet.get(i));
+            Collections.sort(list);
+            excludeMapList.put(i, list);
         }
         return excludeMapList;
     }
