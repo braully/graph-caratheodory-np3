@@ -28,7 +28,8 @@ public class CombMooreGraph {
 
     private static boolean verbose = true;
     private static final long HOUR = 1000 * 60 * 60 * 12;
-    private static String fileDump = System.getenv("user.dir") + File.separator + ".comb-moore-java.txt";
+//    private static String fileDump = System.getenv("user.dir") + File.separator + ".comb-moore-java.txt";
+    private static String fileDump = "/home/strike/.comb-moore-java.txt";
 
     public static Map<Integer, List<Integer>> mapInvalidPositions(int k) {
 //        int k = 57;
@@ -160,8 +161,13 @@ public class CombMooreGraph {
 
         if (args != null && args.length > 0) {
             for (String str : args) {
-                roolback = clearEmptyCombination(arr.size(), Integer.parseInt(str.replaceAll("\\D", "").trim()), countval, maxValCount, possibilidades, mapExcludePosition);
+                str = str.replaceAll("\\D", "").trim();
+//                System.out.println(str);
+                Integer val = Integer.parseInt(str);
+                arr.add(val);
+                roolback = clearEmptyCombination(arr.size(), val, countval, maxValCount, possibilidades, mapExcludePosition);
                 if (roolback) {
+                    System.err.println("Failed val " + str + " in position " + arr.size());
                     break;
                 }
             }

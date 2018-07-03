@@ -37,7 +37,7 @@ public class GACombGraphMoore {
     private static final int NUM_GENERATIONS = DIMENSION * 15;
     private static final double ELITISM_RATE = 0.2;
     private static final double CROSSOVER_RATE = 1;
-    private static final double MUTATION_RATE = 0.14;
+    private static final double MUTATION_RATE = 0.25;
     private static final int TOURNAMENT_ARITY = 2;
     private static final Map<Integer, List<Integer>> MAP_EXCLUDED_POSITIONS = Collections.unmodifiableMap(mapInvalidPositions(K));
 
