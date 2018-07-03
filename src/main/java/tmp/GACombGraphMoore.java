@@ -33,11 +33,11 @@ public class GACombGraphMoore {
     private static final int KO = K - 2;
     private static final int LEN = ((KO + 1) * KO) / 2;
     private static final int DIMENSION = LEN;
-    private static final int POPULATION_SIZE = 400;//Math.max(DIMENSION * 10, 200);
+    private static final int POPULATION_SIZE = 300;//Math.max(DIMENSION * 10, 200);
     private static final int NUM_GENERATIONS = DIMENSION * 15;
     private static final double ELITISM_RATE = 0.2;
     private static final double CROSSOVER_RATE = 1;
-    private static final double MUTATION_RATE = 0.12;
+    private static final double MUTATION_RATE = 0.14;
     private static final int TOURNAMENT_ARITY = 2;
     private static final Map<Integer, List<Integer>> MAP_EXCLUDED_POSITIONS = Collections.unmodifiableMap(mapInvalidPositions(K));
 
