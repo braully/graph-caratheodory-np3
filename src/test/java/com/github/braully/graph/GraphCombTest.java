@@ -420,9 +420,12 @@ public class GraphCombTest extends TestCase {
 
         int[] deltaposition = new int[len];
 
+        int[] countArr = new int[len - ko];
+
         List<Integer> remainPositions = new ArrayList<>();
         for (int i = ko; i < len; i++) {
             remainPositions.add(i);
+            countArr[i - ko] = 0;
         }
 
         Comparator<Integer> comPossibis = new Comparator<Integer>() {
@@ -439,31 +442,23 @@ public class GraphCombTest extends TestCase {
                 return Integer.compare(sizepos1, sizepos2);
             }
         };
-
         Collections.sort(remainPositions, comPossibis);
-
+        int count = 0;
+        List<Integer> bestValEmpate = new ArrayList<>();
         while (!remainPositions.isEmpty()) {
+            count++;
             Integer i = remainPositions.remove(0);
             Integer bestVal = null;
             Integer weight = 0;
+            int menorPossi = 0;
+            bestValEmpate.clear();
             List<Integer> posicoesExcluidas = mapExcludePosition.get(i);
             int pesoAtual = 0;
-            int maiorPossi = 0;
-            int menorPossi = 0;
             for (int j = ko; j < len; j++) {
                 List<Integer> possi = possibilidades.get(j);
-                int posiz = possi.size();
-                pesoAtual = pesoAtual + posiz;
-                if (j == 0) {
-                    maiorPossi = posiz;
-                    menorPossi = posiz;
-                } else {
-                    if (posiz > maiorPossi) {
-                        maiorPossi = posiz;
-                    }
-                    if (posiz < menorPossi) {
-                        menorPossi = posiz;
-                    }
+                if (arr[j] == null) {
+                    int posiz = possi.size();
+                    pesoAtual = pesoAtual + posiz;
                 }
             }
 
@@ -484,7 +479,7 @@ public class GraphCombTest extends TestCase {
                 int peso = 0;
                 int val = j;
                 int delta = 0;
-                int menorPossiLocal = 0;
+                int menorPossiLocal = -1;
 
                 for (int u = 0; u < deltaposition.length; u++) {
                     deltaposition[u] = 0;
@@ -497,19 +492,21 @@ public class GraphCombTest extends TestCase {
                         List<Integer> possiPosi = possibilidades.get(posicao);
                         if (arr[posicao] == null && possiPosi.contains(val)) {
                             delta++;
-                            deltaposition[z]++;
+                            deltaposition[posicao]++;
                         }
                     }
 //                    peso = pesoAtual - delta + locmenorPossi;
 
-                    for (int x = i + 1; x < len; x++) {
-                        List<Integer> possi = possibilidades.get(x);
-                        int posiz = possi.size() - deltaposition[x];
-                        if (x == i + 1) {
-                            menorPossiLocal = posiz;
-                        } else {
-                            if (posiz < menorPossiLocal) {
+                    for (int x = ko; x < len; x++) {
+                        if (arr[x] == null) {
+                            List<Integer> possi = possibilidades.get(x);
+                            int posiz = possi.size() - deltaposition[x];
+                            if (menorPossiLocal == -1) {
                                 menorPossiLocal = posiz;
+                            } else {
+                                if (posiz < menorPossiLocal) {
+                                    menorPossiLocal = posiz;
+                                }
                             }
                         }
                     }
@@ -517,21 +514,40 @@ public class GraphCombTest extends TestCase {
                     if (menorPossiLocal < 0) {
                         menorPossiLocal = 0;
                     }
-                    peso = pesoAtual - delta - countval.get(j);
+
+                    peso = pesoAtual - delta;
 //                    peso = pesoAtual + menorPossiLocal;
-//                    peso = pesoAtual - delta;
 //                    peso = pesoAtual + menorPossiLocal - delta;
+//                    peso = pesoAtual - delta - countval.get(j);
+//                    peso = pesoAtual + menorPossiLocal;
+//                    peso = pesoAtual + menorPossiLocal - delta - countval.get(j);
                 }
                 if (peso > weight) {
                     bestVal = j;
                     weight = peso;
+                    menorPossi = menorPossiLocal;
+                    bestValEmpate.clear();
+                    bestValEmpate.add(j);
                 } else if (peso == weight) {
-                    System.out.println("Posição " + i + " Peso " + peso + " empatado para valores " + bestVal + " e " + j);
+                    bestValEmpate.add(j);
+                    //desempate
+//                    if (menorPossiLocal > menorPossi) {
+////                    if (countval.get(bestVal) > countval.get(j)) {
+////                        System.out.println("Posição " + i + " Peso " + peso + " empatado para valores " + bestVal + " e " + j);
+//                        bestVal = j;
+//                        weight = peso;
+//                        menorPossi = menorPossiLocal;
+//                    }
+//                    else if (countval.get(bestVal) > countval.get(j)) {
+//                        bestVal = j;
+//                        weight = peso;
+//                        menorPossi = menorPossiLocal;
+//                    }
+//                    System.out.println("Posição " + i + " Peso " + peso + " empatado para valores " + bestVal + " e " + j);
                 }
             }
 
             if (bestVal != null) {
-//                clearEmptyCombination(i, bestVal, countval, maxValCount, possibilidades, posicoesExcluidas);
                 Integer pos = i;
                 Integer cur = countval.get(bestVal);
                 countval.put(bestVal, cur + 1);
@@ -553,6 +569,8 @@ public class GraphCombTest extends TestCase {
                 }
             }
             arr[i] = bestVal;
+            countArr[count]++;
+            count++;
             Collections.sort(remainPositions, comPossibis);
         }
 
