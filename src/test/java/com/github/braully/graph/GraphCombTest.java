@@ -701,7 +701,7 @@ public class GraphCombTest extends TestCase {
             if (countArr[count] < bestVals.size()) {
                 bestVal = bestVals.get(countArr[count]);
                 Integer pos = i;
-                rollback = clearAuxPosition(countval, bestVal, maxValCount, pos, len, possibilidades, posicoesExcluidas, arr, remainPositions);
+                rollback = clearAuxPosition(countval, bestVal, maxValCount, pos, len, possibilidades, mapExcludePosition, arr, remainPositions);
 //                if (!rollback) {
                 arr[i] = bestVal;
                 verticeAdded[count] = bestVal;
@@ -715,12 +715,13 @@ public class GraphCombTest extends TestCase {
                 } else {
                     System.out.print("...erro");
                 }
+                System.out.print(" |");
+                System.out.print(remainPositions.size());
 //                }
             } else {
                 rollback = true;
             }
             System.out.println();
-
             if (rollback) {
                 for (int x = count; x < countArr.length; x++) {
                     countArr[x] = 0;
@@ -744,9 +745,8 @@ public class GraphCombTest extends TestCase {
                 System.out.print(" Count ");
                 System.out.println(count);
 
-                System.out.print("Arr: ");
-                UtilTmp.printArray(arr);
-
+//                System.out.print("Arr: ");
+//                UtilTmp.printArray(arr);
                 System.out.println("Re-initvars");
 //                initVars(ko, countval, len, possibilidades, startArray, arr, mapExcludePosition, maxValCount);
                 initVars(ko, countval, len, possibilidades, startArray, arr, mapExcludePosition, maxValCount);
@@ -755,25 +755,41 @@ public class GraphCombTest extends TestCase {
                 for (int x = 0; x < count; x++) {
                     Integer val = verticeAdded[x];
                     Integer pos = positionAdded[x];
-                    System.out.print("Re-add-Posicao-");
-                    System.out.print(pos);
-                    System.out.print(" val ");
-                    System.out.print(val);
-                    boolean tmprollback = clearAuxPosition(countval, val, maxValCount, pos, len, possibilidades, posicoesExcluidas, arr, remainPositions);
+//                    System.out.print("Re-add-Posicao-");
+//                    System.out.print(pos);
+//                    System.out.print(" val ");
+//                    System.out.print(val);
+                    boolean tmprollback = clearAuxPosition(countval, val, maxValCount, pos, len, possibilidades, mapExcludePosition, arr, remainPositions);
                     arr[pos] = val;
                     rollback = tmprollback || rollback;
-                    System.out.println("");
+//                    System.out.println("");
+                    if (rollback) {
+                        System.err.println("Adição de valor " + val + " na posição " + pos + " ilegal");
+                        throw new IllegalStateException("Estado ilegal após rollback!");
+                    }
                 }
                 System.out.print("CountArr: ");
                 UtilTmp.printArray(countArr);
-                if (rollback) {
-                    throw new IllegalStateException("Estado ilegal após rollback!");
-                }
+//                if (rollback) {
+//                    throw new IllegalStateException("Estado ilegal após rollback!");
+//                }
                 //rollback
 //                continue
+
+                //recalc remains positions
+                remainPositions.clear();
+                for (int x = 0; x < arr.length; x++) {
+                    if (arr[x] == null) {
+                        remainPositions.add(x);
+                    }
+                }
             }
             Collections.sort(remainPositions, comPossibis);
         }
+
+        System.out.println("Count: " + count);
+        System.out.print("CountArr: ");
+        UtilTmp.printArray(countArr);
 
         System.out.print("\nCombinação-ini:");
         UtilTmp.printArray(arr);
@@ -806,8 +822,9 @@ public class GraphCombTest extends TestCase {
         return arr;
     }
 
-    private boolean clearAuxPosition(Map<Integer, Integer> countval, Integer bestVal, int maxValCount, Integer pos, int len, Map<Integer, List<Integer>> possibilidades, List<Integer> posicoesExcluidas, Integer[] arr, List<Integer> remainPositions) {
+    private boolean clearAuxPosition(Map<Integer, Integer> countval, Integer bestVal, int maxValCount, Integer pos, int len, Map<Integer, List<Integer>> possibilidades, Map<Integer, List<Integer>> mapExcludePosition, Integer[] arr, List<Integer> remainPositions) {
         boolean ret = false;
+        List<Integer> posicoesExcluidas = mapExcludePosition.get(pos);
         Integer cur = countval.get(bestVal);
         countval.put(bestVal, cur + 1);
         // Remover val das futuras listas de possibilidade
@@ -816,7 +833,7 @@ public class GraphCombTest extends TestCase {
                 List<Integer> possiPosi = possibilidades.get(ii);
                 if (!pos.equals(ii) && possiPosi.remove(bestVal) && possiPosi.isEmpty()) {
                     if (arr[ii] == null) {
-                        System.out.println("Posição: " + ii + " esvaziada por estouro de count valor " + bestVal + " usado na posição " + pos + " faltando " + remainPositions.size() + " posições");
+//                        System.out.println(" Posição: " + ii + " esvaziada por estouro de count valor " + bestVal + " usado na posição " + pos + " faltando " + remainPositions.size() + " posições");
                         ret = true;
                     }
                 }
@@ -827,7 +844,7 @@ public class GraphCombTest extends TestCase {
             if (!pos.equals(posicao) && arr[posicao] == null) {
                 List<Integer> possiPosi = possibilidades.get(posicao);
                 if (possiPosi.remove(bestVal) && possiPosi.isEmpty()) {
-                    System.out.println("Posição: " + posicao + " esvaziada por valor " + bestVal + " na posição " + pos + " faltando " + remainPositions.size() + " posições");
+//                    System.out.println("Posição: " + posicao + " esvaziada por valor " + bestVal + " na posição " + pos + " faltando " + remainPositions.size() + " posições");
                     ret = true;
                 }
             }
