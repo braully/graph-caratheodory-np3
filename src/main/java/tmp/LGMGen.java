@@ -1,13 +1,10 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -18,8 +15,10 @@ public class LGMGen {
 
     private static final long HOUR = 1000 * 60 * 60 * 12;
     private static String fileDump = "/home/strike/.comb-moore-java.txt";
-    private static final int K = 7;
+//    private static final int K = 7;
+    private static final int K = 57;
     private static final int NUM_ARESTAS = ((K * K + 1) * K) / 2;
+    private static Queue<Integer> queue = new LinkedList<Integer>();
 
     private static final String[] GRAPH_EDGE_STRING = new String[]{"0-56,1-57,2-58,3-59,4-60,5-61,6-62,7-63,8-64,9-65,10-66,11-67,12-68,13-69,14-70,15-71,16-72,17-73,18-74,19-75,20-76,21-77,22-78,23-79,24-80,25-81,26-82,27-83,28-84,29-85,30-86,31-87,32-88,33-89,34-90,35-91,36-92,37-93,38-94,39-95,40-96,41-97,42-98,43-99,44-100,45-101,46-102,47-103,48-104,49-105,50-106,51-107,52-108,53-109,54-110,55-111,",
         "0-112,112-3192,112-57,56-113,3249-3192,113-3192,113-1,0-114,114-3193,114-58,56-115,3249-3193,115-3193,115-2,0-116,116-3194,116-59,56-117,3249-3194,117-3194,117-3,0-118,118-3195,118-60,56-119,3249-3195,119-3195,119-4,0-120,120-3196,120-61,56-121,3249-3196,121-3196,121-5,0-122,122-3197,122-62,56-123,3249-3197,123-3197,123-6,0-124,124-3198,124-63,56-125,3249-3198,125-3198,125-7,0-126,126-3199,126-64,56-127,3249-3199,127-3199,127-8,0-128,128-3200,128-65,56-129,3249-3200,129-3200,129-9,0-130,130-3201,130-66,56-131,3249-3201,131-3201,131-10,0-132,132-3202,132-67,56-133,3249-3202,133-3202,133-11,0-134,134-3203,134-68,56-135,3249-3203,135-3203,135-12,0-136,136-3204,136-69,56-137,3249-3204,137-3204,137-13,0-138,138-3205,138-70,56-139,3249-3205,139-3205,139-14,0-140,140-3206,140-71,56-141,3249-3206,141-3206,141-15,0-142,142-3207,142-72,56-143,3249-3207,143-3207,143-16,0-144,144-3208,144-73,56-145,3249-3208,145-3208,145-17,0-146,146-3209,146-74,56-147,3249-3209,147-3209,147-18,0-148,148-3210,148-75,56-149,3249-3210,149-3210,149-19,0-150,150-3211,150-76,56-151,3249-3211,151-3211,151-20,0-152,152-3212,152-77,56-153,3249-3212,153-3212,153-21,0-154,154-3213,154-78,56-155,3249-3213,155-3213,155-22,0-156,156-3214,156-79,56-157,3249-3214,157-3214,157-23,0-158,158-3215,158-80,56-159,3249-3215,159-3215,159-24,0-160,160-3216,160-81,56-161,3249-3216,161-3216,161-25,0-162,162-3217,162-82,56-163,3249-3217,163-3217,163-26,0-164,164-3218,164-83,56-165,3249-3218,165-3218,165-27,0-166,166-3219,166-84,56-167,3249-3219,167-3219,167-28,0-168,168-3220,168-85,56-169,3249-3220,169-3220,169-29,0-170,170-3221,170-86,56-171,3249-3221,171-3221,171-30,0-172,172-3222,172-87,56-173,3249-3222,173-3222,173-31,0-174,174-3223,174-88,56-175,3249-3223,175-3223,175-32,0-176,176-3224,176-89,56-177,3249-3224,177-3224,177-33,0-178,178-3225,178-90,56-179,3249-3225,179-3225,179-34,0-180,180-3226,180-91,56-181,3249-3226,181-3226,181-35,0-182,182-3227,182-92,56-183,3249-3227,183-3227,183-36,0-184,184-3228,184-93,56-185,3249-3228,185-3228,185-37,0-186,186-3229,186-94,56-187,3249-3229,187-3229,187-38,0-188,188-3230,188-95,56-189,3249-3230,189-3230,189-39,0-190,190-3231,190-96,56-191,3249-3231,191-3231,191-40,0-192,192-3232,192-97,56-193,3249-3232,193-3232,193-41,0-194,194-3233,194-98,56-195,3249-3233,195-3233,195-42,0-196,196-3234,196-99,56-197,3249-3234,197-3234,197-43,0-198,198-3235,198-100,56-199,3249-3235,199-3235,199-44,0-200,200-3236,200-101,56-201,3249-3236,201-3236,201-45,0-202,202-3237,202-102,56-203,3249-3237,203-3237,203-46,0-204,204-3238,204-103,56-205,3249-3238,205-3238,205-47,0-206,206-3239,206-104,56-207,3249-3239,207-3239,207-48,0-208,208-3240,208-105,56-209,3249-3240,209-3240,209-49,0-210,210-3241,210-106,56-211,3249-3241,211-3241,211-50,0-212,212-3242,212-107,56-213,3249-3242,213-3242,213-51,0-214,214-3243,214-108,56-215,3249-3243,215-3243,215-52,0-216,216-3244,216-109,56-217,3249-3244,217-3244,217-53,0-218,218-3245,218-110,56-219,3249-3245,219-3245,219-54,0-220,220-3246,220-111,56-221,3249-3246,221-3246,221-55,",
@@ -80,30 +79,30 @@ public class LGMGen {
     private static final UndirectedSparseGraphTO<Integer, Integer> subgraph = new UndirectedSparseGraphTO<>();
 
     static {
-//        for (String str : GRAPH_EDGE_STRING) {
-//            String[] edgestrs = str.split(",");
-//            if (edgestrs != null && edgestrs.length > 0) {
-//                for (String edgestr : edgestrs) {
-//                    String[] verts = edgestr.split("-");
-//                    if (verts != null && verts.length >= 2) {
-//                        subgraph.addEdge(Integer.parseInt(verts[0].trim()), Integer.parseInt(verts[1].trim()));
-//                    }
-//                }
-//            }
-//        }
-        subgraph.addEdgeC(0, 6).addEdgeC(1, 7).addEdgeC(2, 8).addEdgeC(3, 9).addEdgeC(4, 10).addEdgeC(5, 11).addEdgeC(0, 12).addEdgeC(12, 42).addEdgeC(12, 7)
-                .addEdgeC(6, 13).addEdgeC(49, 42).addEdgeC(13, 42).addEdgeC(13, 1).addEdgeC(0, 14).addEdgeC(14, 43).addEdgeC(14, 8).addEdgeC(6, 15).addEdgeC(49, 43)
-                .addEdgeC(15, 43).addEdgeC(15, 2).addEdgeC(0, 16).addEdgeC(16, 44).addEdgeC(16, 9).addEdgeC(6, 17).addEdgeC(49, 44).addEdgeC(17, 44).addEdgeC(17, 3).addEdgeC(0, 18)
-                .addEdgeC(18, 45).addEdgeC(18, 10).addEdgeC(6, 19).addEdgeC(49, 45).addEdgeC(19, 45).addEdgeC(19, 4).addEdgeC(0, 20).addEdgeC(20, 46).addEdgeC(20, 11).addEdgeC(6, 21)
-                .addEdgeC(49, 46).addEdgeC(21, 46).addEdgeC(21, 5).addEdgeC(1, 22).addEdgeC(22, 44).addEdgeC(22, 8).addEdgeC(7, 23).addEdgeC(49, 44).addEdgeC(23, 44).addEdgeC(23, 2).addEdgeC(1, 24)
-                .addEdgeC(24, 45).addEdgeC(24, 9).addEdgeC(7, 25).addEdgeC(49, 45).addEdgeC(25, 45).addEdgeC(25, 3).addEdgeC(1, 26).addEdgeC(26, 46).addEdgeC(26, 10).addEdgeC(7, 27).addEdgeC(49, 46)
-                .addEdgeC(27, 46).addEdgeC(27, 4).addEdgeC(1, 28).addEdgeC(28, 43).addEdgeC(28, 11).addEdgeC(7, 29).addEdgeC(49, 43).addEdgeC(29, 43).addEdgeC(29, 5).addEdgeC(2, 30).addEdgeC(30, 46)
-                .addEdgeC(30, 9).addEdgeC(8, 31).addEdgeC(49, 46).addEdgeC(31, 46).addEdgeC(31, 3).addEdgeC(2, 32).addEdgeC(32, 42).addEdgeC(32, 10).addEdgeC(8, 33).addEdgeC(49, 42).addEdgeC(33, 42)
-                .addEdgeC(33, 4).addEdgeC(2, 34).addEdgeC(34, 45).addEdgeC(34, 11).addEdgeC(8, 35).addEdgeC(49, 45).addEdgeC(35, 45).addEdgeC(35, 5).addEdgeC(3, 36).addEdgeC(36, 43).addEdgeC(36, 10)
-                .addEdgeC(9, 37).addEdgeC(49, 43).addEdgeC(37, 43).addEdgeC(37, 4).addEdgeC(3, 38).addEdgeC(38, 42).addEdgeC(38, 11).addEdgeC(9, 39).addEdgeC(49, 42).addEdgeC(39, 42).addEdgeC(39, 5)
-                .addEdgeC(4, 40).addEdgeC(40, 44).addEdgeC(40, 11).addEdgeC(10, 41).addEdgeC(49, 44).addEdgeC(41, 44).addEdgeC(41, 5).addEdgeC(47, 49).addEdgeC(49, 48).addEdgeC(47, 0).addEdgeC(48, 6)
-                .addEdgeC(47, 1).addEdgeC(48, 7).addEdgeC(47, 2).addEdgeC(48, 8).addEdgeC(47, 3).addEdgeC(48, 9).addEdgeC(47, 4).addEdgeC(48, 10).addEdgeC(47, 5).addEdgeC(48, 11);
+        for (String str : GRAPH_EDGE_STRING) {
+            String[] edgestrs = str.split(",");
+            if (edgestrs != null && edgestrs.length > 0) {
+                for (String edgestr : edgestrs) {
+                    String[] verts = edgestr.split("-");
+                    if (verts != null && verts.length >= 2) {
+                        subgraph.addEdge(Integer.parseInt(verts[0].trim()), Integer.parseInt(verts[1].trim()));
+                    }
+                }
+            }
+        }
 
+//        subgraph.addEdgeC(0, 6).addEdgeC(1, 7).addEdgeC(2, 8).addEdgeC(3, 9).addEdgeC(4, 10).addEdgeC(5, 11).addEdgeC(0, 12).addEdgeC(12, 42).addEdgeC(12, 7)
+//                .addEdgeC(6, 13).addEdgeC(49, 42).addEdgeC(13, 42).addEdgeC(13, 1).addEdgeC(0, 14).addEdgeC(14, 43).addEdgeC(14, 8).addEdgeC(6, 15).addEdgeC(49, 43)
+//                .addEdgeC(15, 43).addEdgeC(15, 2).addEdgeC(0, 16).addEdgeC(16, 44).addEdgeC(16, 9).addEdgeC(6, 17).addEdgeC(49, 44).addEdgeC(17, 44).addEdgeC(17, 3).addEdgeC(0, 18)
+//                .addEdgeC(18, 45).addEdgeC(18, 10).addEdgeC(6, 19).addEdgeC(49, 45).addEdgeC(19, 45).addEdgeC(19, 4).addEdgeC(0, 20).addEdgeC(20, 46).addEdgeC(20, 11).addEdgeC(6, 21)
+//                .addEdgeC(49, 46).addEdgeC(21, 46).addEdgeC(21, 5).addEdgeC(1, 22).addEdgeC(22, 44).addEdgeC(22, 8).addEdgeC(7, 23).addEdgeC(49, 44).addEdgeC(23, 44).addEdgeC(23, 2).addEdgeC(1, 24)
+//                .addEdgeC(24, 45).addEdgeC(24, 9).addEdgeC(7, 25).addEdgeC(49, 45).addEdgeC(25, 45).addEdgeC(25, 3).addEdgeC(1, 26).addEdgeC(26, 46).addEdgeC(26, 10).addEdgeC(7, 27).addEdgeC(49, 46)
+//                .addEdgeC(27, 46).addEdgeC(27, 4).addEdgeC(1, 28).addEdgeC(28, 43).addEdgeC(28, 11).addEdgeC(7, 29).addEdgeC(49, 43).addEdgeC(29, 43).addEdgeC(29, 5).addEdgeC(2, 30).addEdgeC(30, 46)
+//                .addEdgeC(30, 9).addEdgeC(8, 31).addEdgeC(49, 46).addEdgeC(31, 46).addEdgeC(31, 3).addEdgeC(2, 32).addEdgeC(32, 42).addEdgeC(32, 10).addEdgeC(8, 33).addEdgeC(49, 42).addEdgeC(33, 42)
+//                .addEdgeC(33, 4).addEdgeC(2, 34).addEdgeC(34, 45).addEdgeC(34, 11).addEdgeC(8, 35).addEdgeC(49, 45).addEdgeC(35, 45).addEdgeC(35, 5).addEdgeC(3, 36).addEdgeC(36, 43).addEdgeC(36, 10)
+//                .addEdgeC(9, 37).addEdgeC(49, 43).addEdgeC(37, 43).addEdgeC(37, 4).addEdgeC(3, 38).addEdgeC(38, 42).addEdgeC(38, 11).addEdgeC(9, 39).addEdgeC(49, 42).addEdgeC(39, 42).addEdgeC(39, 5)
+//                .addEdgeC(4, 40).addEdgeC(40, 44).addEdgeC(40, 11).addEdgeC(10, 41).addEdgeC(49, 44).addEdgeC(41, 44).addEdgeC(41, 5).addEdgeC(47, 49).addEdgeC(49, 48).addEdgeC(47, 0).addEdgeC(48, 6)
+//                .addEdgeC(47, 1).addEdgeC(48, 7).addEdgeC(47, 2).addEdgeC(48, 8).addEdgeC(47, 3).addEdgeC(48, 9).addEdgeC(47, 4).addEdgeC(48, 10).addEdgeC(47, 5).addEdgeC(48, 11);
     }
 
     public static void main(String... args) {
@@ -129,12 +128,8 @@ public class LGMGen {
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
-
-        BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
-        Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
         Integer[] bfs = new Integer[vertices.size()];
-
-        atualizarVerticesMapa(bdl, subgraph, incompletVertices, mapossibilidades);
+        sincronizarVerticesIncompletos(subgraph, vertices, incompletVertices);
 
         Integer[] edgesAdded = new Integer[len];
         int countEdeges = 0;
@@ -151,7 +146,6 @@ public class LGMGen {
                 incompletVertices.remove(v);
                 continue;
             }
-//            List<Integer> poss = mapossibilidades.get(v);
             sincronizarListaPossibilidades(bfs, lastgraph, poss, v);
             if (poss.isEmpty()) {
                 System.out.print("Caminho impossivel: vertice ");
@@ -159,8 +153,6 @@ public class LGMGen {
                 System.out.println(" estagnado... roolbak, removendo ultima aresta ");
                 countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
                 sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-//                atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
-//                atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
             }
@@ -171,8 +163,6 @@ public class LGMGen {
                 System.out.println("... rollback");
                 countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
                 sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-//                atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
-//                atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
             }
@@ -182,9 +172,7 @@ public class LGMGen {
             countEdeges++;
 
             System.out.println("add(" + v + ", " + u + ")");
-//            atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
             sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-//            atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
         }
 
         System.out.println("Final Graph: ");
@@ -211,7 +199,7 @@ public class LGMGen {
     }
 
     private static void visitVertex(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph1) {
-        Queue<Integer> queue = new LinkedList<Integer>();
+        queue.clear();
         queue.add(v);
         while (!queue.isEmpty()) {
             Integer poll = queue.poll();
@@ -227,63 +215,6 @@ public class LGMGen {
                 }
             }
         }
-    }
-
-    private static Map<Integer, List<Integer>> atualizarVerticesMapa(Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
-        Collection<Integer> vertices = subgraph.getVertices();
-        incompletVertices.clear();
-
-        for (Integer v : vertices) {
-            if (subgraph.degree(v) < K) {
-                incompletVertices.add(v);
-            }
-        }
-
-        for (Integer v : incompletVertices) {
-            List<Integer> listPoss = mapossibilidades.get(v);
-            if (listPoss == null) {
-                listPoss = new ArrayList<>();
-                mapossibilidades.put(v, listPoss);
-            } else {
-                listPoss.clear();
-            }
-            bfs(subgraph, bfs, v);
-            for (Integer i : incompletVertices) {
-                int distance = bfs[i];
-                if (distance > 3) {
-                    listPoss.add(i);
-                }
-            }
-//            int possv = listPoss.size();
-//            System.out.println(v + "[" + possv + "]=" + listPoss);
-        }
-        return mapossibilidades;
-    }
-
-    private static Map<Integer, List<Integer>> atualizarVerticesMapa(BFSDistanceLabeler<Integer, Integer> bdl, UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
-        Collection<Integer> vertices = subgraph.getVertices();
-        incompletVertices.clear();
-
-        for (Integer v : vertices) {
-            if (subgraph.degree(v) < K) {
-                incompletVertices.add(v);
-            }
-        }
-
-        for (Integer v : incompletVertices) {
-            List<Integer> listPoss = new ArrayList<>();
-            bdl.labelDistances(subgraph, v);
-            for (Integer i : incompletVertices) {
-                int distance = bdl.getDistance(subgraph, i);
-                if (distance > 3) {
-                    listPoss.add(i);
-                }
-            }
-            mapossibilidades.put(v, listPoss);
-//            int possv = listPoss.size();
-//            System.out.println(v + "[" + possv + "]=" + listPoss);
-        }
-        return mapossibilidades;
     }
 
     private static void sincronizarListaPossibilidades(Integer[] bfs, UndirectedSparseGraphTO lastgraph, List<Integer> poss, Integer v) {
