@@ -1,6 +1,7 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import java.util.Queue;
  */
 public class LGMGen {
 
+    private static final boolean verbose = true;
     private static final long HOUR = 1000 * 60 * 60 * 12;
     private static String fileDump = "/home/strike/.comb-moore-java.txt";
 //    private static final int K = 7;
@@ -142,48 +144,59 @@ public class LGMGen {
         List<Integer> poss = new ArrayList<>();
         while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < NUM_ARESTAS) {
             Integer v = incompletVertices.get(0);
-            if (lastgraph.degree(v) >= K) {
+            int dv = lastgraph.degree(v);
+            if (dv >= K) {
                 incompletVertices.remove(v);
                 continue;
             }
             sincronizarListaPossibilidades(bfs, lastgraph, poss, v);
-            if (poss.isEmpty()) {
-                System.out.print("Caminho impossivel: vertice ");
-                System.out.print(v);
-                System.out.println(" estagnado... roolbak, removendo ultima aresta ");
-                countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
-                sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-//                UtilTmp.printArray(pos);
-                UtilTmp.printArrayUntil0(pos);
-                continue;
-            }
+            int posssize = poss.size();
             int idx = pos[countEdeges];
-            if (idx >= poss.size()) {
-                System.out.print("Possibilidades esgotadas ");
-                System.out.print(v);
-                System.out.println("... rollback");
+            if (posssize == 0 || posssize < K - dv || idx >= posssize) {
+                if (verbose) {
+//                    System.out.print("Caminho impossivel: vertice ");
+//                    System.out.print(v);
+//                    System.out.println(" estagnado... roolbak, removendo ultima aresta ");
+                    UtilTmp.printArrayUntil0(pos);
+                }
                 countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
                 sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-//                UtilTmp.printArray(pos);
-                UtilTmp.printArrayUntil0(pos);
                 continue;
             }
+
             Integer u = poss.get(idx);
             edgesAdded[countEdeges] = (Integer) lastgraph.addEdge(v, u);
             pos[countEdeges]++;
             countEdeges++;
 
-            System.out.print("add(");
-            System.out.print(v);
-            System.out.print(", ");
-            System.out.print(u);
-            System.out.println(")");
-
+            if (verbose) {
+                System.out.print("add(");
+                System.out.print(v);
+                System.out.print(", ");
+                System.out.print(u);
+                System.out.print(")| ");
+                System.out.print(len - countEdeges);
+                System.out.println();
+            }
             sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
         }
 
+        try {
+            System.out.print("Added-Edges: ");
+            for (int i = 0; i < len; i++) {
+                Pair endpoints = lastgraph.getEndpoints(edgesAdded[i]);
+                System.out.print(endpoints);
+                System.out.print(", ");
+            }
+        } catch (Exception e) {
+        } finally {
+            System.out.println();
+        }
+
         System.out.println("Final Graph: ");
-        System.out.println(lastgraph.getEdgeString());
+        String edgeString = lastgraph.getEdgeString();
+        System.out.println(edgeString);
+//        UtilTmp.dumpString(edgeString);
     }
 
     public static int rollback(int countEdeges, int[] pos, Integer[] edgesAdded, UndirectedSparseGraphTO hoff) {

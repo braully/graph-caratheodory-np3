@@ -104,22 +104,19 @@ public class HoffmanGraphGen {
             atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
 
             //Atualizar lista de possibilidades
-//            List<Integer> listPoss = new ArrayList<>();
-//            for (Integer i : incompletVertices) {
-//                int distance = bdl.getDistance(hoff, i);
-//                if (distance > 3) {
-//                    listPoss.add(i);
-//                }
-//            }
-//            mapossibilidades.put(v, listPoss);
-//
-//            if (hoff.degree(v) == K) {
-//                incompletVertices.remove(v);
-//            }
-//
-//            if (hoff.degree(u) == K) {
-//                incompletVertices.remove(u);
-//            }
+        }
+
+        try {
+            System.out.print("Added-Edges: ");
+            for (int i = 0; i < len; i++) {
+                Pair endpoints = hoff.getEndpoints(edgesAdded[i]);
+                System.out.print(endpoints);
+                System.out.print(", ");
+            }
+
+        } catch (Exception e) {
+        } finally {
+            System.out.println();
         }
 
         System.out.println("Final Graph: ");
