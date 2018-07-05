@@ -7,17 +7,10 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.graph.util.Pair;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import tmp.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.math3.genetics.*;
 import org.apache.commons.math3.genetics.AbstractListChromosome;
 import org.apache.commons.math3.genetics.ElitisticListPopulation;
@@ -28,9 +21,6 @@ import org.apache.commons.math3.genetics.RandomKey;
  * @author strike
  */
 public class GACombPermutation {
-
-    private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
-    private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
     private static final int DIMENSION = 50;
@@ -129,13 +119,13 @@ public class GACombPermutation {
             Chromosome bestFinal = current.getFittestChromosome();
 //            System.out.print(bestFinal);
             double atualfit = bestFinal.getFitness();
-            if (atualfit > bestfit || System.currentTimeMillis() - lastime > HOUR) {
+            if (atualfit > bestfit || System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                 lastime = System.currentTimeMillis();
                 System.out.print(generationsEvolved);
                 System.out.print("-");
                 bestfit = atualfit;
                 String strbest = bestFinal.toString() + "\n";
-                dumpString(strbest);
+                UtilTmp.dumpString(strbest);
                 System.out.print(strbest);
                 System.out.println();
             }
@@ -240,23 +230,6 @@ public class GACombPermutation {
         @Override
         public AbstractListChromosome<Double> newFixedLengthChromosome(List<Double> chromosomeRepresentation) {
             return new MinPermutations(chromosomeRepresentation);
-        }
-    }
-
-    private static void dumpString(String strt) {
-        try {
-            new FileWriter(fileDump, true).append(strt).close();
-        } catch (IOException ex) {
-            Logger.getLogger(CombMooreGraph.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private static void dumpArray(LinkedList<Integer> arr, String preset) {
-        String strArra = "h-arr[" + arr.size() + "]: " + arr.toString() + "\n";
-        try {
-            new FileWriter(fileDump, true).append(strArra).close();
-        } catch (IOException ex) {
-            Logger.getLogger(CombMooreGraph.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

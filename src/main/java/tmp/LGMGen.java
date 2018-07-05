@@ -153,7 +153,8 @@ public class LGMGen {
                 System.out.println(" estagnado... roolbak, removendo ultima aresta ");
                 countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
                 sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-                UtilTmp.printArray(pos);
+//                UtilTmp.printArray(pos);
+                UtilTmp.printArrayUntil0(pos);
                 continue;
             }
             int idx = pos[countEdeges];
@@ -163,7 +164,8 @@ public class LGMGen {
                 System.out.println("... rollback");
                 countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
                 sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-                UtilTmp.printArray(pos);
+//                UtilTmp.printArray(pos);
+                UtilTmp.printArrayUntil0(pos);
                 continue;
             }
             Integer u = poss.get(idx);
@@ -171,7 +173,12 @@ public class LGMGen {
             pos[countEdeges]++;
             countEdeges++;
 
-            System.out.println("add(" + v + ", " + u + ")");
+            System.out.print("add(");
+            System.out.print(v);
+            System.out.print(", ");
+            System.out.print(u);
+            System.out.println(")");
+
             sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
         }
 

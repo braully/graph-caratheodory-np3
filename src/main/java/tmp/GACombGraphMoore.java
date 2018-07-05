@@ -5,11 +5,8 @@ package tmp;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.math3.genetics.*;
@@ -24,8 +21,6 @@ import static tmp.CombMooreGraph.mapInvalidPositions;
  */
 public class GACombGraphMoore {
 
-    private static String fileDump = "/home/strike/.comb-moore-java-ga.txt";
-    private static final int max_length_file = 2000;
     private static final long HOUR = 1000 * 60 * 60 * 12;
 
     // parameters for the GA
@@ -96,10 +91,10 @@ public class GACombGraphMoore {
 //                System.out.print("-");
                 bestfit = atualfit;
                 String strbest = generationsEvolved + "-f=" + atualfit + "-" + ((MinPermutations) bestFinal).decode(sequence).toString().replaceAll(" ", "") + "\n";
-                dumpString(strbest);
+                UtilTmp.dumpString(strbest);
                 System.out.println(strbest);
                 strbest = bestFinal.toString();
-                dumpString(strbest);
+                UtilTmp.dumpString(strbest);
                 System.out.println(strbest);
 //                System.out.println();
                 lastime = System.currentTimeMillis();
@@ -189,30 +184,4 @@ public class GACombGraphMoore {
         }
     }
 
-    private static void dumpString(String strt) {
-        try {
-            FileWriter fileWriter = new FileWriter(fileDump, true);
-            if (strt.length() > max_length_file) {
-                int length = strt.length();
-                for (int i = 0; i < length; i += max_length_file) {
-                    fileWriter.append(strt.substring(i, Math.min(length, i + max_length_file))).append("\n");
-                }
-            } else {
-                fileWriter.append(strt);
-            }
-            fileWriter.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private static void dumpArray(LinkedList<Integer> arr, String preset) {
-        String strArra = "h-arr[" + arr.size() + "]: " + arr.toString() + "\n";
-        try {
-            new FileWriter(fileDump, true).append(strArra).close();
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 }

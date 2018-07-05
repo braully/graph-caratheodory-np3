@@ -27,9 +27,6 @@ import java.util.logging.Logger;
 public class CombMooreGraph {
 
     private static boolean verbose = true;
-    private static final long HOUR = 1000 * 60 * 60 * 12;
-//    private static String fileDump = System.getenv("user.dir") + File.separator + ".comb-moore-java.txt";
-    private static String fileDump = "/home/strike/.comb-moore-java.txt";
 
     public static Map<Integer, List<Integer>> mapInvalidPositions(int k) {
 //        int k = 57;
@@ -102,27 +99,6 @@ public class CombMooreGraph {
             excludeMapList.put(i, list);
         }
         return excludeMapList;
-    }
-
-    private static void dumpArray(LinkedList<Integer> arr, String preset) {
-        String strArra = "h-arr[" + arr.size() + "]: " + arr.toString() + "\n";
-        try {
-            new FileWriter(fileDump, true).append(strArra).close();
-        } catch (IOException ex) {
-            Logger.getLogger(CombMooreGraph.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void printArray(int[] arr) {
-        int len = arr.length;
-        System.out.print("[");
-        for (int i = 0; i < len; i++) {
-            System.out.print(arr[i]);
-            if (i < len - 1) {
-                System.out.print(", ");
-            }
-        }
-        System.out.println("]");
     }
 
     public static void main(String... args) {
@@ -212,12 +188,12 @@ public class CombMooreGraph {
                 System.out.print("]: ");
                 System.out.print(arr);
                 System.out.println();
-                dumpArray(arr, "");
+                UtilTmp.dumpArray(arr);
 
             }
-            if (System.currentTimeMillis() - lastime > HOUR) {
+            if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                 lastime = System.currentTimeMillis();
-                dumpArray(arr, "h-");
+                UtilTmp.dumpArray(arr);
             }
         }
 
@@ -226,7 +202,7 @@ public class CombMooreGraph {
         }
         System.out.print("\nCombinação-Resultado:");
         System.out.println(arr);
-        dumpArray(arr, "Combinação-Resultado-");
+        UtilTmp.dumpArray(arr, "Combinação-Resultado-");
 
         boolean test = checkSequence(k, arr.toArray(new Integer[0]));
         if (!test) {
