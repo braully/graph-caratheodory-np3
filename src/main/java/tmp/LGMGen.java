@@ -2,8 +2,6 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
-import edu.uci.ics.jung.graph.util.Pair;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,7 +18,7 @@ public class LGMGen {
 
     private static final long HOUR = 1000 * 60 * 60 * 12;
     private static String fileDump = "/home/strike/.comb-moore-java.txt";
-    private static final int K = 57;
+    private static final int K = 7;
     private static final int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 
     private static final String[] GRAPH_EDGE_STRING = new String[]{"0-56,1-57,2-58,3-59,4-60,5-61,6-62,7-63,8-64,9-65,10-66,11-67,12-68,13-69,14-70,15-71,16-72,17-73,18-74,19-75,20-76,21-77,22-78,23-79,24-80,25-81,26-82,27-83,28-84,29-85,30-86,31-87,32-88,33-89,34-90,35-91,36-92,37-93,38-94,39-95,40-96,41-97,42-98,43-99,44-100,45-101,46-102,47-103,48-104,49-105,50-106,51-107,52-108,53-109,54-110,55-111,",
@@ -82,22 +80,34 @@ public class LGMGen {
     private static final UndirectedSparseGraphTO<Integer, Integer> subgraph = new UndirectedSparseGraphTO<>();
 
     static {
-        for (String str : GRAPH_EDGE_STRING) {
-            String[] edgestrs = str.split(",");
-            if (edgestrs != null && edgestrs.length > 0) {
-                for (String edgestr : edgestrs) {
-                    String[] verts = edgestr.split("-");
-                    if (verts != null && verts.length >= 2) {
-                        subgraph.addEdge(Integer.parseInt(verts[0].trim()), Integer.parseInt(verts[1].trim()));
-                    }
-                }
-            }
-        }
+//        for (String str : GRAPH_EDGE_STRING) {
+//            String[] edgestrs = str.split(",");
+//            if (edgestrs != null && edgestrs.length > 0) {
+//                for (String edgestr : edgestrs) {
+//                    String[] verts = edgestr.split("-");
+//                    if (verts != null && verts.length >= 2) {
+//                        subgraph.addEdge(Integer.parseInt(verts[0].trim()), Integer.parseInt(verts[1].trim()));
+//                    }
+//                }
+//            }
+//        }
+        subgraph.addEdgeC(0, 6).addEdgeC(1, 7).addEdgeC(2, 8).addEdgeC(3, 9).addEdgeC(4, 10).addEdgeC(5, 11).addEdgeC(0, 12).addEdgeC(12, 42).addEdgeC(12, 7)
+                .addEdgeC(6, 13).addEdgeC(49, 42).addEdgeC(13, 42).addEdgeC(13, 1).addEdgeC(0, 14).addEdgeC(14, 43).addEdgeC(14, 8).addEdgeC(6, 15).addEdgeC(49, 43)
+                .addEdgeC(15, 43).addEdgeC(15, 2).addEdgeC(0, 16).addEdgeC(16, 44).addEdgeC(16, 9).addEdgeC(6, 17).addEdgeC(49, 44).addEdgeC(17, 44).addEdgeC(17, 3).addEdgeC(0, 18)
+                .addEdgeC(18, 45).addEdgeC(18, 10).addEdgeC(6, 19).addEdgeC(49, 45).addEdgeC(19, 45).addEdgeC(19, 4).addEdgeC(0, 20).addEdgeC(20, 46).addEdgeC(20, 11).addEdgeC(6, 21)
+                .addEdgeC(49, 46).addEdgeC(21, 46).addEdgeC(21, 5).addEdgeC(1, 22).addEdgeC(22, 44).addEdgeC(22, 8).addEdgeC(7, 23).addEdgeC(49, 44).addEdgeC(23, 44).addEdgeC(23, 2).addEdgeC(1, 24)
+                .addEdgeC(24, 45).addEdgeC(24, 9).addEdgeC(7, 25).addEdgeC(49, 45).addEdgeC(25, 45).addEdgeC(25, 3).addEdgeC(1, 26).addEdgeC(26, 46).addEdgeC(26, 10).addEdgeC(7, 27).addEdgeC(49, 46)
+                .addEdgeC(27, 46).addEdgeC(27, 4).addEdgeC(1, 28).addEdgeC(28, 43).addEdgeC(28, 11).addEdgeC(7, 29).addEdgeC(49, 43).addEdgeC(29, 43).addEdgeC(29, 5).addEdgeC(2, 30).addEdgeC(30, 46)
+                .addEdgeC(30, 9).addEdgeC(8, 31).addEdgeC(49, 46).addEdgeC(31, 46).addEdgeC(31, 3).addEdgeC(2, 32).addEdgeC(32, 42).addEdgeC(32, 10).addEdgeC(8, 33).addEdgeC(49, 42).addEdgeC(33, 42)
+                .addEdgeC(33, 4).addEdgeC(2, 34).addEdgeC(34, 45).addEdgeC(34, 11).addEdgeC(8, 35).addEdgeC(49, 45).addEdgeC(35, 45).addEdgeC(35, 5).addEdgeC(3, 36).addEdgeC(36, 43).addEdgeC(36, 10)
+                .addEdgeC(9, 37).addEdgeC(49, 43).addEdgeC(37, 43).addEdgeC(37, 4).addEdgeC(3, 38).addEdgeC(38, 42).addEdgeC(38, 11).addEdgeC(9, 39).addEdgeC(49, 42).addEdgeC(39, 42).addEdgeC(39, 5)
+                .addEdgeC(4, 40).addEdgeC(40, 44).addEdgeC(40, 11).addEdgeC(10, 41).addEdgeC(49, 44).addEdgeC(41, 44).addEdgeC(41, 5).addEdgeC(47, 49).addEdgeC(49, 48).addEdgeC(47, 0).addEdgeC(48, 6)
+                .addEdgeC(47, 1).addEdgeC(48, 7).addEdgeC(47, 2).addEdgeC(48, 8).addEdgeC(47, 3).addEdgeC(48, 9).addEdgeC(47, 4).addEdgeC(48, 10).addEdgeC(47, 5).addEdgeC(48, 11);
+
     }
 
     public static void main(String... args) {
         Collection<Integer> vertices = subgraph.getVertices();
-        Collection pairs = subgraph.getPairs();
         List<Integer> incompletVertices = new ArrayList<>();
         int len = NUM_ARESTAS - subgraph.getEdgeCount();
 
@@ -122,7 +132,9 @@ public class LGMGen {
 
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
         Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
-        atualizarVerticesMapa(subgraph, incompletVertices, mapossibilidades);
+        Integer[] bfs = new Integer[vertices.size()];
+
+        atualizarVerticesMapa(bdl, subgraph, incompletVertices, mapossibilidades);
 
         Integer[] edgesAdded = new Integer[len];
         int countEdeges = 0;
@@ -131,62 +143,52 @@ public class LGMGen {
             pos[i] = 0;
         }
 
-        UndirectedSparseGraphTO hoff = subgraph.clone();
-
-//        while (!incompletVertices.isEmpty() && countEdeges < pos.length) {
-        while (!incompletVertices.isEmpty() && hoff.getEdgeCount() < NUM_ARESTAS) {
+        UndirectedSparseGraphTO lastgraph = subgraph.clone();
+        List<Integer> poss = new ArrayList<>();
+        while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < NUM_ARESTAS) {
             Integer v = incompletVertices.get(0);
-            List<Integer> poss = mapossibilidades.get(v);
+            if (lastgraph.degree(v) >= K) {
+                incompletVertices.remove(v);
+                continue;
+            }
+//            List<Integer> poss = mapossibilidades.get(v);
+            sincronizarListaPossibilidades(bfs, lastgraph, poss, v);
             if (poss.isEmpty()) {
-                System.out.println("Caminho Impossivel: vertice " + v + " estagnado");
-                System.out.println("Rollback necessário");
-                System.out.println("Removendo ultima aresta ");
-                countEdeges = rollback(countEdeges, pos, edgesAdded, hoff);
-                atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
+                System.out.print("Caminho impossivel: vertice ");
+                System.out.print(v);
+                System.out.println(" estagnado... roolbak, removendo ultima aresta ");
+                countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
+                sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+//                atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
+//                atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
-//                break;
             }
             int idx = pos[countEdeges];
             if (idx >= poss.size()) {
-                System.out.println("Possibilidades esgotadas " + v);
-                System.out.println("Rollback necessário");
-                countEdeges = rollback(countEdeges, pos, edgesAdded, hoff);
-                atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
+                System.out.print("Possibilidades esgotadas ");
+                System.out.print(v);
+                System.out.println("... rollback");
+                countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
+                sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+//                atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
+//                atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
-//                break;
             }
             Integer u = poss.get(idx);
-            edgesAdded[countEdeges] = (Integer) hoff.addEdge(v, u);
+            edgesAdded[countEdeges] = (Integer) lastgraph.addEdge(v, u);
             pos[countEdeges]++;
             countEdeges++;
 
-            bdl.labelDistances(hoff, v);
             System.out.println("add(" + v + ", " + u + ")");
-            atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
-
-            //Atualizar lista de possibilidades
-//            List<Integer> listPoss = new ArrayList<>();
-//            for (Integer i : incompletVertices) {
-//                int distance = bdl.getDistance(hoff, i);
-//                if (distance > 3) {
-//                    listPoss.add(i);
-//                }
-//            }
-//            mapossibilidades.put(v, listPoss);
-//
-//            if (hoff.degree(v) == K) {
-//                incompletVertices.remove(v);
-//            }
-//
-//            if (hoff.degree(u) == K) {
-//                incompletVertices.remove(u);
-//            }
+//            atualizarVerticesMapa(bdl, lastgraph, incompletVertices, mapossibilidades);
+            sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+//            atualizarVerticesMapa(bfs, lastgraph, incompletVertices, mapossibilidades);
         }
 
         System.out.println("Final Graph: ");
-        System.out.println(hoff.getEdgeString());
+        System.out.println(lastgraph.getEdgeString());
     }
 
     public static int rollback(int countEdeges, int[] pos, Integer[] edgesAdded, UndirectedSparseGraphTO hoff) {
@@ -227,68 +229,38 @@ public class LGMGen {
         }
     }
 
-    private static boolean nextCombination(Integer[] comb, int maxcount) {
-        int i = comb.length - 1;
-        while (i >= 0 && comb[i]++ >= maxcount) {
-            comb[i] = 0;
-            i--;
+    private static Map<Integer, List<Integer>> atualizarVerticesMapa(Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
+        Collection<Integer> vertices = subgraph.getVertices();
+        incompletVertices.clear();
+
+        for (Integer v : vertices) {
+            if (subgraph.degree(v) < K) {
+                incompletVertices.add(v);
+            }
         }
-        return i >= 0;
+
+        for (Integer v : incompletVertices) {
+            List<Integer> listPoss = mapossibilidades.get(v);
+            if (listPoss == null) {
+                listPoss = new ArrayList<>();
+                mapossibilidades.put(v, listPoss);
+            } else {
+                listPoss.clear();
+            }
+            bfs(subgraph, bfs, v);
+            for (Integer i : incompletVertices) {
+                int distance = bfs[i];
+                if (distance > 3) {
+                    listPoss.add(i);
+                }
+            }
+//            int possv = listPoss.size();
+//            System.out.println(v + "[" + possv + "]=" + listPoss);
+        }
+        return mapossibilidades;
     }
 
-    private static boolean checkCombination(Integer[] comb) {
-        return false;
-    }
-//        System.out.print("Total de combinaçoes possiveis: ");
-//        System.out.println(totalComb);
-//
-//        int nverinc = incompletVertices.size();
-//        Integer[] combseq = new Integer[nverinc * 3];
-//        Integer[][] edgrests = new Integer[nverinc][3];
-//        int count = 0;
-//        Integer[] comb = new Integer[nverinc];
-//        Integer[] arr = new Integer[nverinc * 3];
-//        int tamListpos = 8;
-//        while (count < combseq.length && count >= 0) {
-//            int idx = count % 3;
-//            Integer v = incompletVertices.get(idx);
-//            List<Integer> listPoss = mapossibilidades.get(v);
-//            if (combseq[count] >= tamListpos) {
-//                combseq[count] = 0;
-//                count--;
-//                continue;
-//            }
-//            int val = listPoss.get(combseq[count]);
-//            arr[count] = val;
-//            arr[count] = 0;
-//            combseq[count]++;
-//            count++;
-//        }
-//
-//        int maxcount = 8 * 7;
-//        boolean hasnext = true;
-//        boolean fit = false;
-//
-//        for (int i = 0; i < nverinc; i++) {
-//            comb[i] = maxcount;
-//        }
-//        comb[nverinc - 1] = maxcount;
-//
-//        while (hasnext && !fit) {
-//            UtilTmp.printArray(comb);
-//            hasnext = nextCombination(comb, maxcount);
-//            fit = checkCombination(comb);
-//            UtilTmp.printArray(comb);
-//        }
-//
-//        if (fit) {
-//            System.out.println("Solução encontrada");
-//        } else {
-//            System.out.println("Solução não encontrada");
-//        }
-
-    private static Map<Integer, List<Integer>> atualizarVerticesMapa(UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
-        BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
+    private static Map<Integer, List<Integer>> atualizarVerticesMapa(BFSDistanceLabeler<Integer, Integer> bdl, UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
         Collection<Integer> vertices = subgraph.getVertices();
         incompletVertices.clear();
 
@@ -308,9 +280,28 @@ public class LGMGen {
                 }
             }
             mapossibilidades.put(v, listPoss);
-            int possv = listPoss.size();
+//            int possv = listPoss.size();
 //            System.out.println(v + "[" + possv + "]=" + listPoss);
         }
         return mapossibilidades;
+    }
+
+    private static void sincronizarListaPossibilidades(Integer[] bfs, UndirectedSparseGraphTO lastgraph, List<Integer> poss, Integer v) {
+        poss.clear();
+        bfs(lastgraph, bfs, v);
+        for (Integer i = 0; i < bfs.length; i++) {
+            if (bfs[i] > 3 && lastgraph.degree(i) < K) {
+                poss.add(i);
+            }
+        }
+    }
+
+    private static void sincronizarVerticesIncompletos(UndirectedSparseGraphTO lastgraph, Collection<Integer> vertices, List<Integer> incompletVertices) {
+        incompletVertices.clear();
+        for (Integer v : vertices) {
+            if (lastgraph.degree(v) < K) {
+                incompletVertices.add(v);
+            }
+        }
     }
 }

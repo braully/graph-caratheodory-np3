@@ -164,66 +164,6 @@ public class HoffmanGraphGen {
         }
     }
 
-    private static boolean nextCombination(Integer[] comb, int maxcount) {
-        int i = comb.length - 1;
-        while (i >= 0 && comb[i]++ >= maxcount) {
-            comb[i] = 0;
-            i--;
-        }
-        return i >= 0;
-    }
-
-    private static boolean checkCombination(Integer[] comb) {
-        return false;
-    }
-//        System.out.print("Total de combinaçoes possiveis: ");
-//        System.out.println(totalComb);
-//
-//        int nverinc = incompletVertices.size();
-//        Integer[] combseq = new Integer[nverinc * 3];
-//        Integer[][] edgrests = new Integer[nverinc][3];
-//        int count = 0;
-//        Integer[] comb = new Integer[nverinc];
-//        Integer[] arr = new Integer[nverinc * 3];
-//        int tamListpos = 8;
-//        while (count < combseq.length && count >= 0) {
-//            int idx = count % 3;
-//            Integer v = incompletVertices.get(idx);
-//            List<Integer> listPoss = mapossibilidades.get(v);
-//            if (combseq[count] >= tamListpos) {
-//                combseq[count] = 0;
-//                count--;
-//                continue;
-//            }
-//            int val = listPoss.get(combseq[count]);
-//            arr[count] = val;
-//            arr[count] = 0;
-//            combseq[count]++;
-//            count++;
-//        }
-//
-//        int maxcount = 8 * 7;
-//        boolean hasnext = true;
-//        boolean fit = false;
-//
-//        for (int i = 0; i < nverinc; i++) {
-//            comb[i] = maxcount;
-//        }
-//        comb[nverinc - 1] = maxcount;
-//
-//        while (hasnext && !fit) {
-//            UtilTmp.printArray(comb);
-//            hasnext = nextCombination(comb, maxcount);
-//            fit = checkCombination(comb);
-//            UtilTmp.printArray(comb);
-//        }
-//
-//        if (fit) {
-//            System.out.println("Solução encontrada");
-//        } else {
-//            System.out.println("Solução não encontrada");
-//        }
-
     private static Map<Integer, List<Integer>> atualizarVerticesMapa(UndirectedSparseGraphTO<Integer, Integer> subgraph, List<Integer> incompletVertices, Map<Integer, List<Integer>> mapossibilidades) {
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
         Collection<Integer> vertices = subgraph.getVertices();
