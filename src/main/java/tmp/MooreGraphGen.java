@@ -22,7 +22,7 @@ public class MooreGraphGen {
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 
     public static void main(String... args) {
-        K = 7;
+        K = 57;
         if (K == 7) {
             NUM_ARESTAS = ((K * K + 1) * K) / 2;
             UndirectedSparseGraphTO graphTemplate = HoffmanGraphGen.subgraph;
@@ -64,12 +64,12 @@ public class MooreGraphGen {
 
         System.out.println("Montando mapa BFS Inicial");
         Integer[][] bfsAtual = new Integer[numvert][];
-        for (Integer v : incompletVertices) {
-            Integer[] tmpBfs = new Integer[numvert];
-            bfsAtual[v] = tmpBfs;
-            UtilTmp.bfs(graphTemplate, tmpBfs, v);
-        }
-        System.out.println("Montado");
+//        for (Integer v : incompletVertices) {
+//            Integer[] tmpBfs = new Integer[numvert];
+//            bfsAtual[v] = tmpBfs;
+//            UtilTmp.bfs(graphTemplate, tmpBfs, v);
+//        }
+//        System.out.println("Montado");
 
         Integer[] edgesAdded = new Integer[len];
         int countEdeges = 0;
@@ -80,6 +80,9 @@ public class MooreGraphGen {
 
         UndirectedSparseGraphTO lastgraph = graphTemplate.clone();
         List<Integer> poss = new ArrayList<>();
+        List<Integer> bestVals = new ArrayList<>();
+        Integer[] bfsTmp = new Integer[numvert];
+
         while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < NUM_ARESTAS) {
             Integer v = incompletVertices.get(0);
             Integer[] bfs = bfsAtual[v];
@@ -90,6 +93,13 @@ public class MooreGraphGen {
             sincronizarListaPossibilidades(bfs, lastgraph, poss, v);
 
             while (lastgraph.degree(v) < K) {
+                poss.clear();
+                for (Integer i = 0; i < bfs.length; i++) {
+                    if (bfs[i] > 3 && lastgraph.degree(i) < K) {
+                        poss.add(i);
+                    }
+                }
+
                 int dv = lastgraph.degree(v);
                 int posssize = poss.size();
                 int idx = pos[countEdeges];
@@ -98,23 +108,56 @@ public class MooreGraphGen {
                         UtilTmp.printArrayUntil0(pos);
                     }
                     countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
+                    UtilTmp.bfs(lastgraph, bfs, v);
                     sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
                     continue;
                 }
-                
-                Integer peso = null;
-                
 
-                Integer u = poss.get(idx);
-                edgesAdded[countEdeges] = (Integer) lastgraph.addEdge(v, u);
+                Integer peso = null;
+                Integer bestVal = null;
+
+                for (Integer p : poss) {
+                    UtilTmp.arrayCopy(bfs, bfsTmp);
+                    Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
+                    UtilTmp.revisitVertex(v, bfsTmp, lastgraph);
+                    int pesoLocal = 0;
+                    for (int z = 0; z < bfsTmp.length; z++) {
+                        if (bfsTmp[z] > 3) {
+                            pesoLocal++;
+                        }
+                    }
+                    if (peso == null || pesoLocal > peso) {
+                        bestVal = p;
+                        peso = pesoLocal;
+                        bestVals.clear();
+                        bestVals.add(p);
+                    } else if (peso == pesoLocal) {
+                        bestVals.add(p);
+                    }
+                    lastgraph.removeEdge(tmpEdge);
+                }
+
+                if (idx >= bestVals.size()) {//roolback
+                    if (verbose) {
+                        UtilTmp.printArrayUntil0(pos);
+                    }
+                    countEdeges = rollback(countEdeges, pos, edgesAdded, lastgraph);
+                    UtilTmp.bfs(lastgraph, bfs, v);
+                    sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+                    continue;
+                }
+
+                bestVal = bestVals.get(idx);
+                edgesAdded[countEdeges] = (Integer) lastgraph.addEdge(v, bestVal);
                 pos[countEdeges]++;
                 countEdeges++;
+                UtilTmp.revisitVertex(v, bfs, lastgraph);
 
                 if (verbose) {
                     System.out.print("add(");
                     System.out.print(v);
                     System.out.print(", ");
-                    System.out.print(u);
+                    System.out.print(bestVal);
                     System.out.print(")| ");
                     System.out.print(len - countEdeges);
                     System.out.println();

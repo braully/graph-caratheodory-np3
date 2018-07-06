@@ -14,12 +14,12 @@ import java.util.Queue;
  * @author strike
  */
 public class UtilTmp {
-    
+
     public static final String fileDump = "/home/strike/.comb-moore-java-tmp.txt";
     public static final int max_length_file = 2000;
     public static final long ALERT_HOUR = 1000 * 60 * 60 * 12;
     private static Queue<Integer> queue = new LinkedList<Integer>();
-    
+
     public static void printArray(Integer[] arr) {
         int len = arr.length;
         System.out.print("[");
@@ -31,7 +31,7 @@ public class UtilTmp {
         }
         System.out.println("]");
     }
-    
+
     public static void printArray2Mask(Integer[] arr) {
         int len = arr.length;
         System.out.print("[");
@@ -43,7 +43,7 @@ public class UtilTmp {
         }
         System.out.println("]");
     }
-    
+
     public static void printArray(int[] arr) {
         int len = arr.length;
         System.out.print("[");
@@ -55,7 +55,7 @@ public class UtilTmp {
         }
         System.out.println("]");
     }
-    
+
     static void printArrayUntil0(int[] arr) {
         int len = arr.length;
         System.out.print("[");
@@ -70,7 +70,7 @@ public class UtilTmp {
         }
         System.out.println("]");
     }
-    
+
     public static List<Integer> args2intlist(String... args) {
         List<Integer> start = new ArrayList<>();
         if (args != null && args.length > 0) {
@@ -82,7 +82,7 @@ public class UtilTmp {
         }
         return start;
     }
-    
+
     public static int[] args2intarr(String... args) {
         List<Integer> start = args2intlist(args);
         int[] ret = new int[start.size()];
@@ -91,7 +91,7 @@ public class UtilTmp {
         }
         return ret;
     }
-    
+
     public static int indexOf(int needle, int[] haystack) {
         for (int i = 0; i < haystack.length; i++) {
             if (haystack[i] == needle) {
@@ -100,7 +100,7 @@ public class UtilTmp {
         }
         return -1;
     }
-    
+
     public static void dumpString(String strt) {
         try {
             FileWriter fileWriter = new FileWriter(fileDump, true);
@@ -117,21 +117,21 @@ public class UtilTmp {
             ex.printStackTrace();
         }
     }
-    
+
     public static void dumpArray(Collection arr) {
         dumpArray(arr, null);
     }
-    
+
     public static void dumpArray(Collection arr, String preset) {
         String strArra = "h-arr[" + arr.size() + "]: " + arr.toString() + "\n";
         try {
             new FileWriter(fileDump, true).append(strArra).close();
-            
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-    
+
     public static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
         for (int i = 0; i < bfs.length; i++) {
             bfs[i] = null;
@@ -139,7 +139,7 @@ public class UtilTmp {
         bfs[v] = 0;
         visitVertex(v, bfs, subgraph);
     }
-    
+
     public static void visitVertex(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph1) {
         queue.clear();
         queue.add(v);
@@ -158,11 +158,17 @@ public class UtilTmp {
             }
         }
     }
-    
+
     static void revisitVertex(Integer hold, Integer[] bfs3, UndirectedSparseGraphTO<Integer, Integer> subgraph) {
         if (hold == null || bfs3[hold] != 0) {
             throw new IllegalStateException("BFS From another root");
         }
         visitVertex(hold, bfs3, subgraph);
+    }
+
+    static void arrayCopy(Integer[] bfs, Integer[] bfsBackup) {
+        for (int i = 0; i < bfs.length; i++) {
+            bfsBackup[i] = bfs[i];
+        }
     }
 }
