@@ -3,7 +3,6 @@ package tmp;
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import edu.uci.ics.jung.graph.util.Pair;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,12 +17,10 @@ import java.util.Queue;
  */
 public class HoffmanGraphGen {
 
-    private static final long HOUR = 1000 * 60 * 60 * 12;
-    private static String fileDump = System.getenv("user.dir") + File.separator + ".comb-moore-java.txt";
     private static final int NUM_ARESTAS = 175;
     private static final int K = 7;
 
-    private static final UndirectedSparseGraphTO<Integer, Integer> subgraph = new UndirectedSparseGraphTO<>();
+    public static final UndirectedSparseGraphTO<Integer, Integer> subgraph = new UndirectedSparseGraphTO<>();
 
     static {
         subgraph.addEdgeC(0, 6).addEdgeC(1, 7).addEdgeC(2, 8).addEdgeC(3, 9).addEdgeC(4, 10).addEdgeC(5, 11).addEdgeC(0, 12).addEdgeC(12, 42).addEdgeC(12, 7)
@@ -42,7 +39,6 @@ public class HoffmanGraphGen {
 
     public static void main(String... args) {
         Collection<Integer> vertices = subgraph.getVertices();
-        Collection pairs = subgraph.getPairs();
         List<Integer> incompletVertices = new ArrayList<>();
         int len = NUM_ARESTAS - subgraph.getEdgeCount();
 
@@ -70,7 +66,6 @@ public class HoffmanGraphGen {
 
         UndirectedSparseGraphTO hoff = subgraph.clone();
 
-//        while (!incompletVertices.isEmpty() && countEdeges < pos.length) {
         while (!incompletVertices.isEmpty() && hoff.getEdgeCount() < NUM_ARESTAS) {
             Integer v = incompletVertices.get(0);
             List<Integer> poss = mapossibilidades.get(v);
@@ -82,7 +77,6 @@ public class HoffmanGraphGen {
                 atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
-//                break;
             }
             int idx = pos[countEdeges];
             if (idx >= poss.size()) {
@@ -92,7 +86,6 @@ public class HoffmanGraphGen {
                 atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
                 UtilTmp.printArray(pos);
                 continue;
-//                break;
             }
             Integer u = poss.get(idx);
             edgesAdded[countEdeges] = (Integer) hoff.addEdge(v, u);
@@ -102,7 +95,6 @@ public class HoffmanGraphGen {
             bdl.labelDistances(hoff, v);
             System.out.println("add(" + v + ", " + u + ")");
             atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
-
             //Atualizar lista de possibilidades
         }
 
