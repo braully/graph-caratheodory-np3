@@ -16,8 +16,10 @@ import java.util.Queue;
 public class UtilTmp {
 
     public static final String fileDump = "/home/strike/.comb-moore-java-tmp.txt";
-    public static final int max_length_file = 2000;
-    public static final long ALERT_HOUR = 1000 * 60 * 60 * 12;
+    public static final int max_length_file = 3000;
+    public static final long ALERT_HOUR = 1000 * 60 * 60 * 1;
+    public static final long ALERT_HOUR_6 = 1000 * 60 * 60 * 6;
+    public static final long ALERT_HOUR_12 = 1000 * 60 * 60 * 12;
     private static Queue<Integer> queue = new LinkedList<Integer>();
 
     public static void printArray(Integer[] arr) {
@@ -102,6 +104,8 @@ public class UtilTmp {
     }
 
     public static void dumpString(String strt) {
+        System.out.print("Dump-str: ");
+        System.out.println(strt);
         try {
             FileWriter fileWriter = new FileWriter(fileDump, true);
             if (strt.length() > max_length_file) {
@@ -128,6 +132,24 @@ public class UtilTmp {
             new FileWriter(fileDump, true).append(strArra).close();
 
         } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void dumpArrayUntil0(int[] arr) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("h-arr[");
+            sb.append(arr.length).append("]: ");
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] > 0) {
+                    sb.append(arr[i]);
+                    sb.append(", ");
+                }
+            }
+            sb.append("\n");
+            dumpString(sb.toString());
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
