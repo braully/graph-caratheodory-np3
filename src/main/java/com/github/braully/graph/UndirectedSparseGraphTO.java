@@ -324,6 +324,13 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         return -1;
     }
 
+    public Collection<V> getNeighborsUnprotected(V vertex) {
+        if (!containsVertex(vertex)) {
+            return null;
+        }
+        return ((Map<V, E>) vertices.get(vertex)).keySet();
+    }
+
     @JsonIgnore
     private Set<Pair<V>> setPairs = null;
 
