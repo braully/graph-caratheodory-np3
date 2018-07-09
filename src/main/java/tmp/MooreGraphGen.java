@@ -186,6 +186,16 @@ public class MooreGraphGen {
                     System.out.print(stack.size());
                     System.out.print("/");
                     System.out.print(len);
+
+                    System.out.print(" - ");
+                    System.out.print((numvertincompletos - incompletVertices.size()));
+                    System.out.print("/");
+                    System.out.print(numvertincompletos);
+                    
+                    System.out.print(" count-r1: ");
+                    System.out.print(countroolback1);
+                    System.out.print(" count-r2: ");
+                    System.out.print(countroolback2);
                     System.out.println();
                 }
                 if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
@@ -208,7 +218,7 @@ public class MooreGraphGen {
                     sb.append(" count-r1: ");
                     sb.append(countroolback1);
                     sb.append(" count-r2: ");
-                    sb.append(countroolback1);
+                    sb.append(countroolback2);
 
                     sb.append("\n");
                     UtilTmp.dumpString(sb.toString());
