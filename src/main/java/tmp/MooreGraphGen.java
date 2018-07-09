@@ -49,7 +49,6 @@ public class MooreGraphGen {
     private static void generateGraph(int K, int NUM_ARESTAS, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         int numvert = vertices.size();
-        int numvertincompletos = 0;
         List<Integer> incompletVertices = new ArrayList<>();
         int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
 
@@ -58,7 +57,7 @@ public class MooreGraphGen {
                 incompletVertices.add(v);
             }
         }
-        numvertincompletos = numvert - incompletVertices.size();
+        int numvertincompletos = numvert - incompletVertices.size();
 
         long lastime = System.currentTimeMillis();
 
@@ -102,6 +101,9 @@ public class MooreGraphGen {
         Integer[] bfsWork = new Integer[numvert];
         Integer[][] bfsBackup = new Integer[K][numvert];
 
+        int countroolback1 = 0;
+        int countroolback2 = 0;
+
         while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < NUM_ARESTAS) {
             Integer v = incompletVertices.get(0);
             sincronizarListaPossibilidades(bfsWork, lastgraph, poss, v);
@@ -127,6 +129,7 @@ public class MooreGraphGen {
 //                    UtilTmp.bfs(lastgraph, bfsWork, v);
                     UtilTmp.arrayCopy(bfsBackup[stack.size() - offset], bfsWork);
                     sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+                    countroolback1++;
                     continue;
                 }
 
@@ -162,6 +165,7 @@ public class MooreGraphGen {
 //                    UtilTmp.bfs(lastgraph, bfsWork, v);
                     UtilTmp.arrayCopy(bfsBackup[stack.size() - offset], bfsWork);
                     sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
+                    countroolback2++;
                     continue;
                 }
 
@@ -187,21 +191,29 @@ public class MooreGraphGen {
                 if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                     lastime = System.currentTimeMillis();
                     UtilTmp.dumpArrayUntil0(pos);
-                    System.out.print("last-add(");
-                    System.out.print(v);
-                    System.out.print(", ");
-                    System.out.print(bestVal);
-                    System.out.print(")| ");
-                    System.out.print(stack.size());
-                    System.out.print("/");
-                    System.out.print(len);
-                    System.out.print(" - ");
-                    System.out.print(numvertincompletos - incompletVertices.size());
-                    System.out.print("/");
-                    System.out.print(numvertincompletos);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("last-add(");
+                    sb.append(v);
+                    sb.append(", ");
+                    sb.append(bestVal);
+                    sb.append(")| ");
+                    sb.append(stack.size());
+                    sb.append("/");
+                    sb.append(len);
+                    sb.append(" - ");
+                    sb.append((numvertincompletos - incompletVertices.size()));
+                    sb.append("/");
+                    sb.append(numvertincompletos);
 
-                    System.out.println();
+                    sb.append(" count-r1: ");
+                    sb.append(countroolback1);
+                    sb.append(" count-r2: ");
+                    sb.append(countroolback1);
 
+                    sb.append("\n");
+                    UtilTmp.dumpString(sb.toString());
+                    countroolback1 = 0;
+                    countroolback2 = 0;
                 }
             }
             sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
