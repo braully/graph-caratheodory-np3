@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class MooreGraphGen {
 
-    private static final boolean verbose = false;
+    private static final boolean verbose = true;
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
@@ -57,7 +57,7 @@ public class MooreGraphGen {
                 incompletVertices.add(v);
             }
         }
-        int numvertincompletos = numvert - incompletVertices.size();
+        int numvertincompletos = incompletVertices.size();
 
         long lastime = System.currentTimeMillis();
 
@@ -191,7 +191,7 @@ public class MooreGraphGen {
                     System.out.print((numvertincompletos - incompletVertices.size()));
                     System.out.print("/");
                     System.out.print(numvertincompletos);
-                    
+
                     System.out.print(" count-r1: ");
                     System.out.print(countroolback1);
                     System.out.print(" count-r2: ");
