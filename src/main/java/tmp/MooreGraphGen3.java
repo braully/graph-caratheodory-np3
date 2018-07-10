@@ -131,8 +131,10 @@ public class MooreGraphGen3 {
             int dv = lastgraph.degree(v);
             int posssize = poss.size();
             int idx = pos[stack.size()];
-
-            if (posssize == 0 || posssize < K - dv || idx >= posssize) {
+            boolean r1 = posssize == 0;
+            boolean r2 = posssize < K - dv;
+            boolean r3 = idx >= posssize;
+            if (r1 || r2 || r3) {
                 for (int i = stack.size(); i < pos.length; i++) {
                     pos[i] = 0;
                 }
@@ -148,7 +150,6 @@ public class MooreGraphGen3 {
                 if (!v.equals(f) && !v.equals(s)) {
                     UtilTmp.bfs(lastgraph, bfsAtual[v], v);
                 }
-
                 if (verbose) {
                     System.out.print("remove(");
                     System.out.print(f);
@@ -157,7 +158,6 @@ public class MooreGraphGen3 {
                     System.out.println(");");
                     UtilTmp.printArrayUntil0(pos);
                 }
-
                 continue;
             }
 
