@@ -4,9 +4,12 @@ import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  *
@@ -16,11 +19,11 @@ public class MooreGraphGen3 {
 
     private static final boolean verbose = true;
 
-    private static int K = 57;
-    private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
+    private static int K = 0;
+    private static int NUM_ARESTAS = 0;
 
     public static void main(String... args) {
-        K = 57;
+        K = 7;
 
         List<Integer> startArray = new ArrayList<>();
 
@@ -43,13 +46,13 @@ public class MooreGraphGen3 {
             UndirectedSparseGraphTO graphTemplate = LGMGen.subgraph;
             generateGraph(K, NUM_ARESTAS, graphTemplate, startArray);
         }
-
     }
 
     private static void generateGraph(int K, int numArestas, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         int numvert = vertices.size();
-        List<Integer> incompletVertices = new ArrayList<>();
+//        List<Integer> incompletVertices = new ArrayList<>();
+        TreeSet<Integer> incompletVertices = new TreeSet<>();
         int len = numArestas - graphTemplate.getEdgeCount();
 
         for (Integer v : vertices) {
@@ -73,11 +76,13 @@ public class MooreGraphGen3 {
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
-//        Integer[] bfs = new Integer[vertices.size()];
-        sincronizarVerticesIncompletos(graphTemplate, vertices, incompletVertices);
 
         System.out.println("Montando mapa BFS Inicial");
-//        Integer[][] bfsAtual = new Integer[numvert][];
+        Integer[][] bfsAtual = new Integer[numvert][numvert];
+
+        for (Integer inc : incompletVertices) {
+            UtilTmp.bfs(graphTemplate, bfsAtual[inc], inc);
+        }
 
         int[] pos = new int[len];
         for (int i = 0; i < len; i++) {
@@ -95,23 +100,30 @@ public class MooreGraphGen3 {
 
         UndirectedSparseGraphTO lastgraph = graphTemplate.clone();
         List<Integer> poss = new ArrayList<>();
-        List<Integer> bestVals = new ArrayList<>();
         Integer[] bfsTmp = new Integer[numvert];
         Deque<Integer> stack = new LinkedList<>();
-        Integer[] bfsWork = new Integer[numvert];
-        Integer[][] bfsBackup = new Integer[K][numvert];
 
-        int countroolback1 = 0;
-        int countroolback2 = 0;
+        int[] sortindex = new int[numvert];
 
-        while (lastgraph.getEdgeCount() < numArestas) {
-            Integer v = incompletVertices.get(0);
-            sincronizarListaPossibilidades(bfsWork, lastgraph, poss, v);
-            int offset = stack.size();
+        Comparator<Integer> comparatorBySortIndex = new Comparator<Integer>() {
+            @Override
+            public int compare(Integer t, Integer t1) {
+                int compare = 0;
+                compare = Integer.compare(sortindex[t1], sortindex[t]);//maximizar
+//                compare = Integer.compare(sortindex[t], sortindex[t1]);//minimizar
+                if (compare == 0) {
+                    compare = Integer.compare(t, t1);
+                }
+                return compare;
+            }
+        };
 
+//        while (lastgraph.getEdgeCount() < numArestas) {
+        while (!incompletVertices.isEmpty()) {
+            Integer v = incompletVertices.first();
             poss.clear();
-            for (Integer i = 0; i < bfsWork.length; i++) {
-                if (bfsWork[i] > 3 && lastgraph.degree(i) < K) {
+            for (Integer i = 0; i < bfsAtual[v].length; i++) {
+                if (bfsAtual[v][i] > 3 && lastgraph.degree(i) < K) {
                     poss.add(i);
                 }
             }
@@ -121,54 +133,67 @@ public class MooreGraphGen3 {
             int idx = pos[stack.size()];
 
             if (posssize == 0 || posssize < K - dv || idx >= posssize) {
+                for (int i = stack.size(); i < pos.length; i++) {
+                    pos[i] = 0;
+                }
+                Integer edge = stack.pop();
+                Pair endpoints = lastgraph.getEndpoints(edge);
+                Integer f = (Integer) endpoints.getFirst();
+                Integer s = (Integer) endpoints.getSecond();
+                lastgraph.removeEdge(edge);
+                UtilTmp.bfs(lastgraph, bfsAtual[f], f);
+                UtilTmp.bfs(lastgraph, bfsAtual[s], s);
+                incompletVertices.add(f);
+                incompletVertices.add(s);
+                if (!v.equals(f) && !v.equals(s)) {
+                    UtilTmp.bfs(lastgraph, bfsAtual[v], v);
+                }
+
                 if (verbose) {
+                    System.out.print("remove(");
+                    System.out.print(f);
+                    System.out.print(", ");
+                    System.out.print(s);
+                    System.out.println(");");
                     UtilTmp.printArrayUntil0(pos);
                 }
-                rollback(pos, stack, lastgraph);
-//                    UtilTmp.bfs(lastgraph, bfsWork, v);
-                UtilTmp.arrayCopy(bfsBackup[stack.size() - offset], bfsWork);
-                sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
-                countroolback1++;
+
                 continue;
             }
 
-            Integer peso = null;
-            Integer bestVal = null;
-
             for (Integer p : poss) {
-                UtilTmp.arrayCopy(bfsWork, bfsTmp);
+                sortindex[p] = 0;
+                UtilTmp.arrayCopy(bfsAtual[v], bfsTmp);
                 Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
                 UtilTmp.revisitVertex(v, bfsTmp, lastgraph);
-                int pesoLocal = 0;
                 for (int z = 0; z < bfsTmp.length; z++) {
                     if (bfsTmp[z] > 3) {
-                        pesoLocal++;
+                        sortindex[p]++;
                     }
-                }
-                if (peso == null || pesoLocal > peso) {
-                    bestVal = p;
-                    peso = pesoLocal;
-                    bestVals.clear();
-                    bestVals.add(p);
-                } else if (peso == pesoLocal) {
-                    bestVals.add(p);
                 }
                 lastgraph.removeEdge(tmpEdge);
             }
+            Collections.sort(poss, comparatorBySortIndex);
 
             //Backup bfs
-            UtilTmp.arrayCopy(bfsWork, bfsBackup[stack.size() - offset]);
-            bestVal = bestVals.get(idx);
-            Integer ed = (Integer) lastgraph.addEdge(v, bestVal);
+            Integer val = poss.get(idx);
+            Integer ed = (Integer) lastgraph.addEdge(v, val);
             pos[stack.size()]++;
             stack.push(ed);
-            UtilTmp.revisitVertex(v, bfsWork, lastgraph);
+            UtilTmp.revisitVertex(v, bfsAtual[v], lastgraph);
+            UtilTmp.revisitVertex(val, bfsAtual[val], lastgraph);
+            if (lastgraph.degree(v) >= K) {
+                incompletVertices.remove(v);
+            }
+            if (lastgraph.degree(val) >= K) {
+                incompletVertices.remove(val);
+            }
 
             if (verbose) {
                 System.out.print("add(");
                 System.out.print(v);
                 System.out.print(", ");
-                System.out.print(bestVal);
+                System.out.print(val);
                 System.out.print(")| ");
                 System.out.print(stack.size());
                 System.out.print("/");
@@ -178,11 +203,6 @@ public class MooreGraphGen3 {
                 System.out.print((numvertincompletos - incompletVertices.size()));
                 System.out.print("/");
                 System.out.print(numvertincompletos);
-
-                System.out.print(" count-r1: ");
-                System.out.print(countroolback1);
-                System.out.print(" count-r2: ");
-                System.out.print(countroolback2);
                 System.out.println();
             }
             if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
@@ -192,7 +212,7 @@ public class MooreGraphGen3 {
                 sb.append("last-add(");
                 sb.append(v);
                 sb.append(", ");
-                sb.append(bestVal);
+                sb.append(val);
                 sb.append(")| ");
                 sb.append(stack.size());
                 sb.append("/");
@@ -201,18 +221,9 @@ public class MooreGraphGen3 {
                 sb.append((numvertincompletos - incompletVertices.size()));
                 sb.append("/");
                 sb.append(numvertincompletos);
-
-                sb.append(" count-r1: ");
-                sb.append(countroolback1);
-                sb.append(" count-r2: ");
-                sb.append(countroolback2);
                 sb.append("\n");
                 UtilTmp.dumpString(sb.toString());
-                countroolback1 = 0;
-                countroolback2 = 0;
             }
-
-            sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
         }
 
         try {
@@ -232,13 +243,6 @@ public class MooreGraphGen3 {
         String edgeString = lastgraph.getEdgeString();
         System.out.println(edgeString);
 //        UtilTmp.dumpString(edgeString);    }
-    }
-
-    public static void rollback(int[] pos, Deque<Integer> stack, UndirectedSparseGraphTO hoff) {
-        for (int i = stack.size(); i < pos.length; i++) {
-            pos[i] = 0;
-        }
-        hoff.removeEdge(stack.pop());
     }
 
     public static void sincronizarListaPossibilidades(Integer[] bfs, UndirectedSparseGraphTO lastgraph, List<Integer> poss, Integer v) {
