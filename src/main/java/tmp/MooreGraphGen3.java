@@ -152,6 +152,8 @@ public class MooreGraphGen3 {
         long contr1 = 0;
         long contr2 = 0;
         long contr3 = 0;
+        long contr4 = 0;
+        boolean r4 = false;
         while (!incompletVertices.isEmpty()) {
 //            Integer v = incompletVertices.first();
             Integer v = incompletVertices.get(0);
@@ -168,7 +170,7 @@ public class MooreGraphGen3 {
             boolean r1 = posssize == 0;
             boolean r2 = posssize < K - dv;
             boolean r3 = idx >= posssize;
-            if (r1 || r2 || r3) {
+            if (r1 || r2 || r3 || r4) {
                 for (int i = stack.size(); i < pos.length; i++) {
                     pos[i] = 0;
                 }
@@ -195,6 +197,9 @@ public class MooreGraphGen3 {
                 } else if (r3) {
                     contr3++;
                 }
+                if (r4) {
+                    contr4++;
+                }
 
                 if (verbose) {
                     System.out.print("remove(");
@@ -208,9 +213,12 @@ public class MooreGraphGen3 {
                     System.out.print(contr2);
                     System.out.print(" r3=");
                     System.out.print(contr3);
+                    System.out.print(" r4=");
+                    System.out.print(contr4);
                     System.out.println();
                     UtilTmp.printArrayUntil0(pos);
                 }
+                r4 = false;
                 continue;
             }
 
@@ -322,13 +330,26 @@ public class MooreGraphGen3 {
 
             for (Integer i : incompletVertices) {
                 bfsAtual[i][numvert] = 0;
+                int di = lastgraph.degree(i);
                 for (Integer j : possibilidadesIniciais.get(i)) {
-                    if (lastgraph.degree(i) < K && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
+                    if (di < K && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
                         bfsAtual[i][numvert]++;
                     }
                 }
+                if (bfsAtual[i][numvert] < K - di) {
+                    r4 = true;
+                    if (verbose) {
+                        System.out.print("Possibilidades esgotadas: ");
+                        System.out.print(i);
+                        System.out.print(" - ");
+                        System.out.print(bfsAtual[i][numvert]);
+                        System.out.print("/");
+                        System.out.print(K - di);
+                        System.out.println();
+                    }
+                }
             }
-            Collections.sort(incompletVertices, comparatorByRemain);
+//            Collections.sort(incompletVertices, comparatorByRemain);
         }
 
         try {
