@@ -169,7 +169,7 @@ public class UtilTmp {
             Integer poll = queue.poll();
             int depth = bfs[poll] + 1;
             Collection<Integer> ns = (Collection<Integer>) subgraph1.getNeighborsUnprotected(poll);
-            ns.forEach((nv) -> {
+            for (Integer nv : ns) {
                 if (bfs[nv] == null) {
                     bfs[nv] = depth;
                     queue.add(nv);
@@ -177,7 +177,7 @@ public class UtilTmp {
                     bfs[nv] = depth;
                     queue.add(nv);
                 }
-            });
+            }
         }
     }
 

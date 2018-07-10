@@ -123,7 +123,7 @@ public class MooreGraphGen3 {
             Integer v = incompletVertices.first();
             poss.clear();
             for (Integer i = 0; i < bfsAtual[v].length; i++) {
-                if (bfsAtual[v][i] > 3 && lastgraph.degree(i) < K) {
+                if (lastgraph.degree(i) < K && bfsAtual[v][i] > 3 && bfsAtual[i][v] > 3) {
                     poss.add(i);
                 }
             }
