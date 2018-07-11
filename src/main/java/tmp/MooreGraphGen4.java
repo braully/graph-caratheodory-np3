@@ -311,6 +311,9 @@ public class MooreGraphGen4 {
                 sb.append(numvertincompletos);
                 sb.append("\n");
                 UtilTmp.dumpString(sb.toString());
+                if (K > 7) {
+                    UtilTmp.dumpString(lastgraph.getEdgeString(), ".graph");
+                }
             }
 
             r4 = recalcSortIndexVertices(incompletVertices, bfsAtual, numvert, lastgraph, possibilidadesAtuais);
