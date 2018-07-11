@@ -58,6 +58,7 @@ public class MooreGraphGen3 {
         int min = numvert;
         int max = 0;
         Map<Integer, List<Integer>> possibilidadesIniciais = new HashMap<>();
+        Map<Integer, List<Integer>> possibilidadesAtuais = new HashMap<>();
 
         List<Integer> incompletVertices = new ArrayList<>();
         TreeSet<Integer> incompletSet = new TreeSet<>();
@@ -74,6 +75,7 @@ public class MooreGraphGen3 {
                     min = v;
                 }
                 possibilidadesIniciais.put(v, new ArrayList<>());
+                possibilidadesAtuais.put(v, new ArrayList<>());
             }
         }
         int numvertincompletos = incompletVertices.size();
@@ -101,6 +103,7 @@ public class MooreGraphGen3 {
             for (Integer i = min; i <= max; i++) {
                 if (bfsAtual[inc][i] > 3) {
                     possibilidadesIniciais.get(inc).add(i);
+                    possibilidadesAtuais.get(inc).add(i);
                 }
             }
             bfsAtual[inc][numvert] = possibilidadesIniciais.get(inc).size();
@@ -349,7 +352,7 @@ public class MooreGraphGen3 {
                     }
                 }
             }
-//            Collections.sort(incompletVertices, comparatorByRemain);
+            Collections.sort(incompletVertices, comparatorByRemain);
         }
 
         try {
