@@ -229,7 +229,8 @@ public class MooreGraphGen4 {
                 continue;
             }
 
-            rankearPossibilidades(poss, sortindex, bfsAtual, v, bfstmpv, bfstmpf, lastgraph, incompletSet, comparatorBySortIndex);
+            rankearPossibilidades(poss, sortindex, bfsAtual, v, bfstmpv, bfstmpf,
+                    lastgraph, incompletSet, comparatorBySortIndex, possibilidadesAtuais);
 
             //Add Edge
             Integer val = poss.get(idx);
@@ -312,7 +313,7 @@ public class MooreGraphGen4 {
                 UtilTmp.dumpString(sb.toString());
             }
 
-            r4 = recalcSortIndexVertices(incompletVertices, bfsAtual, numvert, lastgraph, possibilidadesAtuais, K, r4);
+            r4 = recalcSortIndexVertices(incompletVertices, bfsAtual, numvert, lastgraph, possibilidadesAtuais);
             reOrderIncompleteVertices(incompletVertices, comparatorByRemain);
         }
 
@@ -341,16 +342,19 @@ public class MooreGraphGen4 {
         Collections.sort(incompletVertices, comparatorByRemain);
     }
 
-    private static boolean recalcSortIndexVertices(List<Integer> incompletVertices, Integer[][] bfsAtual, int numvert, UndirectedSparseGraphTO lastgraph, Map<Integer, Set<Integer>> possibilidadesAtuais, int K1, boolean r4) {
+    private static boolean recalcSortIndexVertices(List<Integer> incompletVertices,
+            Integer[][] bfsAtual, int numvert, UndirectedSparseGraphTO lastgraph,
+            Map<Integer, Set<Integer>> possibilidadesAtuais) {
+        boolean r4 = false;
         for (Integer i : incompletVertices) {
             bfsAtual[i][numvert] = 0;
             int di = lastgraph.degree(i);
             for (Integer j : possibilidadesAtuais.get(i)) {
-                if (di < K1 && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
+                if (di < K && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
                     bfsAtual[i][numvert]++;
                 }
             }
-            if (bfsAtual[i][numvert] < K1 - di) {
+            if (bfsAtual[i][numvert] < K - di) {
                 r4 = true;
                 if (verbose) {
                     System.out.print("Possibilidades esgotadas: ");
@@ -358,7 +362,7 @@ public class MooreGraphGen4 {
                     System.out.print(" - ");
                     System.out.print(bfsAtual[i][numvert]);
                     System.out.print("/");
-                    System.out.print(K1 - di);
+                    System.out.print(K - di);
                     System.out.println();
                 }
             }
@@ -366,16 +370,34 @@ public class MooreGraphGen4 {
         return r4;
     }
 
-    private static void rankearPossibilidades(List<Integer> poss, int[] sortindex, Integer[][] bfsAtual, Integer v, Integer[] bfstmpv, Integer[] bfstmpf, UndirectedSparseGraphTO lastgraph, Set<Integer> incompleteVertices, Comparator<Integer> comparatorBySortIndex) {
+    private static void rankearPossibilidades(List<Integer> poss, int[] sortindex,
+            Integer[][] bfsAtual, Integer v,
+            Integer[] bfstmpv, Integer[] bfstmpf, UndirectedSparseGraphTO lastgraph,
+            Set<Integer> incompleteVertices,
+            Comparator<Integer> comparatorBySortIndex, Map<Integer, Set<Integer>> possibilidadesAtuais) {
         for (Integer p : poss) {
             sortindex[p] = 0;
             UtilTmp.arrayCopy(bfsAtual[v], bfstmpv);
             UtilTmp.arrayCopy(bfsAtual[p], bfstmpf);
-            Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
-            UtilTmp.revisitVertex(v, bfstmpv, lastgraph);
-            UtilTmp.revisitVertex(p, bfstmpf, lastgraph);
-            lastgraph.removeEdge(tmpEdge);
-            for (Integer z : incompleteVertices) {
+//            Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
+            revisitVertex(v, bfstmpv, lastgraph, p);
+            revisitVertex(p, bfstmpf, lastgraph, v);
+//            lastgraph.removeEdge(tmpEdge);
+            for (Integer z : possibilidadesAtuais.get(v)) {
+//                    if (bfstmpv[z] > 3) {
+//                        sortindex[p]++;
+//                    }
+                if (bfstmpv[z] > 3) {
+                    sortindex[p]++;
+                }
+                if (bfsAtual[p][z] > 3 && bfstmpf[z] <= 3) {
+                    sortindex[p]--;
+                }
+                if (bfsAtual[v][z] > 3 && bfstmpv[z] <= 3) {
+                    sortindex[p]--;
+                }
+            }
+            for (Integer z : possibilidadesAtuais.get(p)) {
 //                    if (bfstmpv[z] > 3) {
 //                        sortindex[p]++;
 //                    }
@@ -409,13 +431,7 @@ public class MooreGraphGen4 {
             int depth = bfs[poll] + 1;
             Collection<Integer> ns = (Collection<Integer>) curgraph.getNeighborsUnprotected(poll);
             for (Integer nv : ns) {
-                if (bfs[nv] == null) {
-                    bfs[nv] = depth;
-                    queue.add(nv);
-                } else if (depth < bfs[nv]) {//revisit
-                    bfs[nv] = depth;
-                    queue.add(nv);
-                }
+                evalBfs(bfs, nv, depth);
             }
         }
     }
@@ -425,6 +441,39 @@ public class MooreGraphGen4 {
             throw new IllegalStateException("BFS From another root");
         }
         visitVertex(hold, bfs3, subgraph);
+    }
+
+    static void revisitVertex(Integer v, Integer[] bfs,
+            UndirectedSparseGraphTO<Integer, Integer> curgraph,
+            Integer extra) {
+        if (v == null || bfs[v] != 0) {
+            throw new IllegalStateException("BFS From another root");
+        }
+        queue.clear();
+        queue.add(v);
+        while (!queue.isEmpty()) {
+            Integer poll = queue.poll();
+            int depth = bfs[poll] + 1;
+            Collection<Integer> ns = (Collection<Integer>) curgraph.getNeighborsUnprotected(poll);
+            for (Integer nv : ns) {
+                evalBfs(bfs, nv, depth);
+            }
+            if (poll.equals(v)) {
+                evalBfs(bfs, extra, depth);
+            } else if (poll.equals(extra)) {
+                evalBfs(bfs, v, depth);
+            }
+        }
+    }
+
+    private static void evalBfs(Integer[] bfs, Integer nv, int depth) {
+        if (bfs[nv] == null) {
+            bfs[nv] = depth;
+            queue.add(nv);
+        } else if (depth < bfs[nv]) {//revisit
+            bfs[nv] = depth;
+            queue.add(nv);
+        }
     }
 
     static void revisitVertex(Integer hold, Integer[][] bfs3,
