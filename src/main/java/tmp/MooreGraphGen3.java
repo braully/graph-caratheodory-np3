@@ -8,10 +8,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -20,7 +22,7 @@ import java.util.TreeSet;
  */
 public class MooreGraphGen3 {
 
-    private static final boolean verbose = true;
+    private static final boolean verbose = false;
 
     private static int K = 0;
     private static int NUM_ARESTAS = 0;
@@ -58,7 +60,7 @@ public class MooreGraphGen3 {
         int min = numvert;
         int max = 0;
         Map<Integer, List<Integer>> possibilidadesIniciais = new HashMap<>();
-        Map<Integer, List<Integer>> possibilidadesAtuais = new HashMap<>();
+        Map<Integer, Set<Integer>> possibilidadesAtuais = new HashMap<>();
 
         List<Integer> incompletVertices = new ArrayList<>();
         TreeSet<Integer> incompletSet = new TreeSet<>();
@@ -75,7 +77,7 @@ public class MooreGraphGen3 {
                     min = v;
                 }
                 possibilidadesIniciais.put(v, new ArrayList<>());
-                possibilidadesAtuais.put(v, new ArrayList<>());
+                possibilidadesAtuais.put(v, new HashSet<>());
             }
         }
         int numvertincompletos = incompletVertices.size();
@@ -183,7 +185,9 @@ public class MooreGraphGen3 {
                 Integer s = (Integer) endpoints.getSecond();
                 lastgraph.removeEdge(edge);
                 bfs(lastgraph, bfsAtual[f], f);
+                recalcPossibilidades(bfsAtual[f], possibilidadesIniciais.get(f), possibilidadesAtuais.get(f));
                 bfs(lastgraph, bfsAtual[s], s);
+                recalcPossibilidades(bfsAtual[s], possibilidadesIniciais.get(s), possibilidadesAtuais.get(s));
                 if (incompletSet.add(f)) {
                     incompletVertices.add(f);
                 }
@@ -225,40 +229,17 @@ public class MooreGraphGen3 {
                 continue;
             }
 
-            for (Integer p : poss) {
-                sortindex[p] = 0;
-                UtilTmp.arrayCopy(bfsAtual[v], bfstmpv);
-                UtilTmp.arrayCopy(bfsAtual[p], bfstmpf);
-                Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
-                UtilTmp.revisitVertex(v, bfstmpv, lastgraph);
-                UtilTmp.revisitVertex(p, bfstmpf, lastgraph);
-                lastgraph.removeEdge(tmpEdge);
-                for (int z = min; z <= max; z++) {
-//                    if (bfstmpv[z] > 3) {
-//                        sortindex[p]++;
-//                    }
-                    if (lastgraph.degree(z) < K) {
-                        if (bfstmpv[z] > 3) {
-                            sortindex[p]++;
-                        }
-                        if (bfsAtual[p][z] > 3 && bfstmpf[z] <= 3) {
-                            sortindex[p]--;
-                        }
-                        if (bfsAtual[v][z] > 3 && bfstmpv[z] <= 3) {
-                            sortindex[p]--;
-                        }
-                    }
-                }
-            }
-            Collections.sort(poss, comparatorBySortIndex);
+            rankearPossibilidades(poss, sortindex, bfsAtual, v, bfstmpv, bfstmpf, lastgraph, incompletSet, comparatorBySortIndex);
 
-            //Backup bfs
+            //Add Edge
             Integer val = poss.get(idx);
             Integer ed = (Integer) lastgraph.addEdge(v, val);
             pos[stack.size()]++;
             stack.push(ed);
-            revisitVertex(v, bfsAtual[v], lastgraph);
-            revisitVertex(val, bfsAtual[val], lastgraph);
+//            revisitVertex(v, bfsAtual[v], lastgraph);
+//            revisitVertex(val, bfsAtual[val], lastgraph);
+            revisitVertex(v, bfsAtual, lastgraph, possibilidadesAtuais);
+            revisitVertex(val, bfsAtual, lastgraph, possibilidadesAtuais);
             if (lastgraph.degree(v) >= K) {
                 incompletSet.remove(v);
                 incompletVertices.remove(v);
@@ -331,28 +312,8 @@ public class MooreGraphGen3 {
                 UtilTmp.dumpString(sb.toString());
             }
 
-            for (Integer i : incompletVertices) {
-                bfsAtual[i][numvert] = 0;
-                int di = lastgraph.degree(i);
-                for (Integer j : possibilidadesIniciais.get(i)) {
-                    if (di < K && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
-                        bfsAtual[i][numvert]++;
-                    }
-                }
-                if (bfsAtual[i][numvert] < K - di) {
-                    r4 = true;
-                    if (verbose) {
-                        System.out.print("Possibilidades esgotadas: ");
-                        System.out.print(i);
-                        System.out.print(" - ");
-                        System.out.print(bfsAtual[i][numvert]);
-                        System.out.print("/");
-                        System.out.print(K - di);
-                        System.out.println();
-                    }
-                }
-            }
-            Collections.sort(incompletVertices, comparatorByRemain);
+            r4 = recalcSortIndexVertices(incompletVertices, bfsAtual, numvert, lastgraph, possibilidadesAtuais, K, r4);
+            reOrderIncompleteVertices(incompletVertices, comparatorByRemain);
         }
 
         try {
@@ -371,6 +332,65 @@ public class MooreGraphGen3 {
         System.out.println("Final Graph: ");
         String edgeString = lastgraph.getEdgeString();
         System.out.println(edgeString);
+        if (K > 7) {
+            UtilTmp.dumpString(edgeString);
+        }
+    }
+
+    private static void reOrderIncompleteVertices(List<Integer> incompletVertices, Comparator<Integer> comparatorByRemain) {
+        Collections.sort(incompletVertices, comparatorByRemain);
+    }
+
+    private static boolean recalcSortIndexVertices(List<Integer> incompletVertices, Integer[][] bfsAtual, int numvert, UndirectedSparseGraphTO lastgraph, Map<Integer, Set<Integer>> possibilidadesAtuais, int K1, boolean r4) {
+        for (Integer i : incompletVertices) {
+            bfsAtual[i][numvert] = 0;
+            int di = lastgraph.degree(i);
+            for (Integer j : possibilidadesAtuais.get(i)) {
+                if (di < K1 && bfsAtual[i][j] > 3 && bfsAtual[j][i] > 3) {
+                    bfsAtual[i][numvert]++;
+                }
+            }
+            if (bfsAtual[i][numvert] < K1 - di) {
+                r4 = true;
+                if (verbose) {
+                    System.out.print("Possibilidades esgotadas: ");
+                    System.out.print(i);
+                    System.out.print(" - ");
+                    System.out.print(bfsAtual[i][numvert]);
+                    System.out.print("/");
+                    System.out.print(K1 - di);
+                    System.out.println();
+                }
+            }
+        }
+        return r4;
+    }
+
+    private static void rankearPossibilidades(List<Integer> poss, int[] sortindex, Integer[][] bfsAtual, Integer v, Integer[] bfstmpv, Integer[] bfstmpf, UndirectedSparseGraphTO lastgraph, Set<Integer> incompleteVertices, Comparator<Integer> comparatorBySortIndex) {
+        for (Integer p : poss) {
+            sortindex[p] = 0;
+            UtilTmp.arrayCopy(bfsAtual[v], bfstmpv);
+            UtilTmp.arrayCopy(bfsAtual[p], bfstmpf);
+            Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
+            UtilTmp.revisitVertex(v, bfstmpv, lastgraph);
+            UtilTmp.revisitVertex(p, bfstmpf, lastgraph);
+            lastgraph.removeEdge(tmpEdge);
+            for (Integer z : incompleteVertices) {
+//                    if (bfstmpv[z] > 3) {
+//                        sortindex[p]++;
+//                    }
+                if (bfstmpv[z] > 3) {
+                    sortindex[p]++;
+                }
+                if (bfsAtual[p][z] > 3 && bfstmpf[z] <= 3) {
+                    sortindex[p]--;
+                }
+                if (bfsAtual[v][z] > 3 && bfstmpv[z] <= 3) {
+                    sortindex[p]--;
+                }
+            }
+        }
+        Collections.sort(poss, comparatorBySortIndex);
     }
 
     public static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
@@ -407,7 +427,11 @@ public class MooreGraphGen3 {
         visitVertex(hold, bfs3, subgraph);
     }
 
-    public static void visitVertex(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> curgraph, Map<Integer, List<Integer>> possibilidadesIniciais) {
+    static void revisitVertex(Integer hold, Integer[][] bfs3,
+            UndirectedSparseGraphTO<Integer, Integer> curgraph,
+            Map<Integer, Set<Integer>> possibilidades) {
+        Integer v = hold;
+        Integer[] bfs = bfs3[hold];
         queue.clear();
         queue.add(v);
         while (!queue.isEmpty()) {
@@ -419,17 +443,25 @@ public class MooreGraphGen3 {
                     bfs[nv] = depth;
                     queue.add(nv);
                 } else if (depth < bfs[nv]) {//revisit
+                    if (bfs[nv] == 4) {
+                        possibilidades.get(v).remove(nv);
+//                        bfs[bfs.length - 1]--;
+                    }
                     bfs[nv] = depth;
                     queue.add(nv);
                 }
             }
         }
+        bfs[bfs.length - 1] = possibilidades.get(v).size();
     }
 
-    static void revisitVertex(Integer hold, Integer[] bfs3, UndirectedSparseGraphTO<Integer, Integer> subgraph, Map<Integer, List<Integer>> possibilidadesIniciais) {
-        if (hold == null || bfs3[hold] != 0) {
-            throw new IllegalStateException("BFS From another root");
+    private static void recalcPossibilidades(Integer[] bfs, List<Integer> inicial, Collection<Integer> atual) {
+        atual.clear();
+        for (Integer x : inicial) {
+            if (bfs[x] == 4) {
+                atual.add(x);
+            }
         }
-        visitVertex(hold, bfs3, subgraph);
+        bfs[bfs.length - 1] = atual.size();
     }
 }
