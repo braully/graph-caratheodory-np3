@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import static tmp.MooreGraphGen4.bfs;
 
 /**
  *
@@ -47,11 +48,20 @@ public class HoffmanGraphGen {
                 incompletVertices.add(v);
             }
         }
+        List<Integer> incompletVerticesIni = new ArrayList<>(incompletVertices);
 
         System.out.print("Incomplete vertices[" + incompletVertices.size() + "]: ");
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
+
+        System.out.println("Montando mapa BFS Inicial");
+        int numvert = vertices.size();
+        Integer[][] bfsAtual = new Integer[numvert][numvert];
+        for (Integer inc : incompletVertices) {
+            bfs(subgraph, bfsAtual[inc], inc);
+        }
+        printBfs(incompletVerticesIni, bfsAtual);
 
         BFSDistanceLabeler<Integer, Integer> bdl = new BFSDistanceLabeler<>();
         Map<Integer, List<Integer>> mapossibilidades = new HashMap<>();
@@ -94,6 +104,11 @@ public class HoffmanGraphGen {
 
             bdl.labelDistances(hoff, v);
             System.out.println("add(" + v + ", " + u + ")");
+            for (Integer inc : incompletVerticesIni) {
+                bfs(hoff, bfsAtual[inc], inc);
+            }
+            printBfs(incompletVerticesIni, bfsAtual);
+
             atualizarVerticesMapa(hoff, incompletVertices, mapossibilidades);
             //Atualizar lista de possibilidades
         }
@@ -113,6 +128,43 @@ public class HoffmanGraphGen {
 
         System.out.println("Final Graph: ");
         System.out.println(hoff.getEdgeString());
+    }
+
+    private static void printBfs(List<Integer> incompletVertices, Integer[][] bfsAtual) {
+        System.out.printf("bfs|--| ");
+        for (Integer inc : incompletVertices) {
+            System.out.printf("%2d ", inc);
+        }
+        System.out.println();
+
+        System.out.printf("---------");
+        for (Integer inc : incompletVertices) {
+            System.out.printf("---");
+        }
+        System.out.println();
+
+        for (Integer inc : incompletVertices) {
+            System.out.printf("bfs|%2d| ", inc);
+            for (Integer i : incompletVertices) {
+                if (bfsAtual[inc][i] == 1) {
+                    System.out.print(" o ");
+                } else if (bfsAtual[inc][i] == 2) {
+                    System.out.print(" x ");
+                } else if (bfsAtual[inc][i] > 3) {
+                    System.out.printf("%2d ", bfsAtual[inc][i]);
+                } else {
+                    System.out.printf("-- ");
+                }
+            }
+            System.out.printf("|");
+            System.out.println();
+        }
+
+        System.out.printf("---------");
+        for (Integer inc : incompletVertices) {
+            System.out.printf("---");
+        }
+        System.out.println();
     }
 
     public static int rollback(int countEdeges, int[] pos, Integer[] edgesAdded, UndirectedSparseGraphTO hoff) {
