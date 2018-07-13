@@ -68,7 +68,10 @@ public class MooreGraphGen5 {
         Map<Integer, List<Integer>> possibilidadesAtuais = new HashMap<>();
         Collection<Integer> vertices = null;
         List<Integer> incompletVertices = new ArrayList<>();
+        List<Integer> incompletVerticesOriginal = new ArrayList<>();
+        int numvertincompletosOriginal = 0;
         UndirectedSparseGraphTO graph = null;
+        int[] degreecount = null;
 
         Comparator<Integer> comparatorByRemain = (Integer t, Integer t1) -> {
             int compare = 0;
@@ -93,14 +96,17 @@ public class MooreGraphGen5 {
         private void loadGraph(UndirectedSparseGraphTO graph) {
             this.graph = graph;
             vertices = graph.getVertices();
+            degreecount = new int[vertices.size()];
             for (Integer v : vertices) {
-                if (graph.degree(v) < K) {
+                degreecount[v] = graph.degree(v);
+                if (degreecount[v] < K) {
                     incompletVertices.add(v);
+                    incompletVerticesOriginal.add(v);
                     possibilidadesIniciais.put(v, new ArrayList<>());
                     possibilidadesAtuais.put(v, new ArrayList<>());
                 }
             }
-
+            numvertincompletosOriginal = incompletVerticesOriginal.size();
             for (Integer inc : incompletVertices) {
                 bfs(inc);
                 for (Integer i : incompletVertices) {
@@ -113,19 +119,27 @@ public class MooreGraphGen5 {
             }
         }
 
-        private void rollback(Integer v, Integer f, Integer s) {
-            bfs(f);
-            recalcPossibilidades(f);
-            bfs(s);
-            recalcPossibilidades(s);
-            if (!incompletVertices.contains(v)) {
+        private void removeEdgeAndRollback(Integer v, Integer edge) {
+            Pair endpoints = graph.getEndpoints(edge);
+            Integer f = (Integer) endpoints.getFirst();
+            Integer s = (Integer) endpoints.getSecond();
+            graph.removeEdge(edge);
+//            bfs(f);
+//            recalcPossibilidades(f);
+            visitVertex(f, true);
+//            bfs(s);
+//            recalcPossibilidades(s);
+            visitVertex(s, true);
+            if (!v.equals(f) && !v.equals(s)) {
+//                bfs(v);
+//                recalcPossibilidades(v);
+                visitVertex(v, true);
+            }
+            if (!incompletVertices.contains(f)) {
                 incompletVertices.add(f);
             }
             if (!incompletVertices.contains(s)) {
                 incompletVertices.add(s);
-            }
-            if (!v.equals(f) && !v.equals(s)) {
-                bfs(v);
             }
         }
 
@@ -137,7 +151,28 @@ public class MooreGraphGen5 {
             visitVertex(inc);
         }
 
+        public void addEdge(int[] pos, Deque<Integer> stack, Integer v, Integer val, int len) {
+            Integer ed = (Integer) graph.addEdge(v, val);
+            pos[stack.size()]++;
+            stack.push(ed);
+            //            revisitVertex(v, bfsAtual[v], lastgraph);
+//            revisitVertex(val, bfsAtual[val], lastgraph);
+            revisitVertex(v);
+            revisitVertex(val);
+            if (++degreecount[v] >= K) {
+                incompletVertices.remove(v);
+            }
+            if (++degreecount[val] >= K) {
+                incompletVertices.remove(val);
+            }
+            verboseDump(v, val, stack, len, pos, K);
+        }
+
         public void visitVertex(Integer v) {
+            visitVertex(v, false);
+        }
+
+        public void visitVertex(Integer v, boolean recalc) {
             queue.clear();
             queue.add(v);
             while (!queue.isEmpty()) {
@@ -145,20 +180,33 @@ public class MooreGraphGen5 {
                 int depth = get(v, poll) + 1;
                 Collection<Integer> ns = (Collection<Integer>) graph.getNeighborsUnprotected(poll);
                 for (Integer nv : ns) {
-                    evalBfs(v, nv, depth);
+                    evalBfs(v, nv, depth, recalc);
                 }
             }
         }
 
-        private void evalBfs(Integer hold, Integer nv, int depth) {
+        private void evalBfs(Integer hold, Integer nv, int depth, boolean recalPoss) {
             Integer cur = get(hold, nv);
             if (cur == null) {
                 set(hold, nv, depth);
                 queue.add(nv);
             } else if (depth < cur) {//revisit
+                if (recalPoss && get(hold, nv) == 4) {
+                    possibilidadesAtuais.get(hold).remove(nv);
+                }
                 set(hold, nv, depth);
                 queue.add(nv);
+            } else if (recalPoss && get(hold, nv) == 4) {
+                possibilidadesAtuais.get(hold).add(nv);
             }
+
+//                else if (depth < bfs[nv]) {//revisit
+//                    if (bfs[nv] == 4) {
+//                        possibilidades.get(v).remove(nv);
+//                    }
+//                    bfs[nv] = depth;
+//                    queue.add(nv);
+//                }
         }
 
         private void revisitVertex(Integer v) {
@@ -200,6 +248,48 @@ public class MooreGraphGen5 {
         private boolean recalcSortIndexVertices() {
 //            Collections.sort(incompletVertices, comparatorByRemain);
             return false;
+        }
+
+        private void verboseDump(Integer v, Integer val, Deque<Integer> stack, int len, int[] pos, int K1) {
+            if (verbose) {
+                System.out.print("add(");
+                System.out.print(v);
+                System.out.print(", ");
+                System.out.print(val);
+                System.out.print(")| ");
+                System.out.print(stack.size());
+                System.out.print("/");
+                System.out.print(len);
+
+                System.out.print(" - ");
+                System.out.print(numvertincompletosOriginal - numVerticesIncompletos());
+                System.out.print("/");
+                System.out.print(numvertincompletosOriginal);
+                System.out.print("\t");
+//                System.out.println();
+            }
+            if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_12) {
+                lastime = System.currentTimeMillis();
+                UtilTmp.dumpArrayUntil0(pos);
+                StringBuilder sb = new StringBuilder();
+                sb.append("last-add(");
+                sb.append(v);
+                sb.append(", ");
+                sb.append(val);
+                sb.append(")| ");
+                sb.append(stack.size());
+                sb.append("/");
+                sb.append(len);
+                sb.append(" - ");
+                sb.append(numvertincompletosOriginal - numVerticesIncompletos());
+                sb.append("/");
+                sb.append(numvertincompletosOriginal);
+                sb.append("\n");
+                UtilTmp.dumpString(sb.toString());
+                if (K1 > 7) {
+                    UtilTmp.dumpString(graph.getEdgeString(), ".graph");
+                }
+            }
         }
     }
 
@@ -271,11 +361,8 @@ public class MooreGraphGen5 {
                 }
                 Integer edge = stack.pop();
                 Pair endpoints = lastgraph.getEndpoints(edge);
-                Integer f = (Integer) endpoints.getFirst();
-                Integer s = (Integer) endpoints.getSecond();
-                lastgraph.removeEdge(edge);
-                bfsAtual.rollback(v, f, s);
-                verboseDumpRollback(r1, r2, r3, f, s, pos);
+                bfsAtual.removeEdgeAndRollback(v, edge);
+                verboseDumpRollback(r1, r2, r3, endpoints, pos);
                 r4 = false;
                 continue;
             }
@@ -284,15 +371,7 @@ public class MooreGraphGen5 {
 
             //Add Edge
             Integer val = poss.get(idx);
-            Integer ed = (Integer) lastgraph.addEdge(v, val);
-            pos[stack.size()]++;
-            stack.push(ed);
-//            revisitVertex(v, bfsAtual[v], lastgraph);
-//            revisitVertex(val, bfsAtual[val], lastgraph);
-            bfsAtual.revisitVertex(v);
-            bfsAtual.revisitVertex(val);
-
-            verboseDump(v, val, stack, len, numvertincompletos, bfsAtual, pos, K, lastgraph);
+            bfsAtual.addEdge(pos, stack, v, val, len);
             r4 = bfsAtual.recalcSortIndexVertices();
 //            reOrderIncompleteVertices(incompletVertices, comparatorByRemain);
         }
@@ -318,7 +397,7 @@ public class MooreGraphGen5 {
         }
     }
 
-    private static void verboseDumpRollback(boolean r1, boolean r2, boolean r3, Integer f, Integer s, int[] pos) {
+    private static void verboseDumpRollback(boolean r1, boolean r2, boolean r3, Pair<Integer> end, int[] pos) {
         if (r1) {
             contr1++;
         } else if (r2) {
@@ -332,9 +411,9 @@ public class MooreGraphGen5 {
 
         if (verbose) {
             System.out.print("remove(");
-            System.out.print(f);
+            System.out.print(end.getFirst());
             System.out.print(", ");
-            System.out.print(s);
+            System.out.print(end.getSecond());
             System.out.print("); ");
             System.out.print("r1=");
             System.out.print(contr1);
@@ -346,48 +425,6 @@ public class MooreGraphGen5 {
             System.out.print(contr4);
             System.out.println();
             UtilTmp.printArrayUntil0(pos);
-        }
-    }
-
-    private static void verboseDump(Integer v, Integer val, Deque<Integer> stack, int len, int numvertincompletos, BFSProcessamento bfsAtual, int[] pos, int K1, UndirectedSparseGraphTO lastgraph) {
-        if (verbose) {
-            System.out.print("add(");
-            System.out.print(v);
-            System.out.print(", ");
-            System.out.print(val);
-            System.out.print(")| ");
-            System.out.print(stack.size());
-            System.out.print("/");
-            System.out.print(len);
-
-            System.out.print(" - ");
-            System.out.print(numvertincompletos - bfsAtual.numVerticesIncompletos());
-            System.out.print("/");
-            System.out.print(numvertincompletos);
-            System.out.print("\t");
-//                System.out.println();
-        }
-        if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_12) {
-            lastime = System.currentTimeMillis();
-            UtilTmp.dumpArrayUntil0(pos);
-            StringBuilder sb = new StringBuilder();
-            sb.append("last-add(");
-            sb.append(v);
-            sb.append(", ");
-            sb.append(val);
-            sb.append(")| ");
-            sb.append(stack.size());
-            sb.append("/");
-            sb.append(len);
-            sb.append(" - ");
-            sb.append(numvertincompletos - bfsAtual.numVerticesIncompletos());
-            sb.append("/");
-            sb.append(numvertincompletos);
-            sb.append("\n");
-            UtilTmp.dumpString(sb.toString());
-            if (K1 > 7) {
-                UtilTmp.dumpString(lastgraph.getEdgeString(), ".graph");
-            }
         }
     }
 
