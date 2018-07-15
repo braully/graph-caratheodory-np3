@@ -4,7 +4,6 @@ import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -208,10 +207,6 @@ public class MooreGraphGen5 {
 //                possibilidadesAtuais.get(hold).add(nv);
 //                possibilidadesAtuais.get(nv).add(hold);
 //            }
-        }
-
-        private void revisitVertex(Integer v) {
-            visitVertex(v);
         }
 
         private void set(Integer inc, Integer i, Integer val) {
@@ -452,51 +447,6 @@ public class MooreGraphGen5 {
             }
         }
         return r4;
-    }
-
-    private static void rankearPossibilidades(List<Integer> poss, int[] sortindex,
-            Integer[][] bfsAtual, Integer v,
-            Integer[] bfstmpv, Integer[] bfstmpf, UndirectedSparseGraphTO lastgraph,
-            Set<Integer> incompleteVertices,
-            Comparator<Integer> comparatorBySortIndex, Map<Integer, Set<Integer>> possibilidadesAtuais) {
-        for (Integer p : poss) {
-            sortindex[p] = 0;
-            UtilTmp.arrayCopy(bfsAtual[v], bfstmpv);
-            UtilTmp.arrayCopy(bfsAtual[p], bfstmpf);
-//            Integer tmpEdge = (Integer) lastgraph.addEdge(v, p);
-            revisitVertex(v, bfstmpv, lastgraph, p);
-            revisitVertex(p, bfstmpf, lastgraph, v);
-//            lastgraph.removeEdge(tmpEdge);
-            for (Integer z : possibilidadesAtuais.get(v)) {
-//                    if (bfstmpv[z] > 3) {
-//                        sortindex[p]++;
-//                    }
-                if (bfstmpv[z] > 3) {
-                    sortindex[p]++;
-                }
-                if (bfsAtual[p][z] > 3 && bfstmpf[z] <= 3) {
-                    sortindex[p]--;
-                }
-                if (bfsAtual[v][z] > 3 && bfstmpv[z] <= 3) {
-                    sortindex[p]--;
-                }
-            }
-            for (Integer z : possibilidadesAtuais.get(p)) {
-//                    if (bfstmpv[z] > 3) {
-//                        sortindex[p]++;
-//                    }
-                if (bfstmpv[z] > 3) {
-                    sortindex[p]++;
-                }
-                if (bfsAtual[p][z] > 3 && bfstmpf[z] <= 3) {
-                    sortindex[p]--;
-                }
-                if (bfsAtual[v][z] > 3 && bfstmpv[z] <= 3) {
-                    sortindex[p]--;
-                }
-            }
-        }
-        Collections.sort(poss, comparatorBySortIndex);
     }
 
     public static void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
