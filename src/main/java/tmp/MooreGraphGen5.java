@@ -62,6 +62,7 @@ public class MooreGraphGen5 {
     static class BFSProcessamento {
 
         Integer[][] bfsAtual;
+        int[] countPos = null;
         Integer linha;
         Integer coluna;
         Map<Integer, List<Integer>> possibilidadesIniciais = new HashMap<>();
@@ -86,6 +87,7 @@ public class MooreGraphGen5 {
             bfsAtual = new Integer[linha][coluna];
             this.linha = linha;
             this.coluna = coluna;
+            this.countPos = new int[linha];
         }
 
         private BFSProcessamento(int linha) {
@@ -113,6 +115,7 @@ public class MooreGraphGen5 {
                     if (get(inc, i) > 3) {
                         possibilidadesIniciais.get(inc).add(i);
                         possibilidadesAtuais.get(inc).add(i);
+                        countPos[inc]++;
                     }
                 }
 //            bfsAtual[inc][numvert] = possibilidadesIniciais.get(inc).size();
@@ -135,10 +138,11 @@ public class MooreGraphGen5 {
 //                recalcPossibilidades(v);
                 visitVertex(v, true);
             }
-            if (!incompletVertices.contains(f)) {
+            if (--degreecount[f] < K) {
                 incompletVertices.add(f);
+//                possibilidadesIniciais.get(f).forEach(i -> possibilidadesAtuais.get(i).add(f));
             }
-            if (!incompletVertices.contains(s)) {
+            if (--degreecount[s] < K) {
                 incompletVertices.add(s);
             }
         }
@@ -157,13 +161,15 @@ public class MooreGraphGen5 {
             stack.push(ed);
             //            revisitVertex(v, bfsAtual[v], lastgraph);
 //            revisitVertex(val, bfsAtual[val], lastgraph);
-            revisitVertex(v);
-            revisitVertex(val);
+            visitVertex(v, true);
+            visitVertex(val, true);
             if (++degreecount[v] >= K) {
                 incompletVertices.remove(v);
+                possibilidadesAtuais.get(v).forEach(i -> possibilidadesAtuais.get(i).remove(v));
             }
             if (++degreecount[val] >= K) {
                 incompletVertices.remove(val);
+                possibilidadesAtuais.get(val).forEach(i -> possibilidadesAtuais.get(i).remove(val));
             }
             verboseDump(v, val, stack, len, pos, K);
         }
@@ -193,20 +199,15 @@ public class MooreGraphGen5 {
             } else if (depth < cur) {//revisit
                 if (recalPoss && get(hold, nv) == 4) {
                     possibilidadesAtuais.get(hold).remove(nv);
+                    possibilidadesAtuais.get(nv).remove(hold);
                 }
                 set(hold, nv, depth);
                 queue.add(nv);
-            } else if (recalPoss && get(hold, nv) == 4) {
-                possibilidadesAtuais.get(hold).add(nv);
             }
-
-//                else if (depth < bfs[nv]) {//revisit
-//                    if (bfs[nv] == 4) {
-//                        possibilidades.get(v).remove(nv);
-//                    }
-//                    bfs[nv] = depth;
-//                    queue.add(nv);
-//                }
+//            else if (recalPoss && cur < 4 && depth == 4) {
+//                possibilidadesAtuais.get(hold).add(nv);
+//                possibilidadesAtuais.get(nv).add(hold);
+//            }
         }
 
         private void revisitVertex(Integer v) {
@@ -219,10 +220,6 @@ public class MooreGraphGen5 {
 
         private Integer get(Integer inc, Integer i) {
             return bfsAtual[inc][i];
-        }
-
-        private void recalcPossibilidades(Integer f) {
-
         }
 
         private int numVerticesIncompletos() {
@@ -299,10 +296,9 @@ public class MooreGraphGen5 {
         int numvert = vertices.size();
         int len = numArestas - lastgraph.getEdgeCount();
 
-//        Integer[][] bfsAtual = new Integer[numvert][numvert + 1];
         BFSProcessamento bfsAtual = new BFSProcessamento(numvert, numvert);
         bfsAtual.loadGraph(lastgraph);
-        int numvertincompletos = bfsAtual.numVerticesIncompletos();
+
         System.out.print("Graph[");
         System.out.print(lastgraph.getVertexCount());
         System.out.print(", ");
@@ -350,6 +346,7 @@ public class MooreGraphGen5 {
             Integer v = bfsAtual.proximoVertice();
             List<Integer> poss = bfsAtual.possibilidadesAtuais(v);
             int dv = lastgraph.degree(v);
+//            int posssize = bfsAtual.countPossibilidades(v);
             int posssize = poss.size();
             int idx = pos[stack.size()];
             boolean r1 = posssize == 0;
@@ -370,6 +367,7 @@ public class MooreGraphGen5 {
             bfsAtual.rankearPossibilidades(v);
 
             //Add Edge
+//            Integer val = bfsAtual.getOpcao(v, idx);
             Integer val = poss.get(idx);
             bfsAtual.addEdge(pos, stack, v, val, len);
             r4 = bfsAtual.recalcSortIndexVertices();
