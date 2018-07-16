@@ -61,6 +61,7 @@ public class MooreGraphGen6 {
 
     static class BFSProcessamento {
 
+        int[] startVal;
         Integer[][] bfsAtual;
         int[] countPos = null;
         Integer linha;
@@ -98,6 +99,7 @@ public class MooreGraphGen6 {
             this.graph = graph;
             vertices = graph.getVertices();
             degreecount = new int[vertices.size()];
+            startVal = new int[vertices.size()];
             for (Integer v : vertices) {
                 degreecount[v] = graph.degree(v);
                 if (degreecount[v] < K) {
@@ -125,12 +127,15 @@ public class MooreGraphGen6 {
             Pair endpoints = graph.getEndpoints(edge);
             Integer f = (Integer) endpoints.getFirst();
             Integer s = (Integer) endpoints.getSecond();
-//            getCountPos(v);
+            getCountPos(f);
             graph.removeEdge(edge);
             bfs(f, true);
+            getCountPos(f);
             countPos[f]--;
+//            getCountPos(s);
             bfs(s, true);
-            countPos[s]--;
+//            getCountPos(s);
+//            countPos[s]--;
             if (!v.equals(f) && !v.equals(s)) {
                 bfs(v, true);
             }
@@ -140,6 +145,11 @@ public class MooreGraphGen6 {
             if (degreecount[s]-- == K) {
                 incompletVertices.add(s);
             }
+            if (startVal[f] == s) {
+                startVal[v] = 0;
+            }
+            getCountPos(f);
+            getCountPos(s);
         }
 
         private void bfs(Integer inc, boolean recalc) {
@@ -172,6 +182,9 @@ public class MooreGraphGen6 {
             }
             if (++degreecount[val] >= K) {
                 incompletVertices.remove(val);
+            }
+            if (startVal[v] == 0) {
+                startVal[v] = val;
             }
             verboseDump(v, val, stack, len, pos, K);
         }
@@ -295,25 +308,29 @@ public class MooreGraphGen6 {
         }
 
         private int getCountPos(Integer v) {
-//            int cont = countPos[v];
-//            int contreal = 0;
-//            for (Integer i : possibilidadesIniciais.get(v)) {
-//                if (get(v, i) == 4) {
-//                    contreal++;
-//                }
-//            }
-//            if (cont != contreal) {
-//                throw new IllegalArgumentException("Count inconsistece " + v + " c=" + cont + " != c-real=" + contreal);
-//            }
-//            return cont;
-            return countPos[v];
+            int cont = countPos[v];
+            assertCountPos(v, cont);
+            return cont;
+//            return countPos[v];
+        }
+
+        private void assertCountPos(Integer v, int cont) throws IllegalArgumentException {
+            int contreal = 0;
+            for (Integer i : possibilidadesIniciais.get(v)) {
+                if (get(v, i) == 4) {
+                    contreal++;
+                }
+            }
+            if (cont != contreal) {
+                throw new IllegalArgumentException("Count inconsistece " + v + " c=" + cont + " != c-real=" + contreal);
+            }
         }
 
         private Integer getOpcao(Integer v, int idx) {
             Integer ret = null;
             for (Integer i : possibilidadesIniciais.get(v)) {
                 Integer d = get(v, i);
-                if (i > v && d.equals(4)) {
+                if (i > Math.max(startVal[v], v) && d.equals(4)) {
                     if (idx == 0) {
                         ret = i;
                         break;
@@ -329,6 +346,10 @@ public class MooreGraphGen6 {
             boolean ret = false;
             for (Integer i : incompletVertices) {
                 if (K - degreecount[i] > countPos[i]) {
+                    assertCountPos(i, countPos[i]);
+                    if (degreecount[i] != graph.degree(i)) {
+                        throw new IllegalArgumentException("Degree inconsistece " + i + " d=" + degreecount[i] + " != c-real=" + graph.degree(i));
+                    }
                     ret = true;
                     break;
                 }
