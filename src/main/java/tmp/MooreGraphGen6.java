@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,8 @@ import java.util.TreeSet;
  */
 public class MooreGraphGen6 {
 
-    private static final boolean verbose = true;
+    private static final boolean verbose = false;
+//    private static final boolean verbose = true;
 
     private static int K = 0;
     private static int NUM_ARESTAS = 0;
@@ -33,8 +35,8 @@ public class MooreGraphGen6 {
     static boolean r4 = false;
 
     public static void main(String... args) {
-//        K = 57;
-        K = 7;
+        K = 57;
+//        K = 7;
 
         List<Integer> startArray = new ArrayList<>();
 
@@ -73,6 +75,7 @@ public class MooreGraphGen6 {
         int numvertincompletosOriginal = 0;
         UndirectedSparseGraphTO graph = null;
         int[] degreecount = null;
+        Set<Integer> recountPos = new HashSet<>();
 
         Comparator<Integer> comparatorByRemain = (Integer t, Integer t1) -> {
             int compare = 0;
@@ -127,12 +130,12 @@ public class MooreGraphGen6 {
             Pair endpoints = graph.getEndpoints(edge);
             Integer f = (Integer) endpoints.getFirst();
             Integer s = (Integer) endpoints.getSecond();
-            getCountPos(f);
+//            getCountPos(f);
+//            getCountPos(s);
             graph.removeEdge(edge);
             bfs(f, true);
-            getCountPos(f);
-            countPos[f]--;
-//            getCountPos(s);
+//            getCountPos(f);
+//            countPos[f]--;
             bfs(s, true);
 //            getCountPos(s);
 //            countPos[s]--;
@@ -148,8 +151,9 @@ public class MooreGraphGen6 {
             if (startVal[f] == s) {
                 startVal[v] = 0;
             }
-            getCountPos(f);
-            getCountPos(s);
+            syncCountPos();
+//            getCountPos(f);
+//            getCountPos(s);
         }
 
         private void bfs(Integer inc, boolean recalc) {
@@ -173,10 +177,12 @@ public class MooreGraphGen6 {
             Integer ed = (Integer) graph.addEdge(v, val);
             pos[stack.size()]++;
             stack.push(ed);
+//            getCountPos(v);
+//            getCountPos(val);
             revisitVertex(v, val, true);
-            countPos[v]--;
+//            countPos[v]--;
             revisitVertex(val, v, true);
-            countPos[val]--;
+//            countPos[val]--;
             if (++degreecount[v] >= K) {
                 incompletVertices.remove(v);
             }
@@ -186,6 +192,11 @@ public class MooreGraphGen6 {
             if (startVal[v] == 0) {
                 startVal[v] = val;
             }
+            syncCountPos(v, val);
+//            countPos[v]--;
+//            getCountPos(v);
+////            countPos[val]--;
+//            getCountPos(val);
             verboseDump(v, val, stack, len, pos, K);
         }
 
@@ -217,13 +228,15 @@ public class MooreGraphGen6 {
                 set(hold, nv, depth);
                 queue.add(nv);
                 if (recalPoss && depth == 4) {
-                    countPos[nv]++;
-                    countPos[hold]++;
+//                    countPos[nv]++;
+//                    countPos[hold]++;
+                    recountPos.add(nv);
                 }
             } else if (depth < cur) {//revisit
                 if (recalPoss && cur == 4) {
-                    countPos[nv]--;
-                    countPos[hold]--;
+//                    countPos[nv]--;
+//                    countPos[hold]--;
+                    recountPos.add(nv);
                 }
                 set(hold, nv, depth);
                 queue.add(nv);
@@ -283,7 +296,7 @@ public class MooreGraphGen6 {
                 System.out.print("\t");
 //                System.out.println();
             }
-            if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_12) {
+            if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                 lastime = System.currentTimeMillis();
                 UtilTmp.dumpArrayUntil0(pos);
                 StringBuilder sb = new StringBuilder();
@@ -302,14 +315,14 @@ public class MooreGraphGen6 {
                 sb.append("\n");
                 UtilTmp.dumpString(sb.toString());
                 if (K1 > 7) {
-                    UtilTmp.dumpString(graph.getEdgeString(), ".graph");
+                    UtilTmp.dumpOverrideString(graph.getEdgeString(), ".graph");
                 }
             }
         }
 
         private int getCountPos(Integer v) {
             int cont = countPos[v];
-            assertCountPos(v, cont);
+//            assertCountPos(v, cont);
             return cont;
 //            return countPos[v];
         }
@@ -317,6 +330,7 @@ public class MooreGraphGen6 {
         private void assertCountPos(Integer v, int cont) throws IllegalArgumentException {
             int contreal = 0;
             for (Integer i : possibilidadesIniciais.get(v)) {
+//                if (i > Math.max(startVal[v], v) && get(v, i) == 4) {
                 if (get(v, i) == 4) {
                     contreal++;
                 }
@@ -346,15 +360,42 @@ public class MooreGraphGen6 {
             boolean ret = false;
             for (Integer i : incompletVertices) {
                 if (K - degreecount[i] > countPos[i]) {
-                    assertCountPos(i, countPos[i]);
+//                    assertCountPos(i, countPos[i]);
                     if (degreecount[i] != graph.degree(i)) {
                         throw new IllegalArgumentException("Degree inconsistece " + i + " d=" + degreecount[i] + " != c-real=" + graph.degree(i));
+                    }
+                    if (verbose) {
+                        System.out.println("Vertice " + i + " d=" + degreecount[i] + " possibs=" + countPos[i]);
                     }
                     ret = true;
                     break;
                 }
             }
             return ret;
+        }
+
+        private void syncCountPos(Integer... extra) {
+            for (Integer v : recountPos) {
+                countPos[v] = 0;
+                for (Integer i : possibilidadesIniciais.get(v)) {
+//                    if (i > Math.max(startVal[v], v) && get(v, i) == 4) {
+                    if (get(v, i) == 4) {
+                        countPos[v]++;
+                    }
+                }
+            }
+            if (extra != null) {
+                for (Integer v : extra) {
+                    countPos[v] = 0;
+                    for (Integer i : possibilidadesIniciais.get(v)) {
+//                        if (i > Math.max(startVal[v], v) && get(v, i) == 4) {
+                        if (get(v, i) == 4) {
+                            countPos[v]++;
+                        }
+                    }
+                }
+            }
+            recountPos.clear();
         }
     }
 
