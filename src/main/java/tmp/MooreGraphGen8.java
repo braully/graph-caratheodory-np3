@@ -1,8 +1,10 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,24 +51,61 @@ public class MooreGraphGen8 {
 
     private static void generateGraph(int K, int NUM_ARESTAS, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
         Collection<Integer> vertices = graphTemplate.getVertices();
-        LinkedList<Integer> incompletVertices = new LinkedList<>();
-        Map<Integer, List<Integer>> possibilidadesIniciais = new HashMap<>();
+        LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
+        Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
+        Map<Integer, List<Integer>> caminhoPercorrido = new HashMap<>();
         int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
 
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
-            for (int i = 0; i < remain; i++) {
-                if (graphTemplate.degree(v) < K) {
-                    incompletVertices.add(v);
-                }
-            }
             if (remain > 0) {
-                List<Integer> possi = possibilidadesIniciais.getOrDefault(v, new ArrayList<>());
-                possi.add(v);
-                possibilidadesIniciais.put(v, possi);
+                trabalhoPorFazer.add(v);
+                caminhosPossiveis.put(v, new ArrayList<>());
+                caminhoPercorrido.put(v, new ArrayList<>());
             }
         }
 
+        verboseInit(graphTemplate, trabalhoPorFazer, len);
+
+        UndirectedSparseGraphTO insumo = graphTemplate.clone();
+        Deque<Integer> trabalhoRealizado = new LinkedList<>();
+        while (!trabalhoPorFazer.isEmpty()) {
+            Integer trabalhoAtual = trabalhoPorFazer.peekFirst();
+            List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
+
+            while (trabalhoNaoAcabou(trabalhoAtual) && temOpcoesDisponiveis(trabalhoAtual, opcoesPossiveis)) {
+
+            }
+            if (trabalhoRealizado(trabalhoAtual) && temFuturo(trabalhoAtual)) {
+                trabalhoRealizado.add(trabalhoAtual);
+                trabalhoPorFazer.remove(trabalhoAtual);
+            } else {
+                desfazerUltimoTrabalho(trabalhoRealizado);
+            }
+        }
+
+        verboseResultadoFinal(trabalhoRealizado, insumo);
+    }
+
+    private static void verboseResultadoFinal(Deque<Integer> trabalhoRealizado, UndirectedSparseGraphTO insumo) {
+        try {
+            System.out.print("Added-Edges: ");
+            List<Integer> stackList = (List<Integer>) trabalhoRealizado;
+            for (int i = stackList.size() - 1; i >= 0; i--) {
+                Pair endpoints = insumo.getEndpoints(stackList.get(i));
+                System.out.print(endpoints);
+                System.out.print(", ");
+            }
+        } catch (Exception e) {
+        } finally {
+            System.out.println();
+        }
+        System.out.println("Final Graph: ");
+        String edgeString = insumo.getEdgeString();
+        System.out.println(edgeString);
+    }
+
+    private static void verboseInit(UndirectedSparseGraphTO graphTemplate, LinkedList<Integer> incompletVertices, int len) {
         System.out.print("Graph[");
         System.out.print(graphTemplate.getVertexCount());
         System.out.print(", ");
@@ -79,48 +118,25 @@ public class MooreGraphGen8 {
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
+    }
 
-        int[] edgeArr = new int[incompletVertices.size()];
-        for (int i = 0; i < incompletVertices.size(); i++) {
-            edgeArr[i] = 0;
-        }
+    private static boolean trabalhoNaoAcabou(Integer trabalhoAtual) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        if (startArray != null) {
-            for (int i = 0; i < startArray.size(); i++) {
-                Integer val = startArray.get(i);
-                if (val > 0) {
-                    edgeArr[i] = val;
-                }
-            }
-        }
+    private static boolean temOpcoesDisponiveis(Integer trabalhoAtual, List<Integer> opcoesPossiveis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        UndirectedSparseGraphTO lastgraph = graphTemplate.clone();
-        int cont = 0;
-        while (cont < edgeArr.length) {
-            Integer v = incompletVertices.pollFirst();
-            if ((cont & 1) == 0) {
-                edgeArr[cont] = v;
-            } else {
-                lastgraph.addEdge(v, edgeArr[cont - 1]);
-            }
-            cont++;
-        }
+    private static boolean trabalhoRealizado(Integer trabalhoAtual) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        try {
-            System.out.print("Added-Edges: ");
-            for (int i = 0; i < cont - 1; i++) {
-                System.out.print(edgeArr[i]);
-                System.out.print("-");
-                System.out.print(edgeArr[i + 1]);
-                System.out.print(", ");
-            }
-        } catch (Exception e) {
-        } finally {
-            System.out.println();
-        }
+    private static boolean temFuturo(Integer trabalhoAtual) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        System.out.println("Final Graph: ");
-        String edgeString = lastgraph.getEdgeString();
-        System.out.println(edgeString);
+    private static void desfazerUltimoTrabalho(Deque<Integer> trabalhoRealizado) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
