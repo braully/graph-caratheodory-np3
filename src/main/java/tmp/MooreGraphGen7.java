@@ -4,6 +4,7 @@ import com.github.braully.graph.UndirectedSparseGraphTO;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -14,15 +15,16 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.IntStream;
 
 /**
  *
  * @author strike
  */
-public class MooreGraphGen6 {
+public class MooreGraphGen7 {
 
-    private static final boolean verbose = false;
-//    private static final boolean verbose = true;
+//    private static final boolean verbose = false;
+    private static final boolean verbose = true;
 
     private static int K = 0;
     private static int NUM_ARESTAS = 0;
@@ -35,8 +37,8 @@ public class MooreGraphGen6 {
     static boolean r4 = false;
 
     public static void main(String... args) {
-        K = 57;
-//        K = 7;
+//        K = 57;
+        K = 7;
 
         List<Integer> startArray = new ArrayList<>();
 
@@ -85,6 +87,7 @@ public class MooreGraphGen6 {
             }
             return compare;
         };
+        TreeSet<Integer> rankPossibilidades = new TreeSet<>(comparatorByRemain);
 
         private BFSProcessamento(int linha, int coluna) {
             bfsAtual = new Integer[linha][coluna];
@@ -342,9 +345,20 @@ public class MooreGraphGen6 {
 
         private Integer getOpcao(Integer v, int idx) {
             Integer ret = null;
-            for (Integer i : possibilidadesIniciais.get(v)) {
+            List<Integer> possibilidades = possibilidadesIniciais.get(v);
+            Integer hold = Math.max(startVal[v], v);
+            int binarySearch = Collections.binarySearch(possibilidades, hold);
+            if (binarySearch < 0) {
+                binarySearch = (-(binarySearch) - 1);
+            }
+            rankPossibilidades.clear();
+            IntStream.range(binarySearch, possibilidades.size()).forEach(i -> rankPossibilidades.add(possibilidades.get(i)));
+//            possibilidades.stream().;
+            for (Integer i : rankPossibilidades) {
+//            for (Integer s = binarySearch; s < possibilidades.size(); s++) {
+//                Integer i = possibilidades.get(s);
                 Integer d = get(v, i);
-                if (i > Math.max(startVal[v], v) && d.equals(4)) {
+                if (d.equals(4)) {
                     if (idx == 0) {
                         ret = i;
                         break;
@@ -420,7 +434,6 @@ public class MooreGraphGen6 {
         System.out.println(bfsAtual.incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
-
         System.out.println("Montando mapa BFS Inicial");
 
         int[] pos = new int[len];
