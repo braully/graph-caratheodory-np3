@@ -73,7 +73,7 @@ public class MooreGraphGen8 {
             bfsalg.labelDistances(graphTemplate, v);
             for (Integer u : trabalhoPorFazer) {
                 if (bfsalg.getDistance(graphTemplate, u) == 4) {
-                    caminhosPossiveis.get(v);
+                    caminhosPossiveis.get(v).add(u);
                 }
             }
         }
@@ -87,12 +87,9 @@ public class MooreGraphGen8 {
             while (trabalhoNaoAcabou(insumo, trabalhoAtual) && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
                 Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, opcoesPossiveis, trabalhoAtual);
                 Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
-                caminhoPercorrido.putIfAbsent(aresta, caminhoPercorrido.getOrDefault(aresta, new ArrayList<>())).add(melhorOpcaoLocal);
-                if (trabalhoRealizado(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
-                    trabalhoPorFazer.remove(trabalhoAtual);
-                } else {
-                    desfazerUltimoTrabalho(caminhoPercorrido);
-                }
+                List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
+                subcaminho.add(melhorOpcaoLocal);
+                caminhoPercorrido.putIfAbsent(aresta, subcaminho);
             }
             if (trabalhoRealizado(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
