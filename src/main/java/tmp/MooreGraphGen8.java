@@ -1,6 +1,7 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +10,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  *
@@ -53,46 +56,58 @@ public class MooreGraphGen8 {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
         Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
-        Map<Integer, List<Integer>> caminhoPercorrido = new HashMap<>();
+        TreeMap<Integer, List<Integer>> caminhoPercorrido = new TreeMap<>();
         int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
+
+        BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
 
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
             if (remain > 0) {
                 trabalhoPorFazer.add(v);
                 caminhosPossiveis.put(v, new ArrayList<>());
-                caminhoPercorrido.put(v, new ArrayList<>());
+            }
+        }
+
+        for (Integer v : trabalhoPorFazer) {
+            bfsalg.labelDistances(graphTemplate, v);
+            for (Integer u : trabalhoPorFazer) {
+                if (bfsalg.getDistance(graphTemplate, u) == 4) {
+                    caminhosPossiveis.get(v);
+                }
             }
         }
 
         verboseInit(graphTemplate, trabalhoPorFazer, len);
-
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
-        Deque<Integer> trabalhoRealizado = new LinkedList<>();
         while (!trabalhoPorFazer.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.peekFirst();
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
-
-            while (trabalhoNaoAcabou(trabalhoAtual) && temOpcoesDisponiveis(trabalhoAtual, opcoesPossiveis)) {
-
+            Integer inicioTrabalho = caminhoPercorrido.size();
+            while (trabalhoNaoAcabou(insumo, trabalhoAtual) && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
+                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, opcoesPossiveis, trabalhoAtual);
+                Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
+                caminhoPercorrido.putIfAbsent(aresta, caminhoPercorrido.getOrDefault(aresta, new ArrayList<>())).add(melhorOpcaoLocal);
+                if (trabalhoRealizado(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
+                    trabalhoPorFazer.remove(trabalhoAtual);
+                } else {
+                    desfazerUltimoTrabalho(caminhoPercorrido);
+                }
             }
-            if (trabalhoRealizado(trabalhoAtual) && temFuturo(trabalhoAtual)) {
-                trabalhoRealizado.add(trabalhoAtual);
+            if (trabalhoRealizado(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
             } else {
-                desfazerUltimoTrabalho(trabalhoRealizado);
+                desfazerUltimoTrabalho(caminhoPercorrido);
             }
         }
-
-        verboseResultadoFinal(trabalhoRealizado, insumo);
+        verboseResultadoFinal(caminhoPercorrido, insumo);
     }
 
-    private static void verboseResultadoFinal(Deque<Integer> trabalhoRealizado, UndirectedSparseGraphTO insumo) {
+    private static void verboseResultadoFinal(TreeMap<Integer, List<Integer>> trabalhoRealizado, UndirectedSparseGraphTO insumo) {
         try {
             System.out.print("Added-Edges: ");
-            List<Integer> stackList = (List<Integer>) trabalhoRealizado;
-            for (int i = stackList.size() - 1; i >= 0; i--) {
-                Pair endpoints = insumo.getEndpoints(stackList.get(i));
+            for (Integer e : trabalhoRealizado.navigableKeySet()) {
+                Pair endpoints = insumo.getEndpoints(e);
                 System.out.print(endpoints);
                 System.out.print(", ");
             }
@@ -120,23 +135,27 @@ public class MooreGraphGen8 {
         System.out.println(len);
     }
 
-    private static boolean trabalhoNaoAcabou(Integer trabalhoAtual) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private static boolean temOpcoesDisponiveis(Integer trabalhoAtual, List<Integer> opcoesPossiveis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private static boolean trabalhoRealizado(Integer trabalhoAtual) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static boolean trabalhoNaoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+        return !trabalhoRealizado(insumo, trabalhoAtual);
     }
 
     private static boolean temFuturo(Integer trabalhoAtual) {
+        return true;
+    }
+
+    private static boolean temOpcoesDisponiveis(UndirectedSparseGraphTO insumo, TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
+        return (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
+    }
+
+    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
+        return opcoesPossiveis.get(caminhoPercorrido.size());
+    }
+
+    private static void desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private static void desfazerUltimoTrabalho(Deque<Integer> trabalhoRealizado) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static boolean trabalhoRealizado(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+        return insumo.degree(trabalhoAtual) == K;
     }
 }

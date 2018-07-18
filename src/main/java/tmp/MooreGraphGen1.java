@@ -109,7 +109,7 @@ public class MooreGraphGen1 {
             sincronizarListaPossibilidades(bfsWork, lastgraph, poss, v);
             int offset = stack.size();
 
-            while (lastgraph.degree(v) < K) {
+            while (lastgraph.degree(v) < K && stack.size() >= offset) {
                 poss.clear();
                 for (Integer i = 0; i < bfsWork.length; i++) {
                     if (bfsWork[i] > 3 && lastgraph.degree(i) < K) {
@@ -180,7 +180,7 @@ public class MooreGraphGen1 {
                 UtilTmp.revisitVertex(v, bfsWork, lastgraph);
 
                 if (verbose) {
-                    System.out.print("add(");
+                    System.out.print("+(");
                     System.out.print(v);
                     System.out.print(", ");
                     System.out.print(bestVal);
@@ -198,7 +198,9 @@ public class MooreGraphGen1 {
                     System.out.print(countroolback1);
                     System.out.print(" count-r2: ");
                     System.out.print(countroolback2);
-                    System.out.println();
+                    System.out.print("\t");
+//                    System.out.println();
+
                 }
                 if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                     lastime = System.currentTimeMillis();
@@ -226,6 +228,10 @@ public class MooreGraphGen1 {
                     UtilTmp.dumpString(sb.toString());
                     countroolback1 = 0;
                     countroolback2 = 0;
+
+                    if (K > 7) {
+                        UtilTmp.dumpOverrideString(lastgraph.getEdgeString(), ".graph");
+                    }
                 }
             }
             sincronizarVerticesIncompletos(lastgraph, vertices, incompletVertices);
