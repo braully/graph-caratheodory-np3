@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,22 @@ public class MooreGraphGen8 {
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
     private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
+
+    private static Integer getOpcao(List<Integer> opcoesPossiveis,
+            Integer indice, List<Integer> excludentes) {
+        Integer opcao = null;
+        int restantes = opcoesPossiveis.size() - excludentes.size();
+        if (indice < restantes) {
+            int cont = indice;
+            for (int i = 0; i < cont; i++) {
+                if (excludentes.contains(opcoesPossiveis.get(i))) {
+                    cont++;
+                }
+            }
+            opcao = opcoesPossiveis.get(cont);
+        }
+        return opcao;
+    }
 
     static class ComparatorMap implements Comparator<Integer> {
 
@@ -103,26 +120,63 @@ public class MooreGraphGen8 {
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
 
         //Marco zero
-        caminhoPercorrido.put(insumo.getEdgeCount() - 1, null);
-
+        caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
+        Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
         while (!trabalhoPorFazer.isEmpty() && !caminhoPercorrido.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.peekFirst();
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
             Integer janelaCaminhoPercorrido = caminhoPercorrido.size();
-            while (trabalhoNaoAcabou(insumo, trabalhoAtual) && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
+            while (trabalhoNaoAcabou(insumo, trabalhoAtual)
+                    && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
+                if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
+                    caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
+                }
                 Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis, janelaCaminhoPercorrido, opcoesPossiveis, insumo, trabalhoAtual);
-                Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
-                List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
-                subcaminho.add(melhorOpcaoLocal);
-                caminhoPercorrido.putIfAbsent(aresta, subcaminho);
+                if (opcaoViavel(insumo, melhorOpcaoLocal)) {
+                    Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
+                    List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
+                    subcaminho.add(melhorOpcaoLocal);
+                    caminhoPercorrido.putIfAbsent(aresta, subcaminho);
+                    verificarTrabalhoRealizado.add(trabalhoAtual);
+                    verificarTrabalhoRealizado.add(melhorOpcaoLocal);
+                    System.out.printf("+(%3d,%3d) ", trabalhoAtual, melhorOpcaoLocal);
+                    if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
+                        trabalhoPorFazer.remove(melhorOpcaoLocal);
+                    }
+                } else {
+                    desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo);
+                }
             }
-            if (trabalhoRealizado(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
+            if (trabalhoAcabou(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
+                System.out.printf(".. %d \n", trabalhoAtual);
             } else {
-                desfazerUltimoTrabalho(caminhoPercorrido);
+                System.out.printf("!! %d \n", trabalhoAtual);
+                desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo);
+                break;
             }
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
+    }
+
+    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer melhorOpcao) {
+        int distanciaMelhorOpcao = bfsalg.getDistance(insumo, melhorOpcao);
+        if (distanciaMelhorOpcao < 4) {
+            return false;
+        }
+        return true;
+    }
+
+    private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo) {
+        Integer ultimoPasso = insumo.getEdgeCount() - 1;
+        Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
+        caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
+        insumo.removeEdge(ultimoPasso);
+        if (!trabalhoPorFazer.contains(desfazer.getSecond())) {
+            trabalhoPorFazer.add(desfazer.getSecond());
+        }
+        System.out.printf("-(%3d,%3d) ", desfazer.getFirst(), desfazer.getSecond());
+        return desfazer;
     }
 
     private static void verboseResultadoFinal(TreeMap<Integer, List<Integer>> trabalhoRealizado, UndirectedSparseGraphTO insumo) {
@@ -157,8 +211,12 @@ public class MooreGraphGen8 {
         System.out.println(len);
     }
 
+    private static boolean trabalhoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+        return insumo.degree(trabalhoAtual) == K;
+    }
+
     private static boolean trabalhoNaoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
-        return !trabalhoRealizado(insumo, trabalhoAtual);
+        return !trabalhoAcabou(insumo, trabalhoAtual);
     }
 
     private static boolean temFuturo(Integer trabalhoAtual) {
@@ -169,19 +227,16 @@ public class MooreGraphGen8 {
         return (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
     }
 
-    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, Map<Integer, List<Integer>> caminhosPossiveis,
-            Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido,
+            Map<Integer, List<Integer>> caminhosPossiveis,
+            Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis,
+            UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
         sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        return opcoesPossiveis.get(caminhoPercorrido.size() - janelaCaminhoPercorrido);
-    }
-
-    private static void desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private static boolean trabalhoRealizado(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
-        return insumo.degree(trabalhoAtual) == K;
+        List<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
+        Integer indice = jaSelecionados.size();
+        Integer melhorOpcao = getOpcao(opcoesPossiveis, indice, jaSelecionados);
+        return melhorOpcao;
     }
 
     private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {
