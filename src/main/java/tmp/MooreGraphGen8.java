@@ -23,6 +23,7 @@ public class MooreGraphGen8 {
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
+    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
 
     public static void main(String... args) {
 //        K = 57;
@@ -59,8 +60,6 @@ public class MooreGraphGen8 {
         TreeMap<Integer, List<Integer>> caminhoPercorrido = new TreeMap<>();
         int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
 
-        BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
-
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
             if (remain > 0) {
@@ -89,7 +88,7 @@ public class MooreGraphGen8 {
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
             Integer janelaCaminhoPercorrido = caminhoPercorrido.size();
             while (trabalhoNaoAcabou(insumo, trabalhoAtual) && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
-                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, janelaCaminhoPercorrido, opcoesPossiveis, trabalhoAtual);
+                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis, janelaCaminhoPercorrido, opcoesPossiveis, insumo, trabalhoAtual);
                 Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                 List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
                 subcaminho.add(melhorOpcaoLocal);
@@ -148,7 +147,10 @@ public class MooreGraphGen8 {
         return (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
     }
 
-    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
+    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, Map<Integer, List<Integer>> caminhosPossiveis,
+            Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+        bfsalg.labelDistances(insumo, trabalhoAtual);
+        bfsalg.getDistanceDecorator().entrySet().stream().filter(e -> e.getValue().equals(4));
         return opcoesPossiveis.get(caminhoPercorrido.size() - janelaCaminhoPercorrido);
     }
 
