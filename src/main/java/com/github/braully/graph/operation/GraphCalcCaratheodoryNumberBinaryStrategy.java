@@ -20,7 +20,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public class GraphCalcCaratheodoryNumberBinaryStrategy extends GraphCheckCaratheodorySet {
 
     static final String type = "P3-Convexity";
-    static final String description = "Nº Caratheodory (Binary Java)";
+    static final String description = "Nº Caratheodory (Binary)";
 
     public static final int THRESHOLD_HEURISTIC_FEED = 15;
 
