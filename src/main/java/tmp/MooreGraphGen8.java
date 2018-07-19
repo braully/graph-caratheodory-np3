@@ -92,12 +92,13 @@ public class MooreGraphGen8 {
 
     }
 
-    private static void generateGraph(int K, int NUM_ARESTAS, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
+    private static void generateGraph(int K, int numArestas,
+            UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
         Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
         TreeMap<Integer, List<Integer>> caminhoPercorrido = new TreeMap<>();
-        int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
+        int len = numArestas - graphTemplate.getEdgeCount();
 
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
@@ -131,7 +132,8 @@ public class MooreGraphGen8 {
                 if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
                     caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
                 }
-                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis, janelaCaminhoPercorrido, opcoesPossiveis, insumo, trabalhoAtual);
+                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis,
+                        janelaCaminhoPercorrido, opcoesPossiveis, insumo, trabalhoAtual);
                 if (opcaoViavel(insumo, melhorOpcaoLocal)) {
                     Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                     List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
@@ -167,7 +169,8 @@ public class MooreGraphGen8 {
         return true;
     }
 
-    private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo) {
+    private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido,
+            List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo) {
         Integer ultimoPasso = insumo.getEdgeCount() - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
         caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
@@ -179,7 +182,8 @@ public class MooreGraphGen8 {
         return desfazer;
     }
 
-    private static void verboseResultadoFinal(TreeMap<Integer, List<Integer>> trabalhoRealizado, UndirectedSparseGraphTO insumo) {
+    private static void verboseResultadoFinal(TreeMap<Integer, List<Integer>> trabalhoRealizado,
+            UndirectedSparseGraphTO insumo) {
         try {
             System.out.print("Added-Edges: ");
             for (Integer e : trabalhoRealizado.navigableKeySet()) {
@@ -196,7 +200,8 @@ public class MooreGraphGen8 {
         System.out.println(edgeString);
     }
 
-    private static void verboseInit(UndirectedSparseGraphTO graphTemplate, LinkedList<Integer> incompletVertices, int len) {
+    private static void verboseInit(UndirectedSparseGraphTO graphTemplate,
+            LinkedList<Integer> incompletVertices, int len) {
         System.out.print("Graph[");
         System.out.print(graphTemplate.getVertexCount());
         System.out.print(", ");
@@ -223,7 +228,9 @@ public class MooreGraphGen8 {
         return true;
     }
 
-    private static boolean temOpcoesDisponiveis(UndirectedSparseGraphTO insumo, TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
+    private static boolean temOpcoesDisponiveis(UndirectedSparseGraphTO insumo,
+            TreeMap<Integer, List<Integer>> caminhoPercorrido,
+            List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
         return (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
     }
 
