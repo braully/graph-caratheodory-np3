@@ -178,6 +178,7 @@ public class MooreGraphGen8 {
 
     private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido,
             List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+        caminhoPercorrido.tailMap(insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
         Integer ultimoPasso = insumo.getEdgeCount() - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
         caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
