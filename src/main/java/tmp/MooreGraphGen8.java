@@ -80,7 +80,11 @@ public class MooreGraphGen8 {
 
         verboseInit(graphTemplate, trabalhoPorFazer, len);
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
-        while (!trabalhoPorFazer.isEmpty()) {
+
+        //Marco zero
+        caminhoPercorrido.put(insumo.getEdgeCount() - 1, null);
+
+        while (!trabalhoPorFazer.isEmpty() && !caminhoPercorrido.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.peekFirst();
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
             Integer janelaCaminhoPercorrido = caminhoPercorrido.size();
