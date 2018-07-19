@@ -5,6 +5,7 @@ import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,6 +25,27 @@ public class MooreGraphGen8 {
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
     private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
+
+    static class ComparatorMap implements Comparator<Integer> {
+
+        Map<Integer, Number> map = null;
+
+        public Comparator<Integer> setMap(Map<Integer, Number> map) {
+            this.map = map;
+            return (Comparator<Integer>) this;
+        }
+
+        public int compare(Integer o1, Integer o2) {
+            int ret = 0;
+            ret = Integer.compare(this.map.get(o2).intValue(), this.map.get(o1).intValue());
+            if (ret == 0) {
+                ret = Integer.compare(o1, o2);
+            }
+            return ret;
+        }
+    }
+
+    static ComparatorMap comparator = new ComparatorMap();
 
     public static void main(String... args) {
 //        K = 57;
@@ -150,7 +172,7 @@ public class MooreGraphGen8 {
     private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, Map<Integer, List<Integer>> caminhosPossiveis,
             Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
-        bfsalg.getDistanceDecorator().entrySet().stream().filter(e -> e.getValue().equals(4));
+        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
         return opcoesPossiveis.get(caminhoPercorrido.size() - janelaCaminhoPercorrido);
     }
 
@@ -160,5 +182,9 @@ public class MooreGraphGen8 {
 
     private static boolean trabalhoRealizado(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         return insumo.degree(trabalhoAtual) == K;
+    }
+
+    private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {
+        opcoesPossiveis.sort(comparator.setMap(distanceDecorator));
     }
 }
