@@ -1,7 +1,6 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
-import edu.uci.ics.jung.algorithms.shortestpath.BFSDistanceLabeler;
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,44 +24,21 @@ public class MooreGraphGen8 {
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
-    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
+//    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
+    private static BFSTmp bfsalg = null;
 
     private static Integer getOpcao(List<Integer> opcoesPossiveis,
-            Integer indice, List<Integer> excludentes) {
+            Collection<Integer> excludentes) {
         Integer opcao = null;
-        int restantes = opcoesPossiveis.size() - excludentes.size();
-        if (indice < restantes) {
-            int cont = indice;
-            for (int i = 0; i < cont; i++) {
-                if (excludentes.contains(opcoesPossiveis.get(i))) {
-                    cont++;
-                }
+        for (int i = 0; i < opcoesPossiveis.size(); i++) {
+            Integer val = opcoesPossiveis.get(i);
+            if (!excludentes.contains(val)) {
+                opcao = val;
+                break;
             }
-            opcao = opcoesPossiveis.get(cont);
         }
         return opcao;
     }
-
-    static class ComparatorMap implements Comparator<Integer> {
-
-        Map<Integer, Number> map = null;
-
-        public Comparator<Integer> setMap(Map<Integer, Number> map) {
-            this.map = map;
-            return (Comparator<Integer>) this;
-        }
-
-        public int compare(Integer o1, Integer o2) {
-            int ret = 0;
-            ret = Integer.compare(this.map.get(o2).intValue(), this.map.get(o1).intValue());
-            if (ret == 0) {
-                ret = Integer.compare(o1, o2);
-            }
-            return ret;
-        }
-    }
-
-    static ComparatorMap comparator = new ComparatorMap();
 
     public static void main(String... args) {
 //        K = 57;
@@ -97,8 +73,11 @@ public class MooreGraphGen8 {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
         Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
-        TreeMap<Integer, List<Integer>> caminhoPercorrido = new TreeMap<>();
+        TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
+        bfsalg = new BFSTmp(vertices.size());
         int len = numArestas - graphTemplate.getEdgeCount();
+
+        System.out.println("Calculando trabalho a fazer");
 
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
@@ -108,18 +87,42 @@ public class MooreGraphGen8 {
             }
         }
 
-        for (Integer v : trabalhoPorFazer) {
+        System.out.println("Calculando possibilidades de caminho");
+
+//        Integer v = trabalhoPorFazer.getFirst();
+//        long currentTimeMillis = System.currentTimeMillis();
+//        bfsalg.labelDistances(graphTemplate, v);
+//        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+//        System.out.println("Tempo função 1: " + currentTimeMillis);
+//       
+//        currentTimeMillis = System.currentTimeMillis();
+//        UtilTmp.bfs(graphTemplate, bfs, v);
+//        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
+//        System.out.println("Tempo função 2: " + currentTimeMillis);
+//
+//        if (true) {
+//            return;
+//        }
+        for (int i = 0; i < trabalhoPorFazer.size(); i++) {
+            Integer v = trabalhoPorFazer.get(i);
             bfsalg.labelDistances(graphTemplate, v);
-            for (Integer u : trabalhoPorFazer) {
+            for (int j = i; j < trabalhoPorFazer.size(); j++) {
+                Integer u = trabalhoPorFazer.get(j);
                 if (bfsalg.getDistance(graphTemplate, u) == 4) {
                     caminhosPossiveis.get(v).add(u);
                 }
             }
         }
-
         verboseInit(graphTemplate, trabalhoPorFazer, len);
+        System.out.print("Caminhos possiveis: ");
+        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+        System.out.println();
+
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
 
+//        if (true) {
+//            return;
+//        }
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
@@ -135,10 +138,11 @@ public class MooreGraphGen8 {
                 }
                 Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis,
                         marcoInicial, opcoesPossiveis, insumo, trabalhoAtual);
-                boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
-                if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
+//                boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
+//                if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
+                if (opcaoViavel(insumo, melhorOpcaoLocal)) {
                     Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
-                    List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
+                    Collection<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
                     subcaminho.add(melhorOpcaoLocal);
                     caminhoPercorrido.putIfAbsent(aresta, subcaminho);
                     verificarTrabalhoRealizado.add(trabalhoAtual);
@@ -156,13 +160,18 @@ public class MooreGraphGen8 {
                 System.out.printf(".. %d \n", trabalhoAtual);
             } else {
                 System.out.printf("!! %d \n", trabalhoAtual);
-//                desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo, trabalhoAtual);
-//                break;
             }
-            System.out.println("------------------------------------------------------------------------------------------------");
+            verboseFimEtapa(caminhoPercorrido);
             Collections.sort(trabalhoPorFazer);
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
+    }
+
+    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+        System.out.println("------------------------------------------------------------------------------------------------");
+        System.out.print("Caminhos percorrido: ");
+        caminhoPercorrido.entrySet().forEach(e -> System.out.printf("%d=%s\n", e.getKey(), e.getValue().toString()));
+        System.out.println();
     }
 
     private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer melhorOpcao) {
@@ -176,12 +185,12 @@ public class MooreGraphGen8 {
         return true;
     }
 
-    private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido,
+    private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
             List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         caminhoPercorrido.tailMap(insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
         Integer ultimoPasso = insumo.getEdgeCount() - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
-        caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
+//        caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
         insumo.removeEdge(ultimoPasso);
         if (!trabalhoPorFazer.contains(desfazer.getSecond())) {
             trabalhoPorFazer.add(desfazer.getSecond());
@@ -195,7 +204,7 @@ public class MooreGraphGen8 {
         return desfazer;
     }
 
-    private static void verboseResultadoFinal(TreeMap<Integer, List<Integer>> trabalhoRealizado,
+    private static void verboseResultadoFinal(TreeMap<Integer, Collection<Integer>> trabalhoRealizado,
             UndirectedSparseGraphTO insumo) {
         System.out.println();
         if (insumo.getEdgeCount() < NUM_ARESTAS) {
@@ -251,7 +260,7 @@ public class MooreGraphGen8 {
     }
 
     private static boolean temOpcoesDisponiveis(UndirectedSparseGraphTO insumo,
-            TreeMap<Integer, List<Integer>> caminhoPercorrido,
+            TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
             List<Integer> opcoesPossiveis, Integer marcoInicial,
             Integer trabalhoAtual) {
         boolean condicao0 = insumo.getEdgeCount() >= marcoInicial;
@@ -259,19 +268,59 @@ public class MooreGraphGen8 {
         return condicao0 && condicao1;
     }
 
-    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido,
+    private static Integer avaliarMelhorOpcao(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
             Map<Integer, List<Integer>> caminhosPossiveis,
             Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis,
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
-        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        List<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
+//        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
+        sort(opcoesPossiveis, bfsalg.bfs);
+        Collection<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
         Integer indice = jaSelecionados.size();
-        Integer melhorOpcao = getOpcao(opcoesPossiveis, indice, jaSelecionados);
+        Integer melhorOpcao = getOpcao(opcoesPossiveis, jaSelecionados);
         return melhorOpcao;
+    }
+
+    private static void sort(List<Integer> opcoesPossiveis, Integer[] bfs) {
+        opcoesPossiveis.sort(comparator.setBfs(bfs));
     }
 
     private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {
         opcoesPossiveis.sort(comparator.setMap(distanceDecorator));
     }
+
+    static class ComparatorMap implements Comparator<Integer> {
+
+        Map<Integer, Number> map = null;
+        Integer[] bfs = null;
+
+        public Comparator<Integer> setMap(Map<Integer, Number> map) {
+            this.map = map;
+            this.bfs = null;
+            return (Comparator<Integer>) this;
+        }
+
+        public Comparator<Integer> setBfs(Integer[] bfs) {
+            this.map = null;
+            this.bfs = bfs;
+            return (Comparator<Integer>) this;
+        }
+
+        public int compare(Integer o1, Integer o2) {
+            int ret = 0;
+            if (map != null) {
+                ret = Integer.compare(this.map.get(o2).intValue(), this.map.get(o1).intValue());
+            }
+            if (bfs != null) {
+                ret = Integer.compare(bfs[o2], bfs[o1]);
+            }
+            if (ret == 0) {
+                ret = Integer.compare(o1, o2);
+            }
+            return ret;
+        }
+    }
+
+    static ComparatorMap comparator = new ComparatorMap();
+
 }
