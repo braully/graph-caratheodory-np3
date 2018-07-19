@@ -83,9 +83,9 @@ public class MooreGraphGen8 {
         while (!trabalhoPorFazer.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.peekFirst();
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
-            Integer inicioTrabalho = caminhoPercorrido.size();
+            Integer janelaCaminhoPercorrido = caminhoPercorrido.size();
             while (trabalhoNaoAcabou(insumo, trabalhoAtual) && temOpcoesDisponiveis(insumo, caminhoPercorrido, opcoesPossiveis, trabalhoAtual)) {
-                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, opcoesPossiveis, trabalhoAtual);
+                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, janelaCaminhoPercorrido, opcoesPossiveis, trabalhoAtual);
                 Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                 List<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
                 subcaminho.add(melhorOpcaoLocal);
@@ -144,8 +144,8 @@ public class MooreGraphGen8 {
         return (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
     }
 
-    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
-        return opcoesPossiveis.get(caminhoPercorrido.size());
+    private static Integer avaliarMelhorOpcao(TreeMap<Integer, List<Integer>> caminhoPercorrido, Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis, Integer trabalhoAtual) {
+        return opcoesPossiveis.get(caminhoPercorrido.size() - janelaCaminhoPercorrido);
     }
 
     private static void desfazerUltimoTrabalho(TreeMap<Integer, List<Integer>> caminhoPercorrido) {
