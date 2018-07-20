@@ -27,19 +27,6 @@ public class MooreGraphGen8 {
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
 
-    private static Integer getOpcao(List<Integer> opcoesPossiveis,
-            Collection<Integer> excludentes) {
-        Integer opcao = null;
-        for (int i = 0; i < opcoesPossiveis.size(); i++) {
-            Integer val = opcoesPossiveis.get(i);
-            if (!excludentes.contains(val)) {
-                opcao = val;
-                break;
-            }
-        }
-        return opcao;
-    }
-
     public static void main(String... args) {
         K = 57;
 //        K = 7;
@@ -79,52 +66,10 @@ public class MooreGraphGen8 {
         int numArestasIniciais = graphTemplate.getEdgeCount();
         int len = numArestas - numArestasIniciais;
 
-        System.out.println("Calculando trabalho a fazer");
-
-        for (Integer v : vertices) {
-            int remain = K - graphTemplate.degree(v);
-            if (remain > 0) {
-                trabalhoPorFazer.add(v);
-                caminhosPossiveis.put(v, new ArrayList<>());
-            }
-        }
-
-        System.out.println("Calculando possibilidades de caminho");
-
-//        Integer v = trabalhoPorFazer.getFirst();
-//        long currentTimeMillis = System.currentTimeMillis();
-//        bfsalg.labelDistances(graphTemplate, v);
-//        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
-//        System.out.println("Tempo função 1: " + currentTimeMillis);
-//       
-//        currentTimeMillis = System.currentTimeMillis();
-//        UtilTmp.bfs(graphTemplate, bfs, v);
-//        currentTimeMillis = System.currentTimeMillis() - currentTimeMillis;
-//        System.out.println("Tempo função 2: " + currentTimeMillis);
-//
-//        if (true) {
-//            return;
-//        }
-        for (int i = 0; i < trabalhoPorFazer.size(); i++) {
-            Integer v = trabalhoPorFazer.get(i);
-            bfsalg.labelDistances(graphTemplate, v);
-            for (int j = i; j < trabalhoPorFazer.size(); j++) {
-                Integer u = trabalhoPorFazer.get(j);
-                if (bfsalg.getDistance(graphTemplate, u) == 4) {
-                    caminhosPossiveis.get(v).add(u);
-                }
-            }
-        }
-        verboseInit(graphTemplate, trabalhoPorFazer, len);
-        System.out.print("Caminhos possiveis: ");
-        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
-        System.out.println();
-
+        initialLoad(vertices, graphTemplate, trabalhoPorFazer, caminhosPossiveis);
+        verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
 
-//        if (true) {
-//            return;
-//        }
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
@@ -178,6 +123,31 @@ public class MooreGraphGen8 {
             Collections.sort(trabalhoPorFazer);
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
+    }
+
+    public static void initialLoad(Collection<Integer> vertices,
+            UndirectedSparseGraphTO graphTemplate,
+            LinkedList<Integer> trabalhoPorFazer,
+            Map<Integer, List<Integer>> caminhosPossiveis) {
+        System.out.println("Calculando trabalho a fazer");
+        for (Integer v : vertices) {
+            int remain = K - graphTemplate.degree(v);
+            if (remain > 0) {
+                trabalhoPorFazer.add(v);
+                caminhosPossiveis.put(v, new ArrayList<>());
+            }
+        }
+        System.out.println("Calculando possibilidades de caminho");
+        for (int i = 0; i < trabalhoPorFazer.size(); i++) {
+            Integer v = trabalhoPorFazer.get(i);
+            bfsalg.labelDistances(graphTemplate, v);
+            for (int j = i; j < trabalhoPorFazer.size(); j++) {
+                Integer u = trabalhoPorFazer.get(j);
+                if (bfsalg.getDistance(graphTemplate, u) == 4) {
+                    caminhosPossiveis.get(v).add(u);
+                }
+            }
+        }
     }
 
     private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
@@ -247,7 +217,8 @@ public class MooreGraphGen8 {
     }
 
     private static void verboseInit(UndirectedSparseGraphTO graphTemplate,
-            LinkedList<Integer> incompletVertices, int len) {
+            LinkedList<Integer> incompletVertices,
+            Map<Integer, List<Integer>> caminhosPossiveis, int len) {
         System.out.print("Graph[");
         System.out.print(graphTemplate.getVertexCount());
         System.out.print(", ");
@@ -260,6 +231,10 @@ public class MooreGraphGen8 {
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
+
+        System.out.print("Caminhos possiveis: ");
+        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+        System.out.println();
     }
 
     private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
@@ -294,6 +269,19 @@ public class MooreGraphGen8 {
 //        boolean condicao1 = (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
 //        return condicao0 && condicao1;
         return condicao0;
+    }
+
+    private static Integer getOpcao(List<Integer> opcoesPossiveis,
+            Collection<Integer> excludentes) {
+        Integer opcao = null;
+        for (int i = 0; i < opcoesPossiveis.size(); i++) {
+            Integer val = opcoesPossiveis.get(i);
+            if (!excludentes.contains(val)) {
+                opcao = val;
+                break;
+            }
+        }
+        return opcao;
     }
 
     private static Integer avaliarMelhorOpcao(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
