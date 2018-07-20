@@ -20,7 +20,7 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-    private static final boolean verbose = true;
+    private static final boolean verbose = false;
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
@@ -41,10 +41,10 @@ public class MooreGraphGen8 {
     }
 
     public static void main(String... args) {
-//        K = 57;
-        K = 7;
+        K = 57;
+//        K = 7;
 
-        List<Integer> startArray = new ArrayList<>();
+        LinkedList<Integer> startArray = new LinkedList<>();
 
         if (args != null && args.length > 0) {
             for (String str : args) {
@@ -69,13 +69,15 @@ public class MooreGraphGen8 {
     }
 
     private static void generateGraph(int K, int numArestas,
-            UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
+            UndirectedSparseGraphTO graphTemplate, LinkedList<Integer> loadInital) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
         Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         bfsalg = new BFSTmp(vertices.size());
-        int len = numArestas - graphTemplate.getEdgeCount();
+        long lastime = System.currentTimeMillis();
+        int numArestasIniciais = graphTemplate.getEdgeCount();
+        int len = numArestas - numArestasIniciais;
 
         System.out.println("Calculando trabalho a fazer");
 
@@ -133,11 +135,15 @@ public class MooreGraphGen8 {
             while (trabalhoNaoAcabou(insumo, trabalhoAtual)
                     && temOpcoesDisponiveis(insumo, caminhoPercorrido,
                             opcoesPossiveis, marcoInicial, trabalhoAtual)) {
+
                 if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
                     caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
                 }
                 Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis,
                         marcoInicial, opcoesPossiveis, insumo, trabalhoAtual);
+                if (!loadInital.isEmpty()) {
+                    melhorOpcaoLocal = loadInital.pollFirst();
+                }
 //                boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
 //                if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
                 if (opcaoViavel(insumo, melhorOpcaoLocal)) {
@@ -147,7 +153,14 @@ public class MooreGraphGen8 {
                     caminhoPercorrido.putIfAbsent(aresta, subcaminho);
                     verificarTrabalhoRealizado.add(trabalhoAtual);
                     verificarTrabalhoRealizado.add(melhorOpcaoLocal);
-                    System.out.printf("+[%5d](%3d,%3d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
+                    if (verbose) {
+                        System.out.printf("+[%5d](%3d,%3d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
+                    }
+                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
+                        lastime = System.currentTimeMillis();
+                        printVertAddArray(insumo, numArestasIniciais);
+                    }
+
                     if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
                         trabalhoPorFazer.remove(melhorOpcaoLocal);
                     }
@@ -200,7 +213,9 @@ public class MooreGraphGen8 {
             trabalhoPorFazer.add(desfazer.getFirst());
         }
         //Zerar as opções posteriores
-        System.out.printf("-[%5d](%3d,%3d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
+        if (verbose) {
+            System.out.printf("-[%5d](%3d,%3d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
+        }
         return desfazer;
     }
 
@@ -247,6 +262,18 @@ public class MooreGraphGen8 {
         System.out.println(len);
     }
 
+    private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
+        System.out.print("vert-add: ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getFirst());
+        }
+        System.out.println(" | ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getSecond());
+        }
+        System.out.println();
+    }
+
     private static boolean trabalhoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         return insumo.degree(trabalhoAtual) == K;
     }
@@ -264,8 +291,9 @@ public class MooreGraphGen8 {
             List<Integer> opcoesPossiveis, Integer marcoInicial,
             Integer trabalhoAtual) {
         boolean condicao0 = insumo.getEdgeCount() >= marcoInicial;
-        boolean condicao1 = (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
-        return condicao0 && condicao1;
+//        boolean condicao1 = (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
+//        return condicao0 && condicao1;
+        return condicao0;
     }
 
     private static Integer avaliarMelhorOpcao(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,

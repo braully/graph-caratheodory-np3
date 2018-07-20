@@ -46,19 +46,18 @@ public class MooreGraphGen {
 
     }
 
-    private static void generateGraph(int K, int NUM_ARESTAS, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
+    private static void generateGraph(int K, int numArestasFinais, UndirectedSparseGraphTO graphTemplate, List<Integer> startArray) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         int numvert = vertices.size();
         List<Integer> incompletVertices = new ArrayList<>();
-        int len = NUM_ARESTAS - graphTemplate.getEdgeCount();
-
+        int numArestasIniciais = graphTemplate.getEdgeCount();
+        int len = numArestasFinais - numArestasIniciais;
         for (Integer v : vertices) {
             if (graphTemplate.degree(v) < K) {
                 incompletVertices.add(v);
             }
         }
         int numvertincompletos = incompletVertices.size();
-
         long lastime = System.currentTimeMillis();
 
         System.out.print("Graph[");
@@ -66,7 +65,6 @@ public class MooreGraphGen {
         System.out.print(", ");
         System.out.print(graphTemplate.getEdgeCount());
         System.out.println("]");
-
         System.out.print("Incomplete vertices[");
         System.out.print(incompletVertices.size());
         System.out.print("]: ");
@@ -75,7 +73,6 @@ public class MooreGraphGen {
         System.out.println(len);
 //        Integer[] bfs = new Integer[vertices.size()];
         sincronizarVerticesIncompletos(graphTemplate, vertices, incompletVertices);
-
         System.out.println("Montando mapa BFS Inicial");
 //        Integer[][] bfsAtual = new Integer[numvert][];
 
@@ -104,7 +101,7 @@ public class MooreGraphGen {
         int countroolback1 = 0;
         int countroolback2 = 0;
 
-        while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < NUM_ARESTAS) {
+        while (!incompletVertices.isEmpty() && lastgraph.getEdgeCount() < numArestasFinais) {
             Integer v = incompletVertices.get(0);
             sincronizarListaPossibilidades(bfsWork, lastgraph, poss, v);
             int offset = stack.size();
@@ -160,6 +157,7 @@ public class MooreGraphGen {
                 if (idx >= bestVals.size()) {//roolback
                     if (verbose) {
                         UtilTmp.printArrayUntil0(pos);
+                        printVertAddArray(lastgraph, numArestasIniciais);
                     }
                     rollback(pos, stack, lastgraph);
 //                    UtilTmp.bfs(lastgraph, bfsWork, v);
@@ -226,6 +224,8 @@ public class MooreGraphGen {
                     UtilTmp.dumpString(sb.toString());
                     countroolback1 = 0;
                     countroolback2 = 0;
+                    printVertAddArray(lastgraph, numArestasIniciais);
+
                     if (K > 7) {
                         UtilTmp.dumpOverrideString(lastgraph.getEdgeString(), ".graph-g1");
                     }
@@ -277,4 +277,15 @@ public class MooreGraphGen {
         });
     }
 
+    private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
+        System.out.print("vert-add: ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getFirst());
+        }
+        System.out.println(" | ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getSecond());
+        }
+        System.out.println();
+    }
 }
