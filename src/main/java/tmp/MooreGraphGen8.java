@@ -375,7 +375,7 @@ public class MooreGraphGen8 {
         System.out.print("Edges remain: ");
         System.out.println(len);
 
-        if (verbose) {
+        if (verbose && false) {
             System.out.print("Caminhos possiveis: ");
 //        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
             caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
