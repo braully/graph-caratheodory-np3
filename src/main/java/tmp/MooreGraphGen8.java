@@ -21,6 +21,10 @@ import java.util.TreeMap;
 public class MooreGraphGen8 {
 
     private static final boolean verbose = true;
+    private static final boolean veboseFimEtapa = false;
+    private static final boolean rankearOpcoes = false;
+    private static final boolean anteciparVazio = true;
+    private static final boolean falhaPrimeiroRollBack = true;
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
@@ -73,8 +77,10 @@ public class MooreGraphGen8 {
         bfsRanking = new BFSTmp(numVertices);
         ranking = new Integer[numVertices];
 
-        trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
-        caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+        if (K > 7) {
+            trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
+            caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+        }
 
         if (trabalhoPorFazer == null || caminhosPossiveis == null || trabalhoPorFazer.isEmpty() || caminhosPossiveis.isEmpty()) {
             System.out.println("Building");
@@ -108,7 +114,7 @@ public class MooreGraphGen8 {
                 }
                 //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
                 //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
-                if (opcaoViavel(insumo, melhorOpcaoLocal)) {
+                if (opcaoViavel(insumo, trabalhoAtual, melhorOpcaoLocal)) {
                     Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                     Collection<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
                     subcaminho.add(melhorOpcaoLocal);
@@ -136,7 +142,9 @@ public class MooreGraphGen8 {
             } else {
                 System.out.printf("!! %d \n", trabalhoAtual);
             }
-            verboseFimEtapa(caminhoPercorrido);
+            if (veboseFimEtapa) {
+                verboseFimEtapa(caminhoPercorrido);
+            }
             Collections.sort(trabalhoPorFazer);
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
@@ -169,11 +177,13 @@ public class MooreGraphGen8 {
                 }
             }
         }
-        UtilTmp.saveToCache(trabalhoPorFazer, "/home/braully/trabalho-por-fazer-partial.dat");
-        UtilTmp.saveToCache(caminhosPossiveis, "/home/braully/caminhos-possiveis.dat");
+        if (K > 7) {
+            UtilTmp.saveToCache(trabalhoPorFazer, "/home/braully/trabalho-por-fazer-partial.dat");
+            UtilTmp.saveToCache(caminhosPossiveis, "/home/braully/caminhos-possiveis.dat");
+        }
     }
 
-    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo,
+    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer trabalhoAtual,
             Integer melhorOpcao) {
         if (melhorOpcao == null) {
             return false;
@@ -181,6 +191,18 @@ public class MooreGraphGen8 {
         int distanciaMelhorOpcao = bfsalg.getDistance(insumo, melhorOpcao);
         if (distanciaMelhorOpcao < 4) {
             return false;
+        }
+
+        if (anteciparVazio && bfsalg.getDistance(insumo, trabalhoAtual) == 0) {
+            boolean condicao1 = true;
+            int dv = (K - insumo.degree(trabalhoAtual));
+            condicao1 = dv <= bfsalg.depthcount[4];
+            if (!condicao1 && verbose) {
+                System.err.printf("Falha condicao 1 v=%d rdv=%d 4count=%d \n", trabalhoAtual, dv, bfsalg.depthcount[4]);
+            }
+            if (!condicao1) {
+                return false;
+            }
         }
         return true;
     }
@@ -190,7 +212,7 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO insumo,
             Integer trabalhoAtual) {
 
-        if (true) {
+        if (falhaPrimeiroRollBack) {
             throw new IllegalStateException("Interrução forçada");
         }
 
@@ -232,7 +254,7 @@ public class MooreGraphGen8 {
             List<Integer> opcoesPossiveis, Integer marcoInicial,
             Integer trabalhoAtual) {
         boolean condicao0 = insumo.getEdgeCount() >= marcoInicial;
-//        boolean condicao1 = (K - insumo.degree(trabalhoAtual)) < opcoesPossiveis.size();
+
 //        return condicao0 && condicao1;
         return condicao0;
     }
@@ -267,22 +289,23 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO insumo,
             Integer[] bfs) {
         opcoesPossiveis.sort(comparatorProfundidade.setBfs(bfs));
-        int i = 0;
-        for (i = 0; i < ranking.length; i++) {
-            ranking[i] = 0;
-        }
-        for (i = 0; i < opcoesPossiveis.size(); i++) {
-            Integer val = opcoesPossiveis.get(i);
-            bfsRanking.bfsRanking(insumo, i);
-            if (bfs[val] == 4) {
-                ranking[val] = bfsRanking.depthcount[4];
-//                ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[2];
-            } else {
-                break;
+        if (rankearOpcoes) {
+            int i = 0;
+            for (i = 0; i < ranking.length; i++) {
+                ranking[i] = 0;
             }
+            for (i = 0; i < opcoesPossiveis.size(); i++) {
+                Integer val = opcoesPossiveis.get(i);
+                bfsRanking.bfsRanking(insumo, i);
+                if (bfs[val] == 4) {
+                    ranking[val] = bfsRanking.depthcount[4];
+//                ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[2];
+                } else {
+                    break;
+                }
+            }
+            opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
         }
-        opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
-
     }
 
     private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {

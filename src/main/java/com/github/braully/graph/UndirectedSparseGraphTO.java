@@ -341,4 +341,12 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
         }
         return setPairs;
     }
+
+    @Override
+    public int degree(Object vertex) {
+        if (!containsVertex(vertex)) {
+            throw new IllegalArgumentException(vertex + " is not a vertex in this graph");
+        }
+        return ((Map) this.vertices.get(vertex)).size();
+    }
 }
