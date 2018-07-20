@@ -10,14 +10,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
-/**
- *
- * @author strike
- */
 public class BFSTmp {
 
     Integer[] bfs = null;
     private Queue<Integer> queue = null;
+    int[] depthcount = new int[5];
 
     BFSTmp(int size) {
         bfs = new Integer[size];
@@ -30,6 +27,35 @@ public class BFSTmp {
 
     Integer getDistance(UndirectedSparseGraphTO graphTemplate, Integer u) {
         return bfs[u];
+    }
+
+    void bfsRanking(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer v) {
+        for (int i = 0; i < bfs.length; i++) {
+            bfs[i] = null;
+        }
+        for (int i = 0; i < depthcount.length; i++) {
+            depthcount[i] = 0;
+        }
+
+        bfs[v] = 0;
+        visitVertexRanking(v, bfs, subgraph);
+    }
+
+    void visitVertexRanking(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph1) {
+        queue.clear();
+        queue.add(v);
+        while (!queue.isEmpty()) {
+            Integer poll = queue.poll();
+            int depth = bfs[poll] + 1;
+            Collection<Integer> ns = (Collection<Integer>) subgraph1.getNeighborsUnprotected(poll);
+            for (Integer nv : ns) {
+                if (bfs[nv] == null) {
+                    bfs[nv] = depth;
+                    queue.add(nv);
+                    depthcount[depth]++;
+                }
+            }
+        }
     }
 
     void bfs(UndirectedSparseGraphTO<Integer, Integer> subgraph, Integer[] bfs, Integer v) {
@@ -51,12 +77,8 @@ public class BFSTmp {
                 if (bfs[nv] == null) {
                     bfs[nv] = depth;
                     queue.add(nv);
-                } else if (depth < bfs[nv]) {//revisit
-                    bfs[nv] = depth;
-                    queue.add(nv);
                 }
             }
         }
     }
-
 }

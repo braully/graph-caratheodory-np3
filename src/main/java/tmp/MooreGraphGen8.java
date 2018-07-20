@@ -20,13 +20,14 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-    private static final boolean verbose = false;
+    private static final boolean verbose = true;
 
     private static int K = 57;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
-    private static int[] ranking = null;
+    private static BFSTmp bfsRanking = null;
+    private static Integer[] ranking = null;
 
     public static void main(String... args) {
         K = 57;
@@ -60,8 +61,8 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO graphTemplate,
             LinkedList<Integer> loadInital) {
         Collection<Integer> vertices = graphTemplate.getVertices();
-        LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
-        Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
+        LinkedList<Integer> trabalhoPorFazer = null;
+        Map<Integer, List<Integer>> caminhosPossiveis = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         long lastime = System.currentTimeMillis();
         int numArestasIniciais = graphTemplate.getEdgeCount();
@@ -69,9 +70,20 @@ public class MooreGraphGen8 {
         int len = numArestas - numArestasIniciais;
 
         bfsalg = new BFSTmp(numVertices);
-        ranking = new int[numVertices];
+        bfsRanking = new BFSTmp(numVertices);
+        ranking = new Integer[numVertices];
 
-        initialLoad(vertices, graphTemplate, trabalhoPorFazer, caminhosPossiveis);
+        trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
+        caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+
+        if (trabalhoPorFazer == null || caminhosPossiveis == null || trabalhoPorFazer.isEmpty() || caminhosPossiveis.isEmpty()) {
+            System.out.println("Building");
+            trabalhoPorFazer = new LinkedList<>();
+            caminhosPossiveis = new HashMap<>();
+            initialLoad(vertices, graphTemplate, trabalhoPorFazer, caminhosPossiveis);
+        } else {
+            System.out.println("Loaded");
+        }
         verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
 
@@ -135,6 +147,8 @@ public class MooreGraphGen8 {
             LinkedList<Integer> trabalhoPorFazer,
             Map<Integer, List<Integer>> caminhosPossiveis) {
         System.out.println("Calculando trabalho a fazer");
+
+//        Arrays.stream(LGMGen.cacheTrabalhoFazer).forEachOrdered(t -> trabalhoPorFazer.add(t));
         for (Integer v : vertices) {
             int remain = K - graphTemplate.degree(v);
             if (remain > 0) {
@@ -142,10 +156,12 @@ public class MooreGraphGen8 {
                 caminhosPossiveis.put(v, new ArrayList<>());
             }
         }
+
         System.out.println("Calculando possibilidades de caminho");
         for (int i = 0; i < trabalhoPorFazer.size(); i++) {
             Integer v = trabalhoPorFazer.get(i);
             bfsalg.labelDistances(graphTemplate, v);
+            caminhosPossiveis.put(v, new ArrayList<>());
             for (int j = i; j < trabalhoPorFazer.size(); j++) {
                 Integer u = trabalhoPorFazer.get(j);
                 if (bfsalg.getDistance(graphTemplate, u) == 4) {
@@ -153,9 +169,12 @@ public class MooreGraphGen8 {
                 }
             }
         }
+        UtilTmp.saveToCache(trabalhoPorFazer, "/home/braully/trabalho-por-fazer-partial.dat");
+        UtilTmp.saveToCache(caminhosPossiveis, "/home/braully/caminhos-possiveis.dat");
     }
 
-    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer melhorOpcao) {
+    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo,
+            Integer melhorOpcao) {
         if (melhorOpcao == null) {
             return false;
         }
@@ -167,7 +186,14 @@ public class MooreGraphGen8 {
     }
 
     private static Pair<Integer> desfazerUltimoTrabalho(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
-            List<Integer> trabalhoPorFazer, UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+            List<Integer> trabalhoPorFazer,
+            UndirectedSparseGraphTO insumo,
+            Integer trabalhoAtual) {
+
+        if (true) {
+            throw new IllegalStateException("Interrução forçada");
+        }
+
         caminhoPercorrido.tailMap(insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
         Integer ultimoPasso = insumo.getEdgeCount() - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
@@ -187,11 +213,13 @@ public class MooreGraphGen8 {
         return desfazer;
     }
 
-    private static boolean trabalhoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+    private static boolean trabalhoAcabou(UndirectedSparseGraphTO insumo,
+            Integer trabalhoAtual) {
         return insumo.degree(trabalhoAtual) == K;
     }
 
-    private static boolean trabalhoNaoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
+    private static boolean trabalhoNaoAcabou(UndirectedSparseGraphTO insumo,
+            Integer trabalhoAtual) {
         return !trabalhoAcabou(insumo, trabalhoAtual);
     }
 
@@ -228,48 +256,64 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        sortAndRanking(opcoesPossiveis, bfsalg.bfs);
+        sortAndRanking(opcoesPossiveis, insumo, bfsalg.bfs);
         Collection<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
         Integer indice = jaSelecionados.size();
         Integer melhorOpcao = getOpcao(opcoesPossiveis, jaSelecionados);
         return melhorOpcao;
     }
 
-    private static void sortAndRanking(List<Integer> opcoesPossiveis, Integer[] bfs) {
-        opcoesPossiveis.sort(comparator.setBfs(bfs));
-        for (int i = 0; i < ranking.length; i++) {
+    private static void sortAndRanking(List<Integer> opcoesPossiveis,
+            UndirectedSparseGraphTO insumo,
+            Integer[] bfs) {
+        opcoesPossiveis.sort(comparatorProfundidade.setBfs(bfs));
+        int i = 0;
+        for (i = 0; i < ranking.length; i++) {
             ranking[i] = 0;
         }
+        for (i = 0; i < opcoesPossiveis.size(); i++) {
+            Integer val = opcoesPossiveis.get(i);
+            bfsRanking.bfsRanking(insumo, i);
+            if (bfs[val] == 4) {
+                ranking[val] = bfsRanking.depthcount[4];
+//                ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[2];
+            } else {
+                break;
+            }
+        }
+        opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
+
     }
 
     private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {
-        opcoesPossiveis.sort(comparator.setMap(distanceDecorator));
+        opcoesPossiveis.sort(comparatorProfundidade.setMap(distanceDecorator));
     }
 
     static class ComparatorMap implements Comparator<Integer> {
 
-        Map<Integer, Number> map = null;
-        Integer[] bfs = null;
+        Map<Integer, Number> mapRanking = null;
+        Integer[] ranking = null;
 
         public Comparator<Integer> setMap(Map<Integer, Number> map) {
-            this.map = map;
-            this.bfs = null;
+            this.mapRanking = map;
+            this.ranking = null;
             return (Comparator<Integer>) this;
         }
 
         public Comparator<Integer> setBfs(Integer[] bfs) {
-            this.map = null;
-            this.bfs = bfs;
+            this.mapRanking = null;
+            this.ranking = bfs;
             return (Comparator<Integer>) this;
         }
 
+        @Override
         public int compare(Integer o1, Integer o2) {
             int ret = 0;
-            if (map != null) {
-                ret = Integer.compare(this.map.get(o2).intValue(), this.map.get(o1).intValue());
+            if (mapRanking != null) {
+                ret = Integer.compare(this.mapRanking.get(o2).intValue(), this.mapRanking.get(o1).intValue());
             }
-            if (bfs != null) {
-                ret = Integer.compare(bfs[o2], bfs[o1]);
+            if (ranking != null) {
+                ret = Integer.compare(ranking[o2], ranking[o1]);
             }
             if (ret == 0) {
                 ret = Integer.compare(o1, o2);
@@ -278,7 +322,7 @@ public class MooreGraphGen8 {
         }
     }
 
-    static ComparatorMap comparator = new ComparatorMap();
+    static ComparatorMap comparatorProfundidade = new ComparatorMap();
 
     /* Verboses */
     private static void verboseResultadoFinal(TreeMap<Integer, Collection<Integer>> trabalhoRealizado,
@@ -331,8 +375,11 @@ public class MooreGraphGen8 {
         System.out.print("Edges remain: ");
         System.out.println(len);
 
-        System.out.print("Caminhos possiveis: ");
-        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+        if (verbose) {
+            System.out.print("Caminhos possiveis: ");
+//        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
+        }
         System.out.println();
     }
 
@@ -347,4 +394,5 @@ public class MooreGraphGen8 {
         }
         System.out.println();
     }
+
 }

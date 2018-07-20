@@ -1,8 +1,14 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -230,5 +236,35 @@ public class UtilTmp {
         for (int i = 0; i < bfs.length; i++) {
             bfsBackup[i] = bfs[i];
         }
+    }
+
+    static void saveToCache(Object o, String caminho) {
+        try {
+            FileOutputStream fos = new FileOutputStream(new File(caminho));
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(o);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static Object loadFromCache(String objectdat) {
+        Object ret = null;
+        try {
+            InputStream is = null;
+            try {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream(objectdat);
+            } catch (Exception e) {
+
+            }
+            if (is == null) {
+                is = new FileInputStream("/home/strike/" + objectdat);
+            }
+            ObjectInputStream iis = new ObjectInputStream(is);
+            ret = iis.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 }
