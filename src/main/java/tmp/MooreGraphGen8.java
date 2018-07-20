@@ -26,6 +26,7 @@ public class MooreGraphGen8 {
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
+    private static int[] ranking = null;
 
     public static void main(String... args) {
         K = 57;
@@ -56,15 +57,19 @@ public class MooreGraphGen8 {
     }
 
     private static void generateGraph(int K, int numArestas,
-            UndirectedSparseGraphTO graphTemplate, LinkedList<Integer> loadInital) {
+            UndirectedSparseGraphTO graphTemplate,
+            LinkedList<Integer> loadInital) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
         Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
-        bfsalg = new BFSTmp(vertices.size());
         long lastime = System.currentTimeMillis();
         int numArestasIniciais = graphTemplate.getEdgeCount();
+        int numVertices = vertices.size();
         int len = numArestas - numArestasIniciais;
+
+        bfsalg = new BFSTmp(numVertices);
+        ranking = new int[numVertices];
 
         initialLoad(vertices, graphTemplate, trabalhoPorFazer, caminhosPossiveis);
         verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
@@ -89,8 +94,8 @@ public class MooreGraphGen8 {
                 if (!loadInital.isEmpty()) {
                     melhorOpcaoLocal = loadInital.pollFirst();
                 }
-//                boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
-//                if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
+                //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
+                //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
                 if (opcaoViavel(insumo, melhorOpcaoLocal)) {
                     Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                     Collection<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
@@ -150,13 +155,6 @@ public class MooreGraphGen8 {
         }
     }
 
-    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
-        System.out.println("------------------------------------------------------------------------------------------------");
-        System.out.print("Caminhos percorrido: ");
-        caminhoPercorrido.entrySet().forEach(e -> System.out.printf("%d=%s\n", e.getKey(), e.getValue().toString()));
-        System.out.println();
-    }
-
     private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer melhorOpcao) {
         if (melhorOpcao == null) {
             return false;
@@ -173,7 +171,7 @@ public class MooreGraphGen8 {
         caminhoPercorrido.tailMap(insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
         Integer ultimoPasso = insumo.getEdgeCount() - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
-//        caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
+        //caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
         insumo.removeEdge(ultimoPasso);
         if (!trabalhoPorFazer.contains(desfazer.getSecond())) {
             trabalhoPorFazer.add(desfazer.getSecond());
@@ -187,66 +185,6 @@ public class MooreGraphGen8 {
             System.out.printf("-[%5d](%3d,%3d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
         }
         return desfazer;
-    }
-
-    private static void verboseResultadoFinal(TreeMap<Integer, Collection<Integer>> trabalhoRealizado,
-            UndirectedSparseGraphTO insumo) {
-        System.out.println();
-        if (insumo.getEdgeCount() < NUM_ARESTAS) {
-            System.out.println("Busca pelo grafo Falhou ***");
-        } else {
-            System.out.println("Grafo Encontrado");
-        }
-
-        try {
-            System.out.print("Added-Edges: ");
-            for (Integer e : trabalhoRealizado.navigableKeySet()) {
-                Pair endpoints = insumo.getEndpoints(e);
-                if (endpoints != null) {
-                    System.out.print(endpoints);
-                    System.out.print(", ");
-                }
-            }
-        } catch (Exception e) {
-        } finally {
-            System.out.println();
-        }
-        System.out.println("Final Graph: ");
-        String edgeString = insumo.getEdgeString();
-        System.out.println(edgeString);
-    }
-
-    private static void verboseInit(UndirectedSparseGraphTO graphTemplate,
-            LinkedList<Integer> incompletVertices,
-            Map<Integer, List<Integer>> caminhosPossiveis, int len) {
-        System.out.print("Graph[");
-        System.out.print(graphTemplate.getVertexCount());
-        System.out.print(", ");
-        System.out.print(graphTemplate.getEdgeCount());
-        System.out.println("]");
-
-        System.out.print("Incomplete vertices[");
-        System.out.print(incompletVertices.size());
-        System.out.print("]: ");
-        System.out.println(incompletVertices);
-        System.out.print("Edges remain: ");
-        System.out.println(len);
-
-        System.out.print("Caminhos possiveis: ");
-        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
-        System.out.println();
-    }
-
-    private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
-        System.out.print("vert-add: ");
-        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-            System.out.printf("%d, ", lastgraph.getEndpoints(i).getFirst());
-        }
-        System.out.println(" | ");
-        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-            System.out.printf("%d, ", lastgraph.getEndpoints(i).getSecond());
-        }
-        System.out.println();
     }
 
     private static boolean trabalhoAcabou(UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
@@ -290,15 +228,18 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        sort(opcoesPossiveis, bfsalg.bfs);
+        sortAndRanking(opcoesPossiveis, bfsalg.bfs);
         Collection<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
         Integer indice = jaSelecionados.size();
         Integer melhorOpcao = getOpcao(opcoesPossiveis, jaSelecionados);
         return melhorOpcao;
     }
 
-    private static void sort(List<Integer> opcoesPossiveis, Integer[] bfs) {
+    private static void sortAndRanking(List<Integer> opcoesPossiveis, Integer[] bfs) {
         opcoesPossiveis.sort(comparator.setBfs(bfs));
+        for (int i = 0; i < ranking.length; i++) {
+            ranking[i] = 0;
+        }
     }
 
     private static void sort(List<Integer> opcoesPossiveis, Map<Integer, Number> distanceDecorator) {
@@ -339,4 +280,71 @@ public class MooreGraphGen8 {
 
     static ComparatorMap comparator = new ComparatorMap();
 
+    /* Verboses */
+    private static void verboseResultadoFinal(TreeMap<Integer, Collection<Integer>> trabalhoRealizado,
+            UndirectedSparseGraphTO insumo) {
+        System.out.println();
+        if (insumo.getEdgeCount() < NUM_ARESTAS) {
+            System.out.println("Busca pelo grafo Falhou ***");
+        } else {
+            System.out.println("Grafo Encontrado");
+        }
+
+        try {
+            System.out.print("Added-Edges: ");
+            for (Integer e : trabalhoRealizado.navigableKeySet()) {
+                Pair endpoints = insumo.getEndpoints(e);
+                if (endpoints != null) {
+                    System.out.print(endpoints);
+                    System.out.print(", ");
+                }
+            }
+        } catch (Exception e) {
+        } finally {
+            System.out.println();
+        }
+        System.out.println("Final Graph: ");
+        String edgeString = insumo.getEdgeString();
+        System.out.println(edgeString);
+    }
+
+    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+        System.out.println("------------------------------------------------------------------------------------------------");
+        System.out.print("Caminhos percorrido: ");
+        caminhoPercorrido.entrySet().forEach(e -> System.out.printf("%d=%s\n", e.getKey(), e.getValue().toString()));
+        System.out.println();
+    }
+
+    private static void verboseInit(UndirectedSparseGraphTO graphTemplate,
+            LinkedList<Integer> incompletVertices,
+            Map<Integer, List<Integer>> caminhosPossiveis, int len) {
+        System.out.print("Graph[");
+        System.out.print(graphTemplate.getVertexCount());
+        System.out.print(", ");
+        System.out.print(graphTemplate.getEdgeCount());
+        System.out.println("]");
+
+        System.out.print("Incomplete vertices[");
+        System.out.print(incompletVertices.size());
+        System.out.print("]: ");
+        System.out.println(incompletVertices);
+        System.out.print("Edges remain: ");
+        System.out.println(len);
+
+        System.out.print("Caminhos possiveis: ");
+        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+        System.out.println();
+    }
+
+    private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
+        System.out.print("vert-add: ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getFirst());
+        }
+        System.out.println(" | ");
+        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+            System.out.printf("%d, ", lastgraph.getEndpoints(i).getSecond());
+        }
+        System.out.println();
+    }
 }
