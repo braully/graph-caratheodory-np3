@@ -23,10 +23,13 @@ public class MooreGraphGen8 {
     private static final boolean verbose = true;
     private static final boolean veboseFimEtapa = false;
     private static final boolean rankearOpcoes = false;
+//    private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
     private static final boolean falhaPrimeiroRollBack = true;
+//    private static final boolean falhaPrimeiroRollBack = false;
 
-    private static int K = 57;
+//    private static int K = 57;
+    private static int K = 7;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
@@ -34,9 +37,6 @@ public class MooreGraphGen8 {
     private static Integer[] ranking = null;
 
     public static void main(String... args) {
-        K = 57;
-//        K = 7;
-
         LinkedList<Integer> startArray = new LinkedList<>();
 
         if (args != null && args.length > 0) {
@@ -122,7 +122,7 @@ public class MooreGraphGen8 {
                     verificarTrabalhoRealizado.add(trabalhoAtual);
                     verificarTrabalhoRealizado.add(melhorOpcaoLocal);
                     if (verbose) {
-                        System.out.printf("+[%5d](%3d,%3d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
+                        System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
                     }
                     if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                         lastime = System.currentTimeMillis();
@@ -230,7 +230,7 @@ public class MooreGraphGen8 {
         }
         //Zerar as opções posteriores
         if (verbose) {
-            System.out.printf("-[%5d](%3d,%3d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
+            System.out.printf("-[%5d](%4d,%4d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
         }
         return desfazer;
     }
@@ -278,14 +278,18 @@ public class MooreGraphGen8 {
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        sortAndRanking(opcoesPossiveis, insumo, bfsalg.bfs);
+        sortAndRanking(caminhoPercorrido,
+                opcoesPossiveis,
+                trabalhoAtual,
+                insumo, bfsalg.bfs);
         Collection<Integer> jaSelecionados = caminhoPercorrido.get(insumo.getEdgeCount());
         Integer indice = jaSelecionados.size();
         Integer melhorOpcao = getOpcao(opcoesPossiveis, jaSelecionados);
         return melhorOpcao;
     }
 
-    private static void sortAndRanking(List<Integer> opcoesPossiveis,
+    private static void sortAndRanking(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
+            List<Integer> opcoesPossiveis, Integer trabalhoAtual,
             UndirectedSparseGraphTO insumo,
             Integer[] bfs) {
         opcoesPossiveis.sort(comparatorProfundidade.setBfs(bfs));
@@ -296,13 +300,22 @@ public class MooreGraphGen8 {
             }
             for (i = 0; i < opcoesPossiveis.size(); i++) {
                 Integer val = opcoesPossiveis.get(i);
-                bfsRanking.bfsRanking(insumo, i);
+                bfsRanking.bfsRanking(insumo, val);
                 if (bfs[val] == 4) {
                     ranking[val] = bfsRanking.depthcount[4];
-//                ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[2];
+//                    ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[3];
+//                    ranking[val] = bfsRanking.depthcount[4] * 1000 + bfsRanking.depthcount[3];
+//                    ranking[val] = bfsRanking.depthcount[3];
+//                    ranking[val] = bfsRanking.depthcount[4] * 3000 + bfsRanking.depthcount[3] * 100 + bfsRanking.depthcount[3];
                 } else {
                     break;
                 }
+//                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
+//                if (trabalhoAtual.equals(14)) {
+//                    System.out.printf("Ranking (%4d,%4d): ", val, trabalhoAtual);
+//                    UtilTmp.printArray(bfsRanking.depthcount);
+//                    System.out.println("");
+//                }
             }
             opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
         }
