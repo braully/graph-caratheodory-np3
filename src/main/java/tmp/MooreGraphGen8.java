@@ -22,14 +22,16 @@ public class MooreGraphGen8 {
 
     private static final boolean verbose = true;
     private static final boolean veboseFimEtapa = false;
-    private static final boolean rankearOpcoes = false;
-//    private static final boolean rankearOpcoes = true;
+//    private static final boolean rankearOpcoes = false;
+    private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
-    private static final boolean falhaPrimeiroRollBack = true;
-//    private static final boolean falhaPrimeiroRollBack = false;
+//    private static final boolean falhaPrimeiroRollBack = true;
+    private static final boolean falhaPrimeiroRollBack = false;
+    private static final boolean falhaPrimeiroCommit = true;
+    private static final boolean descartarOpcoesNaoOptimais = true;
 
-//    private static int K = 57;
-    private static int K = 7;
+    private static int K = 57;
+//    private static int K = 7;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
@@ -68,6 +70,7 @@ public class MooreGraphGen8 {
         LinkedList<Integer> trabalhoPorFazer = null;
         Map<Integer, List<Integer>> caminhosPossiveis = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
+        Map<Integer, Map<Integer, Integer>> historicoRanking = new TreeMap<>();
         long lastime = System.currentTimeMillis();
         int numArestasIniciais = graphTemplate.getEdgeCount();
         int numVertices = vertices.size();
@@ -76,6 +79,7 @@ public class MooreGraphGen8 {
         bfsalg = new BFSTmp(numVertices);
         bfsRanking = new BFSTmp(numVertices);
         ranking = new Integer[numVertices];
+        long longestresult = 11948;
 
         if (K > 7) {
             trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
@@ -107,14 +111,14 @@ public class MooreGraphGen8 {
                 if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
                     caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
                 }
-                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, caminhosPossiveis,
+                Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, historicoRanking, caminhosPossiveis,
                         marcoInicial, opcoesPossiveis, insumo, trabalhoAtual);
                 if (!loadInital.isEmpty()) {
                     melhorOpcaoLocal = loadInital.pollFirst();
                 }
                 //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
                 //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
-                if (opcaoViavel(insumo, trabalhoAtual, melhorOpcaoLocal)) {
+                if (opcaoViavel(insumo, caminhoPercorrido, trabalhoAtual, melhorOpcaoLocal, historicoRanking)) {
                     Integer aresta = (Integer) insumo.addEdge(trabalhoAtual, melhorOpcaoLocal);
                     Collection<Integer> subcaminho = caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
                     subcaminho.add(melhorOpcaoLocal);
@@ -124,9 +128,17 @@ public class MooreGraphGen8 {
                     if (verbose) {
                         System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
                     }
-                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
+                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_12) {
+                        System.out.println("Alert hour");
                         lastime = System.currentTimeMillis();
                         printVertAddArray(insumo, numArestasIniciais);
+                    }
+                    if (longestresult < insumo.getEdgeCount()) {
+                        System.out.println("Alert longest");
+                        longestresult = insumo.getEdgeCount();
+                        lastime = System.currentTimeMillis();
+//                        printVertAddArray(insumo, numArestasIniciais);
+                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
                     }
 
                     if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
@@ -144,6 +156,9 @@ public class MooreGraphGen8 {
             }
             if (veboseFimEtapa) {
                 verboseFimEtapa(caminhoPercorrido);
+            }
+            if (falhaPrimeiroCommit) {
+                throw new IllegalStateException("Interrução forçada -- commit");
             }
             Collections.sort(trabalhoPorFazer);
         }
@@ -183,11 +198,13 @@ public class MooreGraphGen8 {
         }
     }
 
-    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo, Integer trabalhoAtual,
-            Integer melhorOpcao) {
+    private static boolean opcaoViavel(UndirectedSparseGraphTO insumo,
+            TreeMap<Integer, Collection<Integer>> caminhoPercorrido, Integer trabalhoAtual,
+            Integer melhorOpcao, Map<Integer, Map<Integer, Integer>> historicoRanking) {
         if (melhorOpcao == null) {
             return false;
         }
+        int posicao = insumo.getEdgeCount();
         int distanciaMelhorOpcao = bfsalg.getDistance(insumo, melhorOpcao);
         if (distanciaMelhorOpcao < 4) {
             return false;
@@ -198,9 +215,16 @@ public class MooreGraphGen8 {
             int dv = (K - insumo.degree(trabalhoAtual));
             condicao1 = dv <= bfsalg.depthcount[4];
             if (!condicao1 && verbose) {
-                System.err.printf("Falha condicao 1 v=%d rdv=%d 4count=%d \n", trabalhoAtual, dv, bfsalg.depthcount[4]);
+                System.out.printf("*[%d](rdv=%d 4c=%d) ", trabalhoAtual, dv, bfsalg.depthcount[4]);
             }
             if (!condicao1) {
+                return false;
+            }
+        }
+        if (descartarOpcoesNaoOptimais && !caminhoPercorrido.get(posicao).isEmpty()) {
+            Integer escolhaAnterior = ((List<Integer>) caminhoPercorrido.get(posicao)).get(0);
+            Integer rankingEscolhaAnterior = historicoRanking.get(posicao).get(escolhaAnterior);
+            if (historicoRanking.get(posicao).get(melhorOpcao) < rankingEscolhaAnterior) {
                 return false;
             }
         }
@@ -273,12 +297,13 @@ public class MooreGraphGen8 {
     }
 
     private static Integer avaliarMelhorOpcao(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
+            Map<Integer, Map<Integer, Integer>> historicoRanking,
             Map<Integer, List<Integer>> caminhosPossiveis,
             Integer janelaCaminhoPercorrido, List<Integer> opcoesPossiveis,
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual) {
         bfsalg.labelDistances(insumo, trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
-        sortAndRanking(caminhoPercorrido,
+        sortAndRanking(caminhoPercorrido, historicoRanking,
                 opcoesPossiveis,
                 trabalhoAtual,
                 insumo, bfsalg.bfs);
@@ -289,35 +314,46 @@ public class MooreGraphGen8 {
     }
 
     private static void sortAndRanking(TreeMap<Integer, Collection<Integer>> caminhoPercorrido,
+            Map<Integer, Map<Integer, Integer>> historicoRanking,
             List<Integer> opcoesPossiveis, Integer trabalhoAtual,
             UndirectedSparseGraphTO insumo,
             Integer[] bfs) {
         opcoesPossiveis.sort(comparatorProfundidade.setBfs(bfs));
+        int posicaoAtual = insumo.getEdgeCount();
+        Collection<Integer> opcoesPassadas = caminhoPercorrido.get(insumo.getEdgeCount());
         if (rankearOpcoes) {
-            int i = 0;
-            for (i = 0; i < ranking.length; i++) {
-                ranking[i] = 0;
-            }
-            for (i = 0; i < opcoesPossiveis.size(); i++) {
-                Integer val = opcoesPossiveis.get(i);
-                bfsRanking.bfsRanking(insumo, val);
-                if (bfs[val] == 4) {
-                    ranking[val] = bfsRanking.depthcount[4];
+            Map<Integer, Integer> rankingAtual = historicoRanking.getOrDefault(posicaoAtual, new HashMap<>());
+            historicoRanking.putIfAbsent(posicaoAtual, rankingAtual);
+            if (opcoesPassadas.isEmpty() || rankingAtual.isEmpty()) {
+                rankingAtual.clear();
+                int i = 0;
+                for (i = 0; i < ranking.length; i++) {
+                    ranking[i] = 0;
+                }
+                for (i = 0; i < opcoesPossiveis.size(); i++) {
+                    Integer val = opcoesPossiveis.get(i);
+                    if (bfs[val] == 4) {
+                        bfsRanking.bfsRanking(insumo, trabalhoAtual, val);
+                        ranking[val] = bfsRanking.depthcount[4];
+                        rankingAtual.put(val, ranking[val]);
 //                    ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[3];
 //                    ranking[val] = bfsRanking.depthcount[4] * 1000 + bfsRanking.depthcount[3];
 //                    ranking[val] = bfsRanking.depthcount[3];
 //                    ranking[val] = bfsRanking.depthcount[4] * 3000 + bfsRanking.depthcount[3] * 100 + bfsRanking.depthcount[3];
-                } else {
-                    break;
-                }
+                    } else {
+                        break;
+                    }
 //                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
-//                if (trabalhoAtual.equals(14)) {
-//                    System.out.printf("Ranking (%4d,%4d): ", val, trabalhoAtual);
-//                    UtilTmp.printArray(bfsRanking.depthcount);
-//                    System.out.println("");
-//                }
+//                    if (trabalhoAtual.equals(18)) {
+//                        System.out.printf("Ranking (%4d,%4d): ", val, trabalhoAtual);
+//                        UtilTmp.printArray(bfsRanking.depthcount);
+//                    }
+                }
+                opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
+            } else {
+                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
+                //Reaproveintando ranking anteriormente calculado
             }
-            opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
         }
     }
 
@@ -327,10 +363,10 @@ public class MooreGraphGen8 {
 
     static class ComparatorMap implements Comparator<Integer> {
 
-        Map<Integer, Number> mapRanking = null;
+        Map<Integer, ? extends Number> mapRanking = null;
         Integer[] ranking = null;
 
-        public Comparator<Integer> setMap(Map<Integer, Number> map) {
+        public Comparator<Integer> setMap(Map<Integer, ? extends Number> map) {
             this.mapRanking = map;
             this.ranking = null;
             return (Comparator<Integer>) this;

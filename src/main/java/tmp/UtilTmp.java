@@ -267,4 +267,42 @@ public class UtilTmp {
         }
         return ret;
     }
+
+    static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
+        System.out.print("Dump-edge: ");
+        try {
+            FileWriter fileWriter = new FileWriter(fileDump, true);
+            int charcount = max_length_file;
+            System.out.print("vert-add: ");
+            fileWriter.append("vert-add: ");
+            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+                String str = String.format("%d, ", lastgraph.getEndpoints(i).getFirst());
+                System.out.printf(str);
+                fileWriter.append(str);
+                charcount = charcount - str.length();
+                if (charcount <= 0) {
+                    charcount = max_length_file;
+                    fileWriter.append("\n");
+                }
+            }
+            System.out.println(" | ");
+            fileWriter.append(" | ");
+            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+                String str = String.format("%d, ", lastgraph.getEndpoints(i).getSecond());
+                System.out.printf(str);
+                fileWriter.append(str);
+                charcount = charcount - str.length();
+                if (charcount <= 0) {
+                    charcount = max_length_file;
+                    fileWriter.append("\n");
+                }
+            }
+            System.out.println();
+            fileWriter.append("\n");
+            fileWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+    }
 }
