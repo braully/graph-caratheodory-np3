@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,6 +29,8 @@ public class UtilTmp {
     public static final long ALERT_HOUR = 1000 * 60 * 60 * 1;
     public static final long ALERT_HOUR_6 = 1000 * 60 * 60 * 6;
     public static final long ALERT_HOUR_12 = 1000 * 60 * 60 * 12;
+
+    private static final DateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Queue<Integer> queue = new LinkedList<Integer>();
 
     public static void printArray(Integer[] arr) {
@@ -303,6 +308,12 @@ public class UtilTmp {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
 
+    public static void printCurrentItme() {
+        try {
+            System.out.printf("time: %s\n", dateFormater.format(new Date()));
+        } catch (Exception e) {
+        }
     }
 }

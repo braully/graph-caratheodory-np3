@@ -20,14 +20,16 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-    private static final boolean verbose = true;
+//    private static final boolean verbose = true;
+    private static final boolean verbose = false;
     private static final boolean veboseFimEtapa = false;
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
 //    private static final boolean falhaPrimeiroRollBack = true;
     private static final boolean falhaPrimeiroRollBack = false;
-    private static final boolean falhaPrimeiroCommit = true;
+//    private static final boolean falhaPrimeiroCommit = true;
+    private static final boolean falhaPrimeiroCommit = false;
     private static final boolean descartarOpcoesNaoOptimais = true;
 
     private static int K = 57;
@@ -128,17 +130,21 @@ public class MooreGraphGen8 {
                     if (verbose) {
                         System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
                     }
-                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_12) {
+                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
                         System.out.println("Alert hour");
                         lastime = System.currentTimeMillis();
-                        printVertAddArray(insumo, numArestasIniciais);
+//                        printVertAddArray(insumo, numArestasIniciais);
+                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+                        String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, trabalhoAtual, melhorOpcaoLocal);
+                        UtilTmp.dumpString(lastAdd);
+                        UtilTmp.printCurrentItme();
                     }
                     if (longestresult < insumo.getEdgeCount()) {
                         System.out.println("Alert longest");
                         longestresult = insumo.getEdgeCount();
                         lastime = System.currentTimeMillis();
 //                        printVertAddArray(insumo, numArestasIniciais);
-                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+//                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
                     }
 
                     if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
@@ -154,6 +160,7 @@ public class MooreGraphGen8 {
             } else {
                 System.out.printf("!! %d \n", trabalhoAtual);
             }
+            UtilTmp.printCurrentItme();
             if (veboseFimEtapa) {
                 verboseFimEtapa(caminhoPercorrido);
             }
