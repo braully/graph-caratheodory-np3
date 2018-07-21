@@ -211,6 +211,11 @@ public class MooreGraphGen8 {
         if (melhorOpcao == null) {
             return false;
         }
+
+//        if (trabalhoAtual.equals(113)) {
+//            return false;
+//        }
+
         int posicao = insumo.getEdgeCount();
         int distanciaMelhorOpcao = bfsalg.getDistance(insumo, melhorOpcao);
         if (distanciaMelhorOpcao < 4) {
