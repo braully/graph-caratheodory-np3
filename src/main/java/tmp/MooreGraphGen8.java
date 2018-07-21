@@ -20,17 +20,20 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-//    private static final boolean verbose = true;
-    private static final boolean verbose = false;
+    private static final boolean verbose = true;
+//    private static final boolean verbose = false;
+//    private static final boolean vebosePossibilidadesIniciais = true;
+    private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
-//    private static final boolean falhaPrimeiroRollBack = true;
-    private static final boolean falhaPrimeiroRollBack = false;
+    private static final boolean falhaPrimeiroRollBack = true;
+//    private static final boolean falhaPrimeiroRollBack = false;
 //    private static final boolean falhaPrimeiroCommit = true;
     private static final boolean falhaPrimeiroCommit = false;
     private static final boolean descartarOpcoesNaoOptimais = true;
+    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
 
     private static int K = 57;
 //    private static int K = 7;
@@ -98,10 +101,17 @@ public class MooreGraphGen8 {
         }
         verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
+        ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveis);
 
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
+        if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
+            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
+        } else {
+            Collections.sort(trabalhoPorFazer);
+        }
+
         while (!trabalhoPorFazer.isEmpty() && !caminhoPercorrido.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.get(0);
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
@@ -130,11 +140,13 @@ public class MooreGraphGen8 {
                     if (verbose) {
                         System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
                     }
-                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
+                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_6) {
                         System.out.println("Alert hour");
                         lastime = System.currentTimeMillis();
 //                        printVertAddArray(insumo, numArestasIniciais);
-                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+                        UtilTmp.dumpVertAddArray(insumo,
+                                numArestasIniciais,
+                                caminhoPercorrido);
                         String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, trabalhoAtual, melhorOpcaoLocal);
                         UtilTmp.dumpString(lastAdd);
                         UtilTmp.printCurrentItme();
@@ -145,6 +157,9 @@ public class MooreGraphGen8 {
                         lastime = System.currentTimeMillis();
 //                        printVertAddArray(insumo, numArestasIniciais);
 //                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+                        UtilTmp.dumpVertAddArray(insumo,
+                                numArestasIniciais,
+                                caminhoPercorrido);
                     }
 
                     if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
@@ -167,7 +182,12 @@ public class MooreGraphGen8 {
             if (falhaPrimeiroCommit) {
                 throw new IllegalStateException("Interrução forçada -- commit");
             }
-            Collections.sort(trabalhoPorFazer);
+
+            if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
+                Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
+            } else {
+                Collections.sort(trabalhoPorFazer);
+            }
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
     }
@@ -215,7 +235,6 @@ public class MooreGraphGen8 {
 //        if (trabalhoAtual.equals(113)) {
 //            return false;
 //        }
-
         int posicao = insumo.getEdgeCount();
         int distanciaMelhorOpcao = bfsalg.getDistance(insumo, melhorOpcao);
         if (distanciaMelhorOpcao < 4) {
@@ -227,7 +246,7 @@ public class MooreGraphGen8 {
             int dv = (K - insumo.degree(trabalhoAtual));
             condicao1 = dv <= bfsalg.depthcount[4];
             if (!condicao1 && verbose) {
-                System.out.printf("*[%d](rdv=%d 4c=%d) ", trabalhoAtual, dv, bfsalg.depthcount[4]);
+                System.out.printf("*[%d](%d,%d -> rdv=%d 4c=%d) ", posicao, trabalhoAtual, melhorOpcao, dv, bfsalg.depthcount[4]);
             }
             if (!condicao1) {
                 return false;
@@ -373,6 +392,29 @@ public class MooreGraphGen8 {
         opcoesPossiveis.sort(comparatorProfundidade.setMap(distanceDecorator));
     }
 
+    static class ComparatorTrabalhoPorFazer implements Comparator<Integer> {
+
+        Map<Integer, List<Integer>> caminhosPossiveis;
+
+        public ComparatorTrabalhoPorFazer(Map<Integer, List<Integer>> caminhosPossiveis) {
+            this.caminhosPossiveis = caminhosPossiveis;
+        }
+
+        @Override
+        public int compare(Integer t, Integer t1) {
+            int ret = 0;
+            ret = Integer.compare(caminhosPossiveis.get(t1).size(), caminhosPossiveis.get(t).size());
+            if (ret == 0 && caminhosPossiveis.get(t1).size() > 0) {
+                ret = Integer.compare(caminhosPossiveis.get(t).get(0), caminhosPossiveis.get(t1).get(0));
+                if (ret == 0) {
+                    ret = Integer.compare(t, t1);
+                }
+            }
+            return ret;
+        }
+
+    }
+
     static class ComparatorMap implements Comparator<Integer> {
 
         Map<Integer, ? extends Number> mapRanking = null;
@@ -459,10 +501,10 @@ public class MooreGraphGen8 {
         System.out.print("Edges remain: ");
         System.out.println(len);
 
-        if (verbose && false) {
+        if (verbose && vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: ");
-//        caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
-            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
+            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
+//            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
         }
         System.out.println();
     }

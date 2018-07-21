@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.TreeMap;
 
 /**
  *
@@ -271,6 +272,46 @@ public class UtilTmp {
             e.printStackTrace();
         }
         return ret;
+    }
+
+    static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph,
+            int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+        System.out.print("Dump-edge: ");
+        try {
+            FileWriter fileWriter = new FileWriter(fileDump, true);
+            int charcount = max_length_file;
+
+            System.out.print("vert-add: ");
+            fileWriter.append("dump-caminho-percorrido: ");
+            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
+                Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
+                String str = String.format("{%d}(%d,%d)",
+                        i, lastgraph.getEndpoints(i).getFirst(),
+                        lastgraph.getEndpoints(i).getSecond());
+                System.out.printf(str);
+                fileWriter.append(str);
+                charcount = charcount - str.length();
+                if (charcount <= 0) {
+                    charcount = max_length_file;
+                    fileWriter.append("\n");
+                }
+                str = opcoesTestadas.toString();
+                System.out.printf(str);
+                fileWriter.append(str);
+                fileWriter.append(" | ");
+                charcount = charcount - str.length();
+                if (charcount <= 0) {
+                    charcount = max_length_file;
+                    fileWriter.append("\n");
+                }
+
+            }
+            System.out.println();
+            fileWriter.append("\n");
+            fileWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
