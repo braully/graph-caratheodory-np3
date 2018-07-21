@@ -20,20 +20,22 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-    private static final boolean verbose = true;
-//    private static final boolean verbose = false;
+//    private static final boolean verbose = true;
+    private static final boolean verbose = false;
 //    private static final boolean vebosePossibilidadesIniciais = true;
     private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
-    private static final boolean falhaPrimeiroRollBack = true;
-//    private static final boolean falhaPrimeiroRollBack = false;
+//    private static final boolean falhaPrimeiroRollBack = true;
+    private static final boolean falhaPrimeiroRollBack = false;
 //    private static final boolean falhaPrimeiroCommit = true;
     private static final boolean falhaPrimeiroCommit = false;
     private static final boolean descartarOpcoesNaoOptimais = true;
     private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+
+    private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof");
 
     private static int K = 57;
 //    private static int K = 7;
@@ -42,6 +44,8 @@ public class MooreGraphGen8 {
     private static BFSTmp bfsalg = null;
     private static BFSTmp bfsRanking = null;
     private static Integer[] ranking = null;
+    private static long longestresult = 11948;
+    private static long lastime = System.currentTimeMillis();
 
     public static void main(String... args) {
         LinkedList<Integer> startArray = new LinkedList<>();
@@ -76,7 +80,6 @@ public class MooreGraphGen8 {
         Map<Integer, List<Integer>> caminhosPossiveis = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         Map<Integer, Map<Integer, Integer>> historicoRanking = new TreeMap<>();
-        long lastime = System.currentTimeMillis();
         int numArestasIniciais = graphTemplate.getEdgeCount();
         int numVertices = vertices.size();
         int len = numArestas - numArestasIniciais;
@@ -84,7 +87,6 @@ public class MooreGraphGen8 {
         bfsalg = new BFSTmp(numVertices);
         bfsRanking = new BFSTmp(numVertices);
         ranking = new Integer[numVertices];
-        long longestresult = 11948;
 
         if (K > 7) {
             trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
@@ -137,41 +139,17 @@ public class MooreGraphGen8 {
                     caminhoPercorrido.putIfAbsent(aresta, subcaminho);
                     verificarTrabalhoRealizado.add(trabalhoAtual);
                     verificarTrabalhoRealizado.add(melhorOpcaoLocal);
-                    if (verbose) {
-                        System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
-                    }
-                    if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR_6) {
-                        System.out.println("Alert hour");
-                        lastime = System.currentTimeMillis();
-//                        printVertAddArray(insumo, numArestasIniciais);
-                        UtilTmp.dumpVertAddArray(insumo,
-                                numArestasIniciais,
-                                caminhoPercorrido);
-                        String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, trabalhoAtual, melhorOpcaoLocal);
-                        UtilTmp.dumpString(lastAdd);
-                        UtilTmp.printCurrentItme();
-                    }
-                    if (longestresult < insumo.getEdgeCount()) {
-                        System.out.println("Alert longest");
-                        longestresult = insumo.getEdgeCount();
-                        lastime = System.currentTimeMillis();
-//                        printVertAddArray(insumo, numArestasIniciais);
-//                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
-                        UtilTmp.dumpVertAddArray(insumo,
-                                numArestasIniciais,
-                                caminhoPercorrido);
-                    }
-
                     if (trabalhoAcabou(insumo, melhorOpcaoLocal)) {
                         trabalhoPorFazer.remove(melhorOpcaoLocal);
                     }
+                    observadorDeEtapa(aresta, trabalhoAtual, melhorOpcaoLocal, insumo, numArestasIniciais, caminhoPercorrido, K);
                 } else {
                     desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo, trabalhoAtual);
                 }
             }
             if (trabalhoAcabou(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
-                System.out.printf(".. %d \n", trabalhoAtual);
+                System.out.printf(".. %d [%d] \n", trabalhoAtual, insumo.getEdgeCount());
             } else {
                 System.out.printf("!! %d \n", trabalhoAtual);
             }
@@ -190,6 +168,37 @@ public class MooreGraphGen8 {
             }
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
+    }
+
+    private static void observadorDeEtapa(Integer aresta, Integer trabalhoAtual, Integer melhorOpcaoLocal, UndirectedSparseGraphTO insumo, int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido, int K1) {
+        if (verbose) {
+            System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
+        }
+        if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
+            System.out.println("Alert hour");
+            UtilTmp.dumpString(estrategiaString);
+            lastime = System.currentTimeMillis();
+            //                        printVertAddArray(insumo, numArestasIniciais);
+            UtilTmp.dumpVertAddArray(insumo,
+                    numArestasIniciais,
+                    caminhoPercorrido);
+            String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, trabalhoAtual, melhorOpcaoLocal);
+            UtilTmp.dumpString(lastAdd);
+            UtilTmp.printCurrentItme();
+            if (K1 > 7) {
+                UtilTmp.dumpOverrideString(insumo.getEdgeString(), ".graph.g8." + estrategiaString);
+            }
+        }
+        if (longestresult < insumo.getEdgeCount()) {
+            System.out.println("Alert longest");
+            longestresult = insumo.getEdgeCount();
+            lastime = System.currentTimeMillis();
+//                        printVertAddArray(insumo, numArestasIniciais);
+//                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+            UtilTmp.dumpVertAddArray(insumo,
+                    numArestasIniciais,
+                    caminhoPercorrido);
+        }
     }
 
     public static void initialLoad(Collection<Integer> vertices,

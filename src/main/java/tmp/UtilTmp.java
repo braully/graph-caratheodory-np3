@@ -28,6 +28,7 @@ public class UtilTmp {
     public static final String fileDump = "/home/strike/.comb-moore-java-tmp.txt";
     public static final int max_length_file = 3000;
     public static final long ALERT_HOUR = 1000 * 60 * 60 * 1;
+    public static final long ALERT_HOUR_2 = 1000 * 60 * 60 * 2;
     public static final long ALERT_HOUR_6 = 1000 * 60 * 60 * 6;
     public static final long ALERT_HOUR_12 = 1000 * 60 * 60 * 12;
 
