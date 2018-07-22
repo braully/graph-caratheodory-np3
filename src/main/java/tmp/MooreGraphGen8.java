@@ -34,9 +34,9 @@ public class MooreGraphGen8 {
 //    private static final boolean falhaPrimeiroCommit = true;
     private static final boolean falhaPrimeiroCommit = false;
     private static final boolean descartarOpcoesNaoOptimais = true;
-//    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
-    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
-
+    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+//    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
+//
     private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
 //    private static int K = 57;
@@ -115,6 +115,15 @@ public class MooreGraphGen8 {
         } else {
             Collections.sort(trabalhoPorFazer);
         }
+
+        if (vebosePossibilidadesIniciais) {
+            System.out.print("Caminhos possiveis: \n");
+            for (Integer e : trabalhoPorFazer) {
+                System.out.printf("%d|%d|=%s\n", e, caminhosPossiveis.get(e).size(), caminhosPossiveis.get(e).toString());
+            }
+//            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
+        }
+        System.out.println();
 
         while (!trabalhoPorFazer.isEmpty() && !caminhoPercorrido.isEmpty()) {
             Integer trabalhoAtual = trabalhoPorFazer.get(0);
@@ -415,11 +424,14 @@ public class MooreGraphGen8 {
         public int compare(Integer t, Integer t1) {
             int ret = 0;
             ret = Integer.compare(caminhosPossiveis.get(t1).size(), caminhosPossiveis.get(t).size());
-            if (ret == 0 && caminhosPossiveis.get(t1).size() > 0) {
-                ret = Integer.compare(caminhosPossiveis.get(t).get(0), caminhosPossiveis.get(t1).get(0));
-                if (ret == 0) {
-                    ret = Integer.compare(t, t1);
-                }
+            int cont = 0;
+            while (ret == 0 && cont < caminhosPossiveis.get(t).size()) {
+                ret = Integer.compare(caminhosPossiveis.get(t).get(cont), caminhosPossiveis.get(t1).get(cont));
+                cont++;
+            }
+
+            if (ret == 0) {
+                ret = Integer.compare(t, t1);
             }
             return ret;
         }
@@ -511,12 +523,6 @@ public class MooreGraphGen8 {
         System.out.println(incompletVertices);
         System.out.print("Edges remain: ");
         System.out.println(len);
-
-        if (vebosePossibilidadesIniciais) {
-            System.out.print("Caminhos possiveis: ");
-            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
-//            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
-        }
         System.out.println();
     }
 
