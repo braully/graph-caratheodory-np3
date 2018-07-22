@@ -296,16 +296,23 @@ public class UtilTmp {
                     charcount = max_length_file;
                     fileWriter.append("\n");
                 }
-                str = opcoesTestadas.toString();
-                System.out.printf(str);
-                fileWriter.append(str);
-                fileWriter.append(" | ");
-                charcount = charcount - str.length();
-                if (charcount <= 0) {
-                    charcount = max_length_file;
-                    fileWriter.append("\n");
-                }
+                fileWriter.append("[");
+                System.out.println("[");
 
+                for (Integer j : opcoesTestadas) {
+                    String jstr = j.toString();
+                    System.out.print(jstr);
+                    System.out.print(",");
+                    fileWriter.append(jstr);
+                    fileWriter.append(",");
+                    charcount = charcount - jstr.length() - 1;
+                    if (charcount <= 0) {
+                        charcount = max_length_file;
+                        fileWriter.append("\n");
+                    }
+                }
+                fileWriter.append("] ");
+                System.out.println("] ");
             }
             System.out.println();
             fileWriter.append("\n");
