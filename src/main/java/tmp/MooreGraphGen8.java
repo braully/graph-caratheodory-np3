@@ -20,11 +20,12 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-//    private static final boolean verbose = true;
-    private static final boolean verbose = false;
-//    private static final boolean vebosePossibilidadesIniciais = true;
-    private static final boolean vebosePossibilidadesIniciais = false;
+    private static final boolean verbose = true;
+//    private static final boolean verbose = false;
+    private static final boolean vebosePossibilidadesIniciais = true;
+//    private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
+//    private static final boolean veboseFimEtapa = true;
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
@@ -33,12 +34,13 @@ public class MooreGraphGen8 {
 //    private static final boolean falhaPrimeiroCommit = true;
     private static final boolean falhaPrimeiroCommit = false;
     private static final boolean descartarOpcoesNaoOptimais = true;
-    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+//    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
 
     private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
-    private static int K = 57;
-//    private static int K = 7;
+//    private static int K = 57;
+    private static int K = 7;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
@@ -510,7 +512,7 @@ public class MooreGraphGen8 {
         System.out.print("Edges remain: ");
         System.out.println(len);
 
-        if (verbose && vebosePossibilidadesIniciais) {
+        if (vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: ");
             caminhosPossiveis.entrySet().forEach(e -> System.out.printf("%d|%d|=%s\n", e.getKey(), e.getValue().size(), e.getValue().toString()));
 //            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
