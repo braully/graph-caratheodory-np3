@@ -365,4 +365,17 @@ public class UtilTmp {
         } catch (Exception e) {
         }
     }
+
+    public static List<Integer> strToList(String group) {
+        List<Integer> list = new ArrayList<>();
+        if (group != null) {
+            String[] split = group.split(",");
+            if (split != null && split.length > 0) {
+                for (String str : split) {
+                    list.add(Integer.parseInt(str.trim().replaceAll("\\D+", "")));
+                }
+            }
+        }
+        return list;
+    }
 }

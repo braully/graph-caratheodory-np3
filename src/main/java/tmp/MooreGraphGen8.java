@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -23,8 +25,8 @@ public class MooreGraphGen8 {
 
 //    private static final boolean verbose = true;
     private static final boolean verbose = false;
-    private static final boolean vebosePossibilidadesIniciais = true;
-//    private static final boolean vebosePossibilidadesIniciais = false;
+//    private static final boolean vebosePossibilidadesIniciais = true;
+    private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
 //    private static final boolean veboseFimEtapa = true;
 //    private static final boolean rankearOpcoes = false;
@@ -52,33 +54,21 @@ public class MooreGraphGen8 {
     private static long lastime = System.currentTimeMillis();
 
     public static void main(String... args) {
-        LinkedList<Integer> startArray = new LinkedList<>();
-
-        if (args != null && args.length > 0) {
-            for (String str : args) {
-                str = str.replaceAll("\\D", "").trim();
-                Integer val = Integer.parseInt(str);
-                startArray.add(val);
-            }
-            System.out.println("Starting with: arr[" + startArray.size() + "]=" + startArray);
-        }
-
         if (K == 7) {
             NUM_ARESTAS = ((K * K + 1) * K) / 2;
             UndirectedSparseGraphTO graphTemplate = HoffmanGraphGen.subgraph;
-            generateGraph(K, NUM_ARESTAS, graphTemplate, startArray);
+            generateGraph(K, NUM_ARESTAS, graphTemplate, args);
         }
         if (K == 57) {
             NUM_ARESTAS = ((K * K + 1) * K) / 2;
             UndirectedSparseGraphTO graphTemplate = LGMGen.subgraph;
-            generateGraph(K, NUM_ARESTAS, graphTemplate, startArray);
+            generateGraph(K, NUM_ARESTAS, graphTemplate, args);
         }
 
     }
 
     private static void generateGraph(int K, int numArestas,
-            UndirectedSparseGraphTO graphTemplate,
-            LinkedList<Integer> loadInital) {
+            UndirectedSparseGraphTO graphTemplate, String... args) {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = null;
         Map<Integer, List<Integer>> caminhosPossiveis = null;
@@ -106,12 +96,46 @@ public class MooreGraphGen8 {
             System.out.println("Loaded");
         }
         verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
+
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
         ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveis);
 
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
+
+        LinkedList<Integer> loadInital = new LinkedList<>();
+        if (args != null && args.length > 0) {
+            if (args.length == 1) {
+                args = args[0].split(" ");
+            }
+            System.out.print("Load-Status from Args");
+            String strpattern = "\\{(\\d+)\\}\\((\\d+),(\\d+)\\)\\[([0-9,]+)\\]";
+            Pattern pattern = Pattern.compile(strpattern);
+            for (String str : args) {
+                Matcher matcher = pattern.matcher(str);
+                System.out.print(str);
+                System.out.print("->");
+                if (matcher.matches()) {
+                    Integer numEdge = Integer.parseInt(matcher.group(2));
+                    Integer e1 = Integer.parseInt(matcher.group(2));
+                    Integer e2 = Integer.parseInt(matcher.group(3));
+                    //System.out.println(matcher.group(3));
+                    List<Integer> caminho = UtilTmp.strToList(matcher.group(4));
+                    Integer aresta = (Integer) insumo.addEdge(e1, e2);
+                    if(numEdge.equals(aresta)){
+                        throw new IllegalStateException("Incorrect load info");
+                    }
+                    caminhoPercorrido.put(aresta, caminho);
+                    System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
+                    System.out.print(caminho);
+                    System.out.print("  ");
+//                    System.out.println(matcher.group(4));
+                }
+            }
+            System.out.println("Starting with: arr[" + loadInital.size() + "]=" + loadInital);
+        }
+
         if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
             Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
         } else {
@@ -194,21 +218,21 @@ public class MooreGraphGen8 {
             verboseFimEtapa(caminhoPercorrido);
         }
         if (falhaInCommitCount) {
-            verboseFimEtapa(caminhoPercorrido);
-            bfsalg.labelDistances(insumo, trabalhoAtual);
-            System.out.printf("\nbfs-map-opf[%4d]: [", trabalhoAtual);
-            TreeSet<Integer> tmp = new TreeSet<>(opcoesPossiveis);
-            for (Integer o : tmp) {
-                int distance = bfsalg.getDistance(insumo, o);
-                if (distance == 1) {
-                    System.out.print('x');
-                } else if (distance == 4) {
-                    System.out.print('4');
-                } else {
-                    System.out.print(' ');
-                }
-            }
-            System.out.print("]\n");
+//            verboseFimEtapa(caminhoPercorrido);
+//            bfsalg.labelDistances(insumo, trabalhoAtual);
+//            System.out.printf("\nbfs-map-opf[%4d]: [", trabalhoAtual);
+//            TreeSet<Integer> tmp = new TreeSet<>(opcoesPossiveis);
+//            for (Integer o : tmp) {
+//                int distance = bfsalg.getDistance(insumo, o);
+//                if (distance == 1) {
+//                    System.out.print('x');
+//                } else if (distance == 4) {
+//                    System.out.print('4');
+//                } else {
+//                    System.out.print(' ');
+//                }
+//            }
+//            System.out.print("]\n");
             if (falhaCommitCount-- <= 0) {
                 throw new IllegalStateException("Interrução forçada -- commit");
             }
@@ -216,20 +240,20 @@ public class MooreGraphGen8 {
     }
 
     private static void verboseInicioEtapa(UndirectedSparseGraphTO insumo, Integer trabalhoAtual, List<Integer> opcoesPossiveis) {
-        if (falhaInCommitCount) {
-            bfsalg.labelDistances(insumo, trabalhoAtual);
-            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
-            for (Integer o : opcoesPossiveis) {
-                if (bfsalg.getDistance(insumo, o) == 1) {
-                    System.out.print('x');
-                } else if (bfsalg.getDistance(insumo, o) == 4) {
-                    System.out.print('4');
-                } else {
-                    System.out.print(' ');
-                }
-            }
-            System.out.print("]\n");
-        }
+//        if (falhaInCommitCount) {
+//            bfsalg.labelDistances(insumo, trabalhoAtual);
+//            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
+//            for (Integer o : opcoesPossiveis) {
+//                if (bfsalg.getDistance(insumo, o) == 1) {
+//                    System.out.print('x');
+//                } else if (bfsalg.getDistance(insumo, o) == 4) {
+//                    System.out.print('4');
+//                } else {
+//                    System.out.print(' ');
+//                }
+//            }
+//            System.out.print("]\n");
+//        }
     }
 
     private static void observadorDeEtapa(Integer aresta, Integer trabalhoAtual, Integer melhorOpcaoLocal, UndirectedSparseGraphTO insumo, int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido, int K1) {
