@@ -32,14 +32,16 @@ public class MooreGraphGen8 {
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
-    private static final boolean falhaPrimeiroRollBack = true;
-//    private static final boolean falhaPrimeiroRollBack = false;
-    private static final boolean falhaInCommitCount = true;
-//    private static final boolean falhaInCommitCount = false;
+//    private static final boolean falhaPrimeiroRollBack = true;
+    private static final boolean falhaPrimeiroRollBack = false;
+//    private static final boolean falhaInCommitCount = true;
+    private static final boolean falhaInCommitCount = false;
     private static int falhaCommitCount = 1;
     private static final boolean descartarOpcoesNaoOptimais = true;
     private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
 //    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
+//    private static final boolean dumpResultadoPeriodicamente = true;
+    private static final boolean dumpResultadoPeriodicamente = false;
 //
     private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
@@ -72,6 +74,7 @@ public class MooreGraphGen8 {
         Collection<Integer> vertices = graphTemplate.getVertices();
         LinkedList<Integer> trabalhoPorFazer = null;
         Map<Integer, List<Integer>> caminhosPossiveis = null;
+        Map<Integer, List<Integer>> caminhosPossiveisOriginal = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         Map<Integer, Map<Integer, Integer>> historicoRanking = new TreeMap<>();
         int numArestasIniciais = graphTemplate.getEdgeCount();
@@ -96,15 +99,15 @@ public class MooreGraphGen8 {
             System.out.println("Loaded");
         }
         verboseInit(graphTemplate, trabalhoPorFazer, caminhosPossiveis, len);
+        caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);
 
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
-        ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveis);
+        ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveisOriginal);
 
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
 
-        LinkedList<Integer> loadInital = new LinkedList<>();
         if (args != null && args.length > 0) {
             if (args.length == 1) {
                 args = args[0].split(" ");
@@ -123,7 +126,7 @@ public class MooreGraphGen8 {
                     //System.out.println(matcher.group(3));
                     List<Integer> caminho = UtilTmp.strToList(matcher.group(4));
                     Integer aresta = (Integer) insumo.addEdge(e1, e2);
-                    if(numEdge.equals(aresta)){
+                    if (numEdge.equals(aresta)) {
                         throw new IllegalStateException("Incorrect load info");
                     }
                     caminhoPercorrido.put(aresta, caminho);
@@ -133,14 +136,16 @@ public class MooreGraphGen8 {
 //                    System.out.println(matcher.group(4));
                 }
             }
-            System.out.println("Starting with: arr[" + loadInital.size() + "]=" + loadInital);
         }
+
+        List<Integer> trabalhPorFazerOriginal = new ArrayList<>();
 
         if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
             Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
         } else {
             Collections.sort(trabalhoPorFazer);
         }
+        trabalhPorFazerOriginal.addAll(trabalhoPorFazer);
 
         if (vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
@@ -163,19 +168,25 @@ public class MooreGraphGen8 {
             Integer marcoInicial = insumo.getEdgeCount();
 
             verboseInicioEtapa(insumo, trabalhoAtual, opcoesPossiveis);
+//            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
 
             while (trabalhoNaoAcabou(insumo, trabalhoAtual)
                     && temOpcoesDisponiveis(insumo, caminhoPercorrido,
                             opcoesPossiveis, marcoInicial, trabalhoAtual)) {
+
+//                if (trabalhoAtual.equals(216)) {
+//                if (trabalhoAtual.equals(221)) {
+//                    desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo, trabalhoAtual);
+//                    System.out.println("Buscando proxima combinação");
+//                    continue;
+//                }
 
                 if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
                     caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
                 }
                 Integer melhorOpcaoLocal = avaliarMelhorOpcao(caminhoPercorrido, historicoRanking, caminhosPossiveis,
                         marcoInicial, opcoesPossiveis, insumo, trabalhoAtual);
-                if (!loadInital.isEmpty()) {
-                    melhorOpcaoLocal = loadInital.pollFirst();
-                }
+
                 //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
                 //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
                 if (opcaoViavel(insumo, caminhoPercorrido, trabalhoAtual, melhorOpcaoLocal, historicoRanking)) {
@@ -196,6 +207,9 @@ public class MooreGraphGen8 {
 
             if (trabalhoAcabou(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
+                UtilTmp.dumpVertAddArray(insumo,
+                        numArestasIniciais,
+                        caminhoPercorrido, ".comb", false);
                 System.out.printf(".. %d [%d] \n", trabalhoAtual, insumo.getEdgeCount());
             } else {
                 System.out.printf("!! %d \n", trabalhoAtual);
@@ -211,6 +225,30 @@ public class MooreGraphGen8 {
             }
         }
         verboseResultadoFinal(caminhoPercorrido, insumo);
+    }
+
+    private static void printMapOpcoes(List<Integer> trabalhPorFazerOriginal, UndirectedSparseGraphTO insumo, Map<Integer, List<Integer>> caminhosPossiveis) {
+        int[] count = new int[]{0, 0, 0, 0, 0};
+        for (Integer v : trabalhPorFazerOriginal) {
+            bfsalg.labelDistances(insumo, v);
+            System.out.printf("[%4d]: [", v);
+            TreeSet<Integer> opcoesPossiveisOrdenada = new TreeSet<>(caminhosPossiveis.get(v));
+            for (Integer o : opcoesPossiveisOrdenada) {
+                int distancia = bfsalg.getDistance(insumo, o);
+                if (distancia == 1) {
+                    System.out.print('x');
+                } else if (distancia == 4) {
+                    System.out.print('4');
+                } else if (distancia == 2) {
+                    System.out.print('-');
+                } else {
+                    System.out.print(' ');
+                }
+                count[distancia]++;
+            }
+            System.out.print("]\n");
+        }
+        System.out.printf("Total count: d4=%d d3=%d d2=%d \n", count[4], count[3], count[2], count[1]);
     }
 
     private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido, UndirectedSparseGraphTO insumo, Integer trabalhoAtual, List<Integer> opcoesPossiveis) throws IllegalStateException {
@@ -260,7 +298,7 @@ public class MooreGraphGen8 {
         if (verbose) {
             System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
         }
-        if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
+        if (dumpResultadoPeriodicamente && System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
             System.out.println("Alert hour ");
             UtilTmp.dumpString(estrategiaString);
             lastime = System.currentTimeMillis();
@@ -282,16 +320,6 @@ public class MooreGraphGen8 {
                 UtilTmp.dumpOverrideString(insumo.getEdgeString(), ".graph.g8." + estrategiaString);
             }
         }
-//        if (longestresult < insumo.getEdgeCount()) {
-//            System.out.println("Alert longest");
-//            longestresult = insumo.getEdgeCount();
-//            lastime = System.currentTimeMillis();
-////                        printVertAddArray(insumo, numArestasIniciais);
-////                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
-//            UtilTmp.dumpVertAddArray(insumo,
-//                    numArestasIniciais,
-//                    caminhoPercorrido);
-//        }
     }
 
     public static void initialLoad(Collection<Integer> vertices,

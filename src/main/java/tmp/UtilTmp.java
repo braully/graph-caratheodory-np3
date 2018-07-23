@@ -14,8 +14,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 
@@ -277,9 +279,19 @@ public class UtilTmp {
 
     static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph,
             int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+        dumpVertAddArray(lastgraph, numArestasIniciais, caminhoPercorrido, "");
+    }
+
+    static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph,
+            int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido, String offset) {
+        dumpVertAddArray(lastgraph, numArestasIniciais, caminhoPercorrido, "", true);
+    }
+
+    static void dumpVertAddArray(UndirectedSparseGraphTO lastgraph,
+            int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido, String offset, boolean trunk) {
         System.out.print("Dump-edge: ");
         try {
-            FileWriter fileWriter = new FileWriter(fileDump, true);
+            FileWriter fileWriter = new FileWriter(fileDump + offset, true);
             int charcount = max_length_file;
 
             System.out.print("vert-add: ");
@@ -292,12 +304,12 @@ public class UtilTmp {
                 System.out.printf(str);
                 fileWriter.append(str);
                 charcount = charcount - str.length();
-                if (charcount <= 0) {
+                if (trunk && charcount <= 0) {
                     charcount = max_length_file;
                     fileWriter.append("\n");
                 }
                 fileWriter.append("[");
-                System.out.println("[");
+                System.out.print("[");
 
                 for (Integer j : opcoesTestadas) {
                     String jstr = j.toString();
@@ -306,13 +318,13 @@ public class UtilTmp {
                     fileWriter.append(jstr);
                     fileWriter.append(",");
                     charcount = charcount - jstr.length() - 1;
-                    if (charcount <= 0) {
+                    if (trunk && charcount <= 0) {
                         charcount = max_length_file;
                         fileWriter.append("\n");
                     }
                 }
                 fileWriter.append("] ");
-                System.out.println("] ");
+                System.out.print("] ");
             }
             System.out.println();
             fileWriter.append("\n");
@@ -377,5 +389,13 @@ public class UtilTmp {
             }
         }
         return list;
+    }
+
+    static Map<Integer, List<Integer>> cloneMap(Map<Integer, List<Integer>> caminhosPossiveis) {
+        Map<Integer, List<Integer>> clone = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : caminhosPossiveis.entrySet()) {
+            clone.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+        return clone;
     }
 }
