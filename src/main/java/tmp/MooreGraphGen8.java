@@ -40,13 +40,13 @@ public class MooreGraphGen8 {
     private static final boolean descartarOpcoesNaoOptimais = true;
     private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
 //    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
-//    private static final boolean dumpResultadoPeriodicamente = true;
-    private static final boolean dumpResultadoPeriodicamente = false;
+    private static final boolean dumpResultadoPeriodicamente = true;
+//    private static final boolean dumpResultadoPeriodicamente = false;
 //
     private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
-    private static int K = 57;
-//    private static int K = 7;
+//    private static int K = 57;
+    private static int K = 7;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
@@ -168,7 +168,7 @@ public class MooreGraphGen8 {
             Integer marcoInicial = insumo.getEdgeCount();
 
             verboseInicioEtapa(insumo, trabalhoAtual, opcoesPossiveis);
-//            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
+            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
 
             while (trabalhoNaoAcabou(insumo, trabalhoAtual)
                     && temOpcoesDisponiveis(insumo, caminhoPercorrido,
@@ -180,7 +180,6 @@ public class MooreGraphGen8 {
 //                    System.out.println("Buscando proxima combinação");
 //                    continue;
 //                }
-
                 if (!caminhoPercorrido.containsKey(insumo.getEdgeCount())) {
                     caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
                 }
@@ -233,18 +232,22 @@ public class MooreGraphGen8 {
             bfsalg.labelDistances(insumo, v);
             System.out.printf("[%4d]: [", v);
             TreeSet<Integer> opcoesPossiveisOrdenada = new TreeSet<>(caminhosPossiveis.get(v));
-            for (Integer o : opcoesPossiveisOrdenada) {
-                int distancia = bfsalg.getDistance(insumo, o);
-                if (distancia == 1) {
-                    System.out.print('x');
-                } else if (distancia == 4) {
-                    System.out.print('4');
-                } else if (distancia == 2) {
-                    System.out.print('-');
+            for (Integer o : trabalhPorFazerOriginal) {
+                if (opcoesPossiveisOrdenada.contains(o)) {
+                    int distancia = bfsalg.getDistance(insumo, o);
+                    if (distancia == 1) {
+                        System.out.print('x');
+                    } else if (distancia == 4) {
+                        System.out.print('4');
+                    } else if (distancia == 2) {
+                        System.out.print('o');
+                    } else {
+                        System.out.print('#');
+                    }
+                    count[distancia]++;
                 } else {
                     System.out.print(' ');
                 }
-                count[distancia]++;
             }
             System.out.print("]\n");
         }
