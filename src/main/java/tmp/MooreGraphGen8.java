@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -20,8 +21,8 @@ import java.util.TreeMap;
  */
 public class MooreGraphGen8 {
 
-    private static final boolean verbose = true;
-//    private static final boolean verbose = false;
+//    private static final boolean verbose = true;
+    private static final boolean verbose = false;
     private static final boolean vebosePossibilidadesIniciais = true;
 //    private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
@@ -29,18 +30,19 @@ public class MooreGraphGen8 {
 //    private static final boolean rankearOpcoes = false;
     private static final boolean rankearOpcoes = true;
     private static final boolean anteciparVazio = true;
-//    private static final boolean falhaPrimeiroRollBack = true;
-    private static final boolean falhaPrimeiroRollBack = false;
-//    private static final boolean falhaPrimeiroCommit = true;
-    private static final boolean falhaPrimeiroCommit = false;
+    private static final boolean falhaPrimeiroRollBack = true;
+//    private static final boolean falhaPrimeiroRollBack = false;
+    private static final boolean falhaInCommitCount = true;
+//    private static final boolean falhaInCommitCount = false;
+    private static int falhaCommitCount = 1;
     private static final boolean descartarOpcoesNaoOptimais = true;
     private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
 //    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = false;
 //
     private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
-//    private static int K = 57;
-    private static int K = 7;
+    private static int K = 57;
+//    private static int K = 7;
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 //    private static BFSDistanceLabeler<Integer, Integer> bfsalg = new BFSDistanceLabeler<>();
     private static BFSTmp bfsalg = null;
@@ -118,8 +120,14 @@ public class MooreGraphGen8 {
 
         if (vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
+            List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
             for (Integer e : trabalhoPorFazer) {
-                System.out.printf("%d|%d|=%s\n", e, caminhosPossiveis.get(e).size(), caminhosPossiveis.get(e).toString());
+                List<Integer> at = caminhosPossiveis.get(e);
+                if (!at.equals(ant)) {
+                    System.out.println("----------------------------------------------------------------------------------------------");
+                }
+                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+                ant = at;
             }
 //            caminhosPossiveis.entrySet().forEach(e -> System.out.printf("{%d, %s},\n", e.getKey(), e.getValue().toString()));
         }
@@ -129,6 +137,9 @@ public class MooreGraphGen8 {
             Integer trabalhoAtual = trabalhoPorFazer.get(0);
             List<Integer> opcoesPossiveis = caminhosPossiveis.get(trabalhoAtual);
             Integer marcoInicial = insumo.getEdgeCount();
+
+            verboseInicioEtapa(insumo, trabalhoAtual, opcoesPossiveis);
+
             while (trabalhoNaoAcabou(insumo, trabalhoAtual)
                     && temOpcoesDisponiveis(insumo, caminhoPercorrido,
                             opcoesPossiveis, marcoInicial, trabalhoAtual)) {
@@ -158,6 +169,7 @@ public class MooreGraphGen8 {
                     desfazerUltimoTrabalho(caminhoPercorrido, trabalhoPorFazer, insumo, trabalhoAtual);
                 }
             }
+
             if (trabalhoAcabou(insumo, trabalhoAtual) && temFuturo(trabalhoAtual)) {
                 trabalhoPorFazer.remove(trabalhoAtual);
                 System.out.printf(".. %d [%d] \n", trabalhoAtual, insumo.getEdgeCount());
@@ -165,12 +177,8 @@ public class MooreGraphGen8 {
                 System.out.printf("!! %d \n", trabalhoAtual);
             }
             UtilTmp.printCurrentItme();
-            if (veboseFimEtapa) {
-                verboseFimEtapa(caminhoPercorrido);
-            }
-            if (falhaPrimeiroCommit) {
-                throw new IllegalStateException("Interrução forçada -- commit");
-            }
+
+            verboseFimEtapa(caminhoPercorrido, insumo, trabalhoAtual, opcoesPossiveis);
 
             if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
                 Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
@@ -181,12 +189,55 @@ public class MooreGraphGen8 {
         verboseResultadoFinal(caminhoPercorrido, insumo);
     }
 
+    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido, UndirectedSparseGraphTO insumo, Integer trabalhoAtual, List<Integer> opcoesPossiveis) throws IllegalStateException {
+        if (veboseFimEtapa) {
+            verboseFimEtapa(caminhoPercorrido);
+        }
+        if (falhaInCommitCount) {
+            verboseFimEtapa(caminhoPercorrido);
+            bfsalg.labelDistances(insumo, trabalhoAtual);
+            System.out.printf("\nbfs-map-opf[%4d]: [", trabalhoAtual);
+            TreeSet<Integer> tmp = new TreeSet<>(opcoesPossiveis);
+            for (Integer o : tmp) {
+                int distance = bfsalg.getDistance(insumo, o);
+                if (distance == 1) {
+                    System.out.print('x');
+                } else if (distance == 4) {
+                    System.out.print('4');
+                } else {
+                    System.out.print(' ');
+                }
+            }
+            System.out.print("]\n");
+            if (falhaCommitCount-- <= 0) {
+                throw new IllegalStateException("Interrução forçada -- commit");
+            }
+        }
+    }
+
+    private static void verboseInicioEtapa(UndirectedSparseGraphTO insumo, Integer trabalhoAtual, List<Integer> opcoesPossiveis) {
+        if (falhaInCommitCount) {
+            bfsalg.labelDistances(insumo, trabalhoAtual);
+            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
+            for (Integer o : opcoesPossiveis) {
+                if (bfsalg.getDistance(insumo, o) == 1) {
+                    System.out.print('x');
+                } else if (bfsalg.getDistance(insumo, o) == 4) {
+                    System.out.print('4');
+                } else {
+                    System.out.print(' ');
+                }
+            }
+            System.out.print("]\n");
+        }
+    }
+
     private static void observadorDeEtapa(Integer aresta, Integer trabalhoAtual, Integer melhorOpcaoLocal, UndirectedSparseGraphTO insumo, int numArestasIniciais, TreeMap<Integer, Collection<Integer>> caminhoPercorrido, int K1) {
         if (verbose) {
             System.out.printf("+[%5d](%4d,%4d) ", aresta, trabalhoAtual, melhorOpcaoLocal);
         }
         if (System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
-            System.out.println("Alert hour");
+            System.out.println("Alert hour ");
             UtilTmp.dumpString(estrategiaString);
             lastime = System.currentTimeMillis();
             //                        printVertAddArray(insumo, numArestasIniciais);
@@ -196,20 +247,27 @@ public class MooreGraphGen8 {
             String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, trabalhoAtual, melhorOpcaoLocal);
             UtilTmp.dumpString(lastAdd);
             UtilTmp.printCurrentItme();
+
+            if (longestresult < insumo.getEdgeCount()) {
+                longestresult = insumo.getEdgeCount();
+                System.out.print("new longest result: ");
+                System.out.println(longestresult);
+            }
+
             if (K1 > 7) {
                 UtilTmp.dumpOverrideString(insumo.getEdgeString(), ".graph.g8." + estrategiaString);
             }
         }
-        if (longestresult < insumo.getEdgeCount()) {
-            System.out.println("Alert longest");
-            longestresult = insumo.getEdgeCount();
-            lastime = System.currentTimeMillis();
-//                        printVertAddArray(insumo, numArestasIniciais);
-//                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
-            UtilTmp.dumpVertAddArray(insumo,
-                    numArestasIniciais,
-                    caminhoPercorrido);
-        }
+//        if (longestresult < insumo.getEdgeCount()) {
+//            System.out.println("Alert longest");
+//            longestresult = insumo.getEdgeCount();
+//            lastime = System.currentTimeMillis();
+////                        printVertAddArray(insumo, numArestasIniciais);
+////                        UtilTmp.dumpVertAddArray(insumo, numArestasIniciais);
+//            UtilTmp.dumpVertAddArray(insumo,
+//                    numArestasIniciais,
+//                    caminhoPercorrido);
+//        }
     }
 
     public static void initialLoad(Collection<Integer> vertices,
