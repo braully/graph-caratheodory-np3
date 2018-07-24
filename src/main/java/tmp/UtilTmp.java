@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,8 +36,18 @@ public class UtilTmp {
     public static final long ALERT_HOUR_6 = 1000 * 60 * 60 * 6;
     public static final long ALERT_HOUR_12 = 1000 * 60 * 60 * 12;
 
+    public static String hostname = "";
+
     private static final DateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Queue<Integer> queue = new LinkedList<Integer>();
+
+    static {
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     public static void printArray(Integer[] arr) {
         int len = arr.length;
@@ -123,6 +135,8 @@ public class UtilTmp {
         System.out.println(strt);
         try {
             FileWriter fileWriter = new FileWriter(fileDump, true);
+            fileWriter.append(hostname);
+            fileWriter.append(": ");
             if (strt.length() > max_length_file) {
                 int length = strt.length();
                 for (int i = 0; i < length; i += max_length_file) {
@@ -142,6 +156,8 @@ public class UtilTmp {
         System.out.println(strt);
         try {
             FileWriter fileWriter = new FileWriter(fileDump + fileoffset);
+            fileWriter.append(hostname);
+            fileWriter.append(": ");
             if (strt.length() > max_length_file) {
                 int length = strt.length();
                 for (int i = 0; i < length; i += max_length_file) {
@@ -161,6 +177,8 @@ public class UtilTmp {
         System.out.println(strt);
         try {
             FileWriter fileWriter = new FileWriter(fileDump + fileoffset, true);
+            fileWriter.append(hostname);
+            fileWriter.append(": ");
             if (strt.length() > max_length_file) {
                 int length = strt.length();
                 for (int i = 0; i < length; i += max_length_file) {
@@ -292,6 +310,9 @@ public class UtilTmp {
         System.out.print("Dump-edge: ");
         try {
             FileWriter fileWriter = new FileWriter(fileDump + offset, true);
+            fileWriter.append(hostname);
+            fileWriter.append(": ");
+
             int charcount = max_length_file;
 
             System.out.print("vert-add: ");
@@ -338,6 +359,8 @@ public class UtilTmp {
         System.out.print("Dump-edge: ");
         try {
             FileWriter fileWriter = new FileWriter(fileDump, true);
+            fileWriter.append(hostname);
+            fileWriter.append(": ");
             int charcount = max_length_file;
             System.out.print("vert-add: ");
             fileWriter.append("vert-add: ");
