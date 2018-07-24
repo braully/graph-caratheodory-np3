@@ -25,8 +25,8 @@ public class MooreGraphGen8 {
 
 //    private static final boolean verbose = true;
     private static final boolean verbose = false;
-//    private static final boolean vebosePossibilidadesIniciais = true;
-    private static final boolean vebosePossibilidadesIniciais = false;
+    private static final boolean vebosePossibilidadesIniciais = true;
+//    private static final boolean vebosePossibilidadesIniciais = false;
     private static final boolean veboseFimEtapa = false;
 //    private static final boolean veboseFimEtapa = true;
 //    private static final boolean rankearOpcoes = false;
@@ -223,16 +223,23 @@ public class MooreGraphGen8 {
                 Collections.sort(trabalhoPorFazer);
             }
         }
+        printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
         verboseResultadoFinal(caminhoPercorrido, insumo);
     }
 
     private static void printMapOpcoes(List<Integer> trabalhPorFazerOriginal, UndirectedSparseGraphTO insumo, Map<Integer, List<Integer>> caminhosPossiveis) {
         int[] count = new int[]{0, 0, 0, 0, 0};
+
+//        TreeSet<Integer> trabalhPorFazerOriginalOrdenado = new TreeSet<>(trabalhPorFazerOriginal);
+        int linha = 0;
         for (Integer v : trabalhPorFazerOriginal) {
+//        for (Integer v : trabalhPorFazerOriginalOrdenado) {
             bfsalg.labelDistances(insumo, v);
             System.out.printf("[%4d]: [", v);
             TreeSet<Integer> opcoesPossiveisOrdenada = new TreeSet<>(caminhosPossiveis.get(v));
+            int coluna = 0;
             for (Integer o : trabalhPorFazerOriginal) {
+                if (coluna >= linha) {
 //                if (opcoesPossiveisOrdenada.contains(o)) {
                     int distancia = bfsalg.getDistance(insumo, o);
                     if (distancia == 1) {
@@ -241,14 +248,21 @@ public class MooreGraphGen8 {
                         System.out.print('4');
                     } else if (distancia == 2) {
                         System.out.print(' ');
-                    } else {
+                    } else if (distancia == 3) {
                         System.out.print('#');
+                    } else {
+                        System.out.print('\\');
                     }
                     count[distancia]++;
 //                } else {
 //                    System.out.print(' ');
 //                }
+                } else {
+                    System.out.print(' ');
+                }
+                coluna++;
             }
+            linha++;
             System.out.print("]\n");
         }
         System.out.printf("Total count: d4=%d d3=%d d2=%d \n", count[4], count[3], count[2], count[1]);
