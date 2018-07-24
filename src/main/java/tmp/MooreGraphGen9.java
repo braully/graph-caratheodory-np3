@@ -27,19 +27,19 @@ public class MooreGraphGen9 {
     private static final boolean verbose = false;
 //    private static final boolean vebosePossibilidadesIniciais = true;
     private static final boolean vebosePossibilidadesIniciais = false;
-//    private static final boolean veboseFimEtapa = false;
-    private static final boolean veboseFimEtapa = true;
+    private static final boolean veboseFimEtapa = false;
+//    private static final boolean veboseFimEtapa = true;
 //    private static final boolean rankearOpcoes = false;
     private static final boolean verboseRankingOption = false;
     private static final boolean rankearOpcoes = true;
-    private static final int rankearOpcoesProfundidade = 3;
+    private static final int rankearOpcoesProfundidade = 2;
 //    private static final boolean rankearSegundaOpcoes = true;
     private static final boolean rankearSegundaOpcoes = false;
     private static final boolean anteciparVazio = true;
 //    private static final boolean falhaPrimeiroRollBack = true;
     private static final boolean falhaPrimeiroRollBack = false;
-    private static final boolean falhaInCommitCount = true;
-//    private static final boolean falhaInCommitCount = false;
+//    private static final boolean falhaInCommitCount = true;
+    private static final boolean falhaInCommitCount = false;
     private static int falhaCommitCount = 0;
     private static final boolean descartarOpcoesNaoOptimais = true;
     private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
@@ -436,10 +436,13 @@ public class MooreGraphGen9 {
         }
         if (descartarOpcoesNaoOptimais && !processamento.caminhoPercorrido.get(posicao).isEmpty()) {
             Integer escolhaAnterior = ((List<Integer>) processamento.caminhoPercorrido.get(posicao)).get(0);
-            Integer rankingEscolhaAnterior = processamento.historicoRanking.get(posicao).get(escolhaAnterior).get(0);
-            if (processamento.historicoRanking.get(posicao).get(melhorOpcao).get(0) < rankingEscolhaAnterior) {
-                rbcount[3]++;
-                return false;
+            List<Integer> rankingAnterior = processamento.historicoRanking.get(posicao).get(escolhaAnterior);
+            if (rankingAnterior != null) {
+                Integer rankingEscolhaAnterior = rankingAnterior.get(0);
+                if (processamento.historicoRanking.get(posicao).get(melhorOpcao).get(0) < rankingEscolhaAnterior) {
+                    rbcount[3]++;
+                    return false;
+                }
             }
         }
         return true;
@@ -561,8 +564,8 @@ public class MooreGraphGen9 {
                     }
 //                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
 //                    if (trabalhoAtual.equals(18)) {
-                    if (verboseRankingOption || posicaoAtual == 9505) {
-//                    if (verboseRankingOption) {
+//                    if (verboseRankingOption || posicaoAtual == 9505) {
+                    if (verboseRankingOption) {
                         System.out.printf("Ranking (%4d,%4d): ", val, processamento.trabalhoAtual);
                         UtilTmp.printArray(processamento.bfsRanking.depthcount);
 //                        if (rankearSegundaOpcoes) {
