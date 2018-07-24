@@ -569,7 +569,8 @@ public class MooreGraphGen8 {
                     }
 //                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
 //                    if (trabalhoAtual.equals(18)) {
-                    if (verboseRankingOption || posicaoAtual == 9505) {
+//                    if (verboseRankingOption || posicaoAtual == 9505) {
+                    if (verboseRankingOption) {
                         System.out.printf("Ranking (%4d,%4d): ", val, trabalhoAtual);
                         UtilTmp.printArray(bfsRanking.depthcount);
                     }
