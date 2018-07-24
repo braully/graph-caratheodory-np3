@@ -233,21 +233,21 @@ public class MooreGraphGen8 {
             System.out.printf("[%4d]: [", v);
             TreeSet<Integer> opcoesPossiveisOrdenada = new TreeSet<>(caminhosPossiveis.get(v));
             for (Integer o : trabalhPorFazerOriginal) {
-                if (opcoesPossiveisOrdenada.contains(o)) {
+//                if (opcoesPossiveisOrdenada.contains(o)) {
                     int distancia = bfsalg.getDistance(insumo, o);
                     if (distancia == 1) {
                         System.out.print('x');
                     } else if (distancia == 4) {
                         System.out.print('4');
                     } else if (distancia == 2) {
-                        System.out.print('o');
+                        System.out.print(' ');
                     } else {
                         System.out.print('#');
                     }
                     count[distancia]++;
-                } else {
-                    System.out.print(' ');
-                }
+//                } else {
+//                    System.out.print(' ');
+//                }
             }
             System.out.print("]\n");
         }
