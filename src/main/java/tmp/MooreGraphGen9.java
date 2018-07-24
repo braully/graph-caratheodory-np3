@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
  */
 public class MooreGraphGen9 {
 
-    private static final boolean verbose = true;
-//    private static final boolean verbose = false;
+//    private static final boolean verbose = true;
+    private static final boolean verbose = false;
 //    private static final boolean vebosePossibilidadesIniciais = true;
     private static final boolean vebosePossibilidadesIniciais = false;
 //    private static final boolean veboseFimEtapa = false;
@@ -32,7 +32,9 @@ public class MooreGraphGen9 {
 //    private static final boolean rankearOpcoes = false;
     private static final boolean verboseRankingOption = false;
     private static final boolean rankearOpcoes = true;
-    private static final int rankearOpcoesProfundidade = 1;
+    private static final int rankearOpcoesProfundidade = 3;
+//    private static final boolean rankearSegundaOpcoes = true;
+    private static final boolean rankearSegundaOpcoes = false;
     private static final boolean anteciparVazio = true;
 //    private static final boolean falhaPrimeiroRollBack = true;
     private static final boolean falhaPrimeiroRollBack = false;
@@ -45,7 +47,7 @@ public class MooreGraphGen9 {
     private static final boolean dumpResultadoPeriodicamente = true;
 //    private static final boolean dumpResultadoPeriodicamente = false;
 //
-    private static final String estrategiaString = (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
+    private static final String estrategiaString = (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
     private static int K = 57;
 //    private static int K = 7;
@@ -87,7 +89,8 @@ public class MooreGraphGen9 {
 
         BFSTmp bfsalg = null;
         BFSTmp bfsRanking = null;
-        Integer[] ranking = null;
+        BFSTmp bfsRankingSegundaOpcao = null;
+//        Integer[] ranking = null;
         long longestresult = 11948;
         private Integer melhorOpcaoLocal;
 
@@ -104,7 +107,8 @@ public class MooreGraphGen9 {
 
         processamento.bfsalg = new BFSTmp(processamento.numVertices);
         processamento.bfsRanking = new BFSTmp(processamento.numVertices);
-        processamento.ranking = new Integer[processamento.numVertices];
+        processamento.bfsRankingSegundaOpcao = new BFSTmp(processamento.numVertices);
+//        processamento.ranking = new Integer[processamento.numVertices];
 
         if (K > 7) {
             processamento.trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
@@ -296,7 +300,7 @@ public class MooreGraphGen9 {
             UndirectedSparseGraphTO insumo, Integer trabalhoAtual,
             List<Integer> opcoesPossiveis) throws IllegalStateException {
         if (veboseFimEtapa) {
-            verboseFimEtapa(caminhoPercorrido);
+            verboseFimEtapa(caminhoPercorrido, insumo);
         }
         if (falhaInCommitCount) {
 //            verboseFimEtapa(caminhoPercorrido);
@@ -523,14 +527,14 @@ public class MooreGraphGen9 {
             if (opcoesPassadas.isEmpty() || rankingAtual.isEmpty()) {
                 rankingAtual.clear();
                 int i = 0;
-                for (i = 0; i < processamento.ranking.length; i++) {
-                    processamento.ranking[i] = 0;
-                }
+//                for (i = 0; i < processamento.ranking.length; i++) {
+//                    processamento.ranking[i] = 0;
+//                }
                 for (i = 0; i < processamento.opcoesPossiveis.size(); i++) {
                     Integer val = processamento.opcoesPossiveis.get(i);
                     if (bfs[val] == 4) {
                         processamento.bfsRanking.bfsRanking(processamento.insumo, processamento.trabalhoAtual, val);
-                        processamento.ranking[val] = processamento.bfsRanking.depthcount[4];
+//                        processamento.ranking[val] = processamento.bfsRanking.depthcount[4];
                         List<Integer> listRankingVal = rankingAtual.get(val);
                         if (listRankingVal == null) {
                             listRankingVal = new ArrayList<>(4);
@@ -541,6 +545,12 @@ public class MooreGraphGen9 {
                         listRankingVal.add(processamento.bfsRanking.depthcount[4]);
                         listRankingVal.add(-processamento.bfsRanking.depthcount[3]);
                         listRankingVal.add(processamento.bfsRanking.depthcount[2]);
+                        if (rankearSegundaOpcoes) {
+                            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val, processamento.trabalhoAtual);
+                            int f = processamento.bfsRankingSegundaOpcao.depthcount[3];
+                            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val);
+                            listRankingVal.add(processamento.bfsRankingSegundaOpcao.depthcount[3] - f);
+                        }
 //                        listRankingVal.add(bfsRanking.depthcount[1]);
 //                    ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[3];
 //                    ranking[val] = bfsRanking.depthcount[4] * 1000 + bfsRanking.depthcount[3];
@@ -551,10 +561,17 @@ public class MooreGraphGen9 {
                     }
 //                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
 //                    if (trabalhoAtual.equals(18)) {
-//                    if (verboseRankingOption || posicaoAtual == 9505) {
-                    if (verboseRankingOption) {
+                    if (verboseRankingOption || posicaoAtual == 9505) {
+//                    if (verboseRankingOption) {
                         System.out.printf("Ranking (%4d,%4d): ", val, processamento.trabalhoAtual);
                         UtilTmp.printArray(processamento.bfsRanking.depthcount);
+//                        if (rankearSegundaOpcoes) {
+//                            int f = processamento.bfsRankingSegundaOpcao.depthcount[3];
+//                            UtilTmp.printArray(processamento.bfsRankingSegundaOpcao.depthcount);
+//                            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val);
+//                            UtilTmp.printArray(processamento.bfsRankingSegundaOpcao.depthcount);
+//                            listRankingVal.add(processamento.bfsRankingSegundaOpcao.depthcount[3]-f);
+//                        }
                     }
 //                    }
                 }
@@ -678,10 +695,10 @@ public class MooreGraphGen9 {
         System.out.println(edgeString);
     }
 
-    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+    private static void verboseFimEtapa(TreeMap<Integer, Collection<Integer>> caminhoPercorrido, UndirectedSparseGraphTO insumo) {
         System.out.println("------------------------------------------------------------------------------------------------");
         System.out.print("Caminhos percorrido: ");
-        caminhoPercorrido.entrySet().forEach(e -> System.out.printf("%d=%s\n", e.getKey(), e.getValue().toString()));
+        caminhoPercorrido.entrySet().forEach(e -> System.out.printf("%d(%s)=%s\n", e.getKey(), insumo.getEndpoints(e.getKey()), e.getValue().toString()));
         System.out.println();
     }
 
