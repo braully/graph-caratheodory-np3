@@ -94,6 +94,8 @@ public class MooreGraphGen8 {
         Map<Integer, List<Integer>> caminhosPossiveisOriginal = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
+
+        TreeMap<Integer, Collection<Integer>> caminhoPercorridoLoad = new TreeMap<>();
         int numArestasIniciais = graphTemplate.getEdgeCount();
         int numVertices = vertices.size();
         int len = numArestas - numArestasIniciais;
@@ -121,6 +123,15 @@ public class MooreGraphGen8 {
         UndirectedSparseGraphTO insumo = graphTemplate.clone();
         ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveisOriginal);
 
+        List<Integer> trabalhPorFazerOriginal = new ArrayList<>();
+
+        if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
+            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
+        } else {
+            Collections.sort(trabalhoPorFazer);
+        }
+        trabalhPorFazerOriginal.addAll(trabalhoPorFazer);
+
         //Marco zero
         caminhoPercorrido.put(insumo.getEdgeCount(), new ArrayList<>());
         Set<Integer> verificarTrabalhoRealizado = new HashSet<>();
@@ -137,32 +148,31 @@ public class MooreGraphGen8 {
                 System.out.print(str);
                 System.out.print("->");
                 if (matcher.matches()) {
-                    Integer numEdge = Integer.parseInt(matcher.group(2));
+                    Integer numEdge = Integer.parseInt(matcher.group(1));
                     Integer e1 = Integer.parseInt(matcher.group(2));
                     Integer e2 = Integer.parseInt(matcher.group(3));
                     //System.out.println(matcher.group(3));
                     List<Integer> caminho = UtilTmp.strToList(matcher.group(4));
                     Integer aresta = (Integer) insumo.addEdge(e1, e2);
-                    if (numEdge.equals(aresta)) {
+                    if (!numEdge.equals(aresta)) {
                         throw new IllegalStateException("Incorrect load info");
                     }
                     caminhoPercorrido.put(aresta, caminho);
                     System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
                     System.out.print(caminho);
                     System.out.print("  ");
+                    if (insumo.degree(e1) == K) {
+                        trabalhoPorFazer.remove(e1);
+                    }
+                    if (insumo.degree(e2) == K) {
+                        trabalhoPorFazer.remove(e2);
+                    }
+                    Map<Integer, List<Integer>> rankingAtual = historicoRanking.getOrDefault(aresta, new HashMap<>());
+                    historicoRanking.putIfAbsent(aresta, rankingAtual);
 //                    System.out.println(matcher.group(4));
                 }
             }
         }
-
-        List<Integer> trabalhPorFazerOriginal = new ArrayList<>();
-
-        if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
-            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
-        } else {
-            Collections.sort(trabalhoPorFazer);
-        }
-        trabalhPorFazerOriginal.addAll(trabalhoPorFazer);
 
         if (vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
@@ -435,11 +445,20 @@ public class MooreGraphGen8 {
             }
         }
         if (descartarOpcoesNaoOptimais && !caminhoPercorrido.get(posicao).isEmpty()) {
-            Integer escolhaAnterior = ((List<Integer>) caminhoPercorrido.get(posicao)).get(0);
-            Integer rankingEscolhaAnterior = historicoRanking.get(posicao).get(escolhaAnterior).get(0);
-            if (historicoRanking.get(posicao).get(melhorOpcao).get(0) < rankingEscolhaAnterior) {
-                rbcount[3]++;
-                return false;
+            List<Integer> rankingAtual = (List<Integer>) caminhoPercorrido.get(posicao);
+            Integer escolhaAnterior = rankingAtual.get(0);
+            if (escolhaAnterior == null) {
+                System.out.printf("Posição %d valor %d ranking: \n", posicao, escolhaAnterior, rankingAtual);
+            }
+            List<Integer> rankingHistorico = historicoRanking.get(posicao).get(escolhaAnterior);
+            if (rankingHistorico != null) {
+                Integer rankingEscolhaAnterior = rankingHistorico.get(0);
+                if (historicoRanking.get(posicao).get(melhorOpcao).get(0) < rankingEscolhaAnterior) {
+                    rbcount[3]++;
+                    return false;
+                }
+            } else {
+                System.out.printf("Ranking historico is null -- Posição %d valor %d ranking-historico: \n", posicao, escolhaAnterior, rankingHistorico);
             }
         }
         return true;
