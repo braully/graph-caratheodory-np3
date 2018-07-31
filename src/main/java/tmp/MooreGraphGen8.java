@@ -154,18 +154,18 @@ public class MooreGraphGen8 {
                     List<Integer> caminho = UtilTmp.strToList(matcher.group(4));
                     Integer aresta = (Integer) insumo.addEdge(e1, e2);
                     if (!numEdge.equals(aresta)) {
-                        throw new IllegalStateException("Incorrect load info");
+                        throw new IllegalStateException(String.format("Incorrect load info edge %d expected %d for: %s ", aresta, numEdge, str));
                     }
                     caminhoPercorrido.put(aresta, caminho);
                     System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
                     System.out.print(caminho);
                     System.out.print("  ");
-                    if (insumo.degree(e1) == K) {
-                        trabalhoPorFazer.remove(e1);
-                    }
-                    if (insumo.degree(e2) == K) {
-                        trabalhoPorFazer.remove(e2);
-                    }
+//                    if (insumo.degree(e1) == K) {
+//                        trabalhoPorFazer.remove(e1);
+//                    }
+//                    if (insumo.degree(e2) == K) {
+//                        trabalhoPorFazer.remove(e2);
+//                    }
                     Map<Integer, List<Integer>> rankingAtual = historicoRanking.getOrDefault(aresta, new HashMap<>());
                     historicoRanking.putIfAbsent(aresta, rankingAtual);
 //                    System.out.println(matcher.group(4));
