@@ -94,8 +94,7 @@ public class MooreGraphGen8 {
         Map<Integer, List<Integer>> caminhosPossiveisOriginal = null;
         TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
         Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
-
-        TreeMap<Integer, Collection<Integer>> caminhoPercorridoLoad = new TreeMap<>();
+//        TreeMap<Integer, Collection<Integer>> caminhoPercorridoLoad = new TreeMap<>();
         int numArestasIniciais = graphTemplate.getEdgeCount();
         int numVertices = vertices.size();
         int len = numArestas - numArestasIniciais;
