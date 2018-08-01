@@ -475,7 +475,7 @@ public class BatchExecuteOperation implements IBatchExecute {
         }
         return ret;
     }
-    
+
     static List<File> sortFileArrayBySize(File[] files) {
         List<File> fileList = new ArrayList<>(Arrays.asList(files));
         Collections.sort(fileList, new Comparator<File>() {
