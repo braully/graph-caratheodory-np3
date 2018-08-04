@@ -7,14 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -22,8 +18,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import static tmp.MooreGraphGen9.getEstrategiaString;
-import static tmp.MooreGraphGen9.initialLoad;
 
 /**
  *
@@ -32,15 +26,31 @@ import static tmp.MooreGraphGen9.initialLoad;
 public class PipeGraph {
 
     private static boolean verbose = false;
+    private static final boolean vebosePossibilidadesIniciais = false;
+    private static final boolean veboseFimEtapa = false;
+    private static final boolean verboseRankingOption = false;
+
+    private static final boolean rankearOpcoes = true;
+    private static final int rankearOpcoesProfundidade = 2;
+    private static final boolean rankearSegundaOpcoes = false;
+    private static final boolean anteciparVazio = true;
+    private static final boolean falhaPrimeiroRollBack = false;
+    private static final boolean falhaInCommitCount = false;
+    private static int falhaCommitCount = 0;
+    private static final boolean descartarOpcoesNaoOptimais = true;
+    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+    private static final boolean dumpResultadoPeriodicamente = true;
 
     private static BFSTmp bfsalg = null;
-    private static boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
 
     public static void main(String... args) {
 
         Option input = new Option("i", "input", true, "input file graph");
         Options options = new Options();
         options.addOption(input);
+
+        Option loadprocess = new Option("l", "load", true, "load state process");
+        options.addOption(loadprocess);
 
         Option cont = new Option("c", "continue", false, "continue from last processing");
         cont.setRequired(false);
@@ -74,9 +84,6 @@ public class PipeGraph {
 
         String inputFilePath = cmd.getOptionValue("input");
         if (inputFilePath == null) {
-//            formatter.printHelp("PipeGraph", options);
-//            System.out.println("input file requerid");
-//            System.exit(1);
             inputFilePath = "/home/strike/Nuvem/nextcloud/Workspace-nuvem/maior-grafo-direto-striped.es";
         }
 
