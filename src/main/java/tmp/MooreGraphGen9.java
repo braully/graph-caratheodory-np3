@@ -47,7 +47,6 @@ public class MooreGraphGen9 {
     private static final boolean dumpResultadoPeriodicamente = true;
 //    private static final boolean dumpResultadoPeriodicamente = false;
 //
-    private static final String estrategiaString = (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
 
     private static int K = 57;
 //    private static int K = 7;
@@ -61,12 +60,12 @@ public class MooreGraphGen9 {
         if (K == 7) {
             NUM_ARESTAS = ((K * K + 1) * K) / 2;
             UndirectedSparseGraphTO graphTemplate = HoffmanGraphGen.subgraph;
-            generateGraph(K, NUM_ARESTAS, graphTemplate, args);
+            generateGrapStrategy1(K, NUM_ARESTAS, graphTemplate, args);
         }
         if (K == 57) {
             NUM_ARESTAS = ((K * K + 1) * K) / 2;
             UndirectedSparseGraphTO graphTemplate = LGMGen.subgraph;
-            generateGraph(K, NUM_ARESTAS, graphTemplate, args);
+            generateGrapStrategy1(K, NUM_ARESTAS, graphTemplate, args);
         }
 
     }
@@ -96,7 +95,7 @@ public class MooreGraphGen9 {
 
     }
 
-    private static void generateGraph(int K, int numArestas,
+    private static void generateGrapStrategy1(int K, int numArestas,
             UndirectedSparseGraphTO graphTemplate, String... args) {
 
         Processamento processamento = new Processamento();
@@ -238,7 +237,7 @@ public class MooreGraphGen9 {
                 System.out.printf("!! %d \n", processamento.trabalhoAtual);
             }
             System.out.printf("rbcount[%d,%d,%d,%d]=%d ", rbcount[0], rbcount[1], rbcount[2], rbcount[3], (rbcount[0] + rbcount[1] + rbcount[2] + rbcount[3]));
-            System.out.println(estrategiaString);
+            System.out.println(getEstrategiaString());
             UtilTmp.printCurrentItme();
             verboseFimEtapa(processamento.caminhoPercorrido, processamento.insumo, processamento.trabalhoAtual, processamento.opcoesPossiveis);
 
@@ -348,13 +347,13 @@ public class MooreGraphGen9 {
         }
         if (dumpResultadoPeriodicamente && System.currentTimeMillis() - lastime > UtilTmp.ALERT_HOUR) {
             System.out.println("Alert hour ");
-            UtilTmp.dumpString(estrategiaString);
-            UtilTmp.dumpString(String.format("rbcount[%d,%d,%d,%d]=%d", rbcount[0], rbcount[1], rbcount[2], rbcount[3], (rbcount[0] + rbcount[1] + rbcount[2] + rbcount[3])));
+            UtilTmp.dumpStringIdentified(getEstrategiaString());
+            UtilTmp.dumpString(String.format(" rbcount[%d,%d,%d,%d]=%d", rbcount[0], rbcount[1], rbcount[2], rbcount[3], (rbcount[0] + rbcount[1] + rbcount[2] + rbcount[3])));
             rbcount[0] = rbcount[1] = rbcount[2] = rbcount[3] = 0;
             lastime = System.currentTimeMillis();
             //                        printVertAddArray(insumo, numArestasIniciais);
 
-            String lastAdd = String.format("last+[%5d](%4d,%4d) \n", aresta, processamento.trabalhoAtual, melhorOpcaoLocal);
+            String lastAdd = String.format(" last+[%5d](%4d,%4d) \n", aresta, processamento.trabalhoAtual, melhorOpcaoLocal);
             UtilTmp.dumpString(lastAdd);
             UtilTmp.printCurrentItme();
 
@@ -369,7 +368,7 @@ public class MooreGraphGen9 {
                         processamento.numArestasIniciais,
                         processamento.caminhoPercorrido);
                 if (K > 7) {
-                    UtilTmp.dumpOverrideString(processamento.insumo.getEdgeString(), ".graph.g9." + estrategiaString);
+                    UtilTmp.dumpOverrideString(processamento.insumo.getEdgeString(), ".graph.g9." + getEstrategiaString());
                 }
             }
         }
@@ -721,15 +720,7 @@ public class MooreGraphGen9 {
         System.out.println();
     }
 
-    private static void printVertAddArray(UndirectedSparseGraphTO lastgraph, int numArestasIniciais) {
-        System.out.print("vert-add: ");
-        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-            System.out.printf("%d, ", lastgraph.getEndpoints(i).getFirst());
-        }
-        System.out.println(" | ");
-        for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-            System.out.printf("%d, ", lastgraph.getEndpoints(i).getSecond());
-        }
-        System.out.println();
+    public static String getEstrategiaString() {
+        return (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
     }
 }

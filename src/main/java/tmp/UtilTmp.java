@@ -129,13 +129,32 @@ public class UtilTmp {
         return -1;
     }
 
-    public static void dumpString(String strt) {
+    public static void dumpStringIdentified(String strt) {
         System.out.print("Dump-str: ");
         System.out.println(strt);
         try {
             FileWriter fileWriter = new FileWriter(fileDump, true);
             fileWriter.append(hostname);
             fileWriter.append(": ");
+            if (strt.length() > max_length_file) {
+                int length = strt.length();
+                for (int i = 0; i < length; i += max_length_file) {
+                    fileWriter.append(strt.substring(i, Math.min(length, i + max_length_file))).append("\n");
+                }
+            } else {
+                fileWriter.append(strt);
+            }
+            fileWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void dumpString(String strt) {
+        System.out.print("Dump-str: ");
+        System.out.println(strt);
+        try {
+            FileWriter fileWriter = new FileWriter(fileDump, true);
             if (strt.length() > max_length_file) {
                 int length = strt.length();
                 for (int i = 0; i < length; i += max_length_file) {

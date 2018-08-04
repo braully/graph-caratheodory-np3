@@ -101,7 +101,8 @@ public class GraphSkelTest extends TestCase {
         System.out.println();
         System.out.println("Estrategia-3");
         //        int k = 2;
-        int k = 57;
+//        int k = 57;
+        int k = 7;
 
         int ko = k - 2;
         int maxvert = k * k;

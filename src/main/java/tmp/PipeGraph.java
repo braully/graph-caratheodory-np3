@@ -1,5 +1,20 @@
 package tmp;
 
+import com.github.braully.graph.UndirectedSparseGraphTO;
+import com.github.braully.graph.UtilGraph;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -7,6 +22,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import static tmp.MooreGraphGen9.getEstrategiaString;
+import static tmp.MooreGraphGen9.initialLoad;
 
 /**
  *
@@ -14,9 +31,14 @@ import org.apache.commons.cli.ParseException;
  */
 public class PipeGraph {
 
+    private static boolean verbose = false;
+
+    private static BFSTmp bfsalg = null;
+    private static boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
+
     public static void main(String... args) {
 
-        Option input = new Option("i", "input", true, "input file or directory");
+        Option input = new Option("i", "input", true, "input file graph");
         Options options = new Options();
         options.addOption(input);
 
@@ -26,6 +48,9 @@ public class PipeGraph {
 
         Option verb = new Option("v", "verbose", false, "verbose processing");
         options.addOption(verb);
+
+        Option poss = new Option("p", "possibility", false, "check possiblities");
+        options.addOption(poss);
 
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
@@ -37,12 +62,132 @@ public class PipeGraph {
 
         try {
             cmd = parser.parse(options, args);
-            formatter.printHelp("PipeGraph", options);
+//            formatter.printHelp("PipeGraph", options);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("PipeGraph", options);
             System.exit(1);
             return;
+        }
+
+        boolean contProcess = false;
+
+        String inputFilePath = cmd.getOptionValue("input");
+        if (inputFilePath == null) {
+//            formatter.printHelp("PipeGraph", options);
+//            System.out.println("input file requerid");
+//            System.exit(1);
+            inputFilePath = "/home/strike/Nuvem/nextcloud/Workspace-nuvem/maior-grafo-direto-striped.es";
+        }
+
+        UndirectedSparseGraphTO graph = UtilGraph.loadGraph(new File(inputFilePath));
+        Collection<Integer> vertices = (Collection<Integer>) graph.getVertices();
+        LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
+        Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
+
+        int k = 0;
+        for (Integer v : vertices) {
+            int dg = graph.degree(v);
+            if (dg > k) {
+                k = dg;
+            }
+        }
+
+        bfsalg = new BFSTmp(vertices.size());
+        initialLoad(vertices, graph, trabalhoPorFazer, caminhosPossiveis, k);
+        MooreGraphGen8.ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new MooreGraphGen8.ComparatorTrabalhoPorFazer(caminhosPossiveis);
+
+        if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
+            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
+        } else {
+            Collections.sort(trabalhoPorFazer);
+        }
+
+        System.out.print("Trabalho por fazer: \n");
+        for (Integer e : trabalhoPorFazer) {
+            System.out.printf("%d (%d), ", e, graph.degree(e));
+        }
+        System.out.println();
+
+        System.out.print("Caminhos possiveis: \n");
+        List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
+        for (Integer e : trabalhoPorFazer) {
+            List<Integer> at = caminhosPossiveis.get(e);
+            if (!at.equals(ant)) {
+                System.out.println("----------------------------------------------------------------------------------------------");
+            }
+            System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+            ant = at;
+            int dv = k - graph.degree(e);
+            if (dv > at.size()) {
+//                throw new IllegalStateException("Grafo inviavel: vetrice " + e + " dv=" + dv + " possi(" + at.size() + ")=" + at);
+            }
+        }
+
+        System.out.println();
+
+        if (cmd.hasOption("continue")) {
+            contProcess = true;
+        }
+
+        if (cmd.hasOption("possibility")) {
+
+        }
+
+        if (cmd.hasOption("verbose")) {
+            verbose = true;
+        }
+    }
+
+    private static class Processamento {
+
+        UndirectedSparseGraphTO insumo;
+        Collection<Integer> vertices;
+        LinkedList<Integer> trabalhoPorFazer;
+        Map<Integer, List<Integer>> caminhosPossiveis;
+        Map<Integer, List<Integer>> caminhosPossiveisOriginal;
+        TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
+        Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
+        int numArestasIniciais;
+        int numVertices;
+        int len;
+        Integer trabalhoAtual;
+        List<Integer> opcoesPossiveis;
+        int marcoInicial;
+
+        BFSTmp bfsalg = null;
+        BFSTmp bfsRanking = null;
+        BFSTmp bfsRankingSegundaOpcao = null;
+        long longestresult = 12160;
+        private Integer melhorOpcaoLocal;
+
+    }
+
+    public static void initialLoad(Collection<Integer> vertices,
+            UndirectedSparseGraphTO graphTemplate,
+            LinkedList<Integer> trabalhoPorFazer,
+            Map<Integer, List<Integer>> caminhosPossiveis, int k) {
+        System.out.println("Calculando trabalho a fazer");
+
+        for (Integer v : vertices) {
+            int remain = k - graphTemplate.degree(v);
+            if (remain > 0) {
+                trabalhoPorFazer.add(v);
+                caminhosPossiveis.put(v, new ArrayList<>());
+            }
+        }
+
+        System.out.println("Calculando possibilidades de caminho");
+        for (int i = 0; i < trabalhoPorFazer.size(); i++) {
+            Integer v = trabalhoPorFazer.get(i);
+            bfsalg.labelDistances(graphTemplate, v);
+            caminhosPossiveis.put(v, new ArrayList<>());
+            for (int j = i; j < trabalhoPorFazer.size(); j++) {
+                Integer u = trabalhoPorFazer.get(j);
+                if (bfsalg.getDistance(graphTemplate, u) == 4) {
+                    caminhosPossiveis.get(v).add(u);
+                }
+            }
         }
     }
 }
