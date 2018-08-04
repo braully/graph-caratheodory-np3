@@ -2,15 +2,24 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
+import edu.uci.ics.jung.graph.util.Pair;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -25,25 +34,10 @@ import org.apache.commons.cli.ParseException;
  */
 public class PipeGraph {
 
-    private static boolean verbose = false;
-    private static final boolean vebosePossibilidadesIniciais = false;
-    private static final boolean veboseFimEtapa = false;
-    private static final boolean verboseRankingOption = false;
-
-    private static final boolean rankearOpcoes = true;
-    private static final int rankearOpcoesProfundidade = 2;
-    private static final boolean rankearSegundaOpcoes = false;
-    private static final boolean anteciparVazio = true;
-    private static final boolean falhaPrimeiroRollBack = false;
-    private static final boolean falhaInCommitCount = false;
-    private static int falhaCommitCount = 0;
-    private static final boolean descartarOpcoesNaoOptimais = true;
-    private static final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
-    private static final boolean dumpResultadoPeriodicamente = true;
-
     private static BFSTmp bfsalg = null;
 
     public static void main(String... args) {
+        Processamento processamento = new Processamento();
 
         Option input = new Option("i", "input", true, "input file graph");
         Options options = new Options();
@@ -72,7 +66,6 @@ public class PipeGraph {
 
         try {
             cmd = parser.parse(options, args);
-//            formatter.printHelp("PipeGraph", options);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("PipeGraph", options);
@@ -80,61 +73,22 @@ public class PipeGraph {
             return;
         }
 
-        boolean contProcess = false;
-
         String inputFilePath = cmd.getOptionValue("input");
         if (inputFilePath == null) {
             inputFilePath = "/home/strike/Nuvem/nextcloud/Workspace-nuvem/maior-grafo-direto-striped.es";
         }
 
-        UndirectedSparseGraphTO graph = UtilGraph.loadGraph(new File(inputFilePath));
-        Collection<Integer> vertices = (Collection<Integer>) graph.getVertices();
-        LinkedList<Integer> trabalhoPorFazer = new LinkedList<>();
-        Map<Integer, List<Integer>> caminhosPossiveis = new HashMap<>();
+        processamento.loadGraph(inputFilePath);
 
-        int k = 0;
-        for (Integer v : vertices) {
-            int dg = graph.degree(v);
-            if (dg > k) {
-                k = dg;
-            }
+        String loadProcess = cmd.getOptionValue("load");
+        if (loadProcess != null) {
+            processamento.loadCaminho(loadProcess);
         }
 
-        bfsalg = new BFSTmp(vertices.size());
-        initialLoad(vertices, graph, trabalhoPorFazer, caminhosPossiveis, k);
-        MooreGraphGen8.ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new MooreGraphGen8.ComparatorTrabalhoPorFazer(caminhosPossiveis);
-
-        if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
-            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
-        } else {
-            Collections.sort(trabalhoPorFazer);
-        }
-
-        System.out.print("Trabalho por fazer: \n");
-        for (Integer e : trabalhoPorFazer) {
-            System.out.printf("%d (%d), ", e, graph.degree(e));
-        }
-        System.out.println();
-
-        System.out.print("Caminhos possiveis: \n");
-        List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
-        for (Integer e : trabalhoPorFazer) {
-            List<Integer> at = caminhosPossiveis.get(e);
-            if (!at.equals(ant)) {
-                System.out.println("----------------------------------------------------------------------------------------------");
-            }
-            System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
-            ant = at;
-            int dv = k - graph.degree(e);
-            if (dv > at.size()) {
-//                throw new IllegalStateException("Grafo inviavel: vetrice " + e + " dv=" + dv + " possi(" + at.size() + ")=" + at);
-            }
-        }
-
-        System.out.println();
+        processamento.prepareStart();
 
         if (cmd.hasOption("continue")) {
-            contProcess = true;
+
         }
 
         if (cmd.hasOption("possibility")) {
@@ -142,59 +96,10 @@ public class PipeGraph {
         }
 
         if (cmd.hasOption("verbose")) {
-            verbose = true;
+            processamento.verbose = true;
         }
-    }
-
-    private static class Processamento {
-
-        UndirectedSparseGraphTO insumo;
-        Collection<Integer> vertices;
-        LinkedList<Integer> trabalhoPorFazer;
-        Map<Integer, List<Integer>> caminhosPossiveis;
-        Map<Integer, List<Integer>> caminhosPossiveisOriginal;
-        TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
-        Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
-        int numArestasIniciais;
-        int numVertices;
-        int len;
-        Integer trabalhoAtual;
-        List<Integer> opcoesPossiveis;
-        int marcoInicial;
-
-        BFSTmp bfsalg = null;
-        BFSTmp bfsRanking = null;
-        BFSTmp bfsRankingSegundaOpcao = null;
-        long longestresult = 12160;
-        private Integer melhorOpcaoLocal;
 
     }
 
-    public static void initialLoad(Collection<Integer> vertices,
-            UndirectedSparseGraphTO graphTemplate,
-            LinkedList<Integer> trabalhoPorFazer,
-            Map<Integer, List<Integer>> caminhosPossiveis, int k) {
-        System.out.println("Calculando trabalho a fazer");
-
-        for (Integer v : vertices) {
-            int remain = k - graphTemplate.degree(v);
-            if (remain > 0) {
-                trabalhoPorFazer.add(v);
-                caminhosPossiveis.put(v, new ArrayList<>());
-            }
-        }
-
-        System.out.println("Calculando possibilidades de caminho");
-        for (int i = 0; i < trabalhoPorFazer.size(); i++) {
-            Integer v = trabalhoPorFazer.get(i);
-            bfsalg.labelDistances(graphTemplate, v);
-            caminhosPossiveis.put(v, new ArrayList<>());
-            for (int j = i; j < trabalhoPorFazer.size(); j++) {
-                Integer u = trabalhoPorFazer.get(j);
-                if (bfsalg.getDistance(graphTemplate, u) == 4) {
-                    caminhosPossiveis.get(v).add(u);
-                }
-            }
-        }
-    }
+    ComparatorMap comparatorProfundidade = new ComparatorMap(2);
 }

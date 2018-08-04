@@ -257,17 +257,13 @@ public class MooreGraphGen9 {
             Map<Integer, List<Integer>> caminhosPossiveis) {
         int[] count = new int[]{0, 0, 0, 0, 0};
 
-//        TreeSet<Integer> trabalhPorFazerOriginalOrdenado = new TreeSet<>(trabalhPorFazerOriginal);
         int linha = 0;
         for (Integer v : trabalhPorFazerOriginal) {
-//        for (Integer v : trabalhPorFazerOriginalOrdenado) {
             processamento.bfsalg.labelDistances(insumo, v);
             System.out.printf("[%4d]: [", v);
-            TreeSet<Integer> opcoesPossiveisOrdenada = new TreeSet<>(caminhosPossiveis.get(v));
             int coluna = 0;
             for (Integer o : trabalhPorFazerOriginal) {
                 if (coluna >= linha) {
-//                if (opcoesPossiveisOrdenada.contains(o)) {
                     int distancia = processamento.bfsalg.getDistance(insumo, o);
                     if (distancia == 1) {
                         System.out.print('x');
@@ -281,9 +277,6 @@ public class MooreGraphGen9 {
                         System.out.print('\\');
                     }
                     count[distancia]++;
-//                } else {
-//                    System.out.print(' ');
-//                }
                 } else {
                     System.out.print(' ');
                 }
