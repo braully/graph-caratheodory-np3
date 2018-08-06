@@ -1,10 +1,12 @@
 package tmp;
 
+import com.github.braully.graph.operation.IGraphOperation;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -14,6 +16,10 @@ import org.apache.commons.cli.ParseException;
  */
 public class PipeGraph {
 
+    static final IGenStrategy[] operations = new IGenStrategy[]{
+        new StrategyEstagnacao()
+    };
+
     public static void main(String... args) {
         Processamento processamento = new Processamento();
 
@@ -21,22 +27,42 @@ public class PipeGraph {
         Options options = new Options();
         options.addOption(input);
 
-        Option loadprocess = new Option("l", "load", true, "load state process");
+        Option loadprocess = new Option("c", "contiue", true, "continue process from comb state");
+        loadprocess.setRequired(false);
         options.addOption(loadprocess);
 
-        Option cont = new Option("c", "continue", false, "continue from last processing");
-        cont.setRequired(false);
-        options.addOption(cont);
+        Option loadstart = new Option("l", "load-start", false, "load start information");
+        loadstart.setRequired(false);
+        options.addOption(loadstart);
 
         Option verb = new Option("v", "verbose", false, "verbose processing");
         options.addOption(verb);
 
-        Option poss = new Option("p", "possibility", false, "check possiblities");
+        Option verbrank = new Option("vr", "verbose-ranking", false, "verbose ranking");
+        options.addOption(verbrank);
+
+        Option verbinit = new Option("vi", "verbose-init", false, "verbose initial possibilities");
+        options.addOption(verbinit);
+
+        Option poss = new Option("cp", "check-possibility", false, "check possiblities");
         options.addOption(poss);
 
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
+
+        Option commitfail = new Option("cf", "commit-fail", true, "Commit count fail");
+        options.addOption(commitfail);
+
+        OptionGroup exec = new OptionGroup();
+        exec.setRequired(false);
+        IGenStrategy[] opers = operations;
+        Option[] execs = new Option[opers.length];
+        for (int i = 0; i < opers.length; i++) {
+            IGenStrategy oper = opers[i];
+            execs[i] = new Option("" + i, false, oper.getName());
+            options.addOption(execs[i]);
+        }
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -47,8 +73,26 @@ public class PipeGraph {
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("PipeGraph", options);
-            System.exit(1);
             return;
+        }
+
+        if (cmd.hasOption("verbose")) {
+            processamento.verbose = true;
+        }
+        if (cmd.hasOption("verbose-ranking")) {
+            processamento.verboseRankingOption = true;
+        }
+        if (cmd.hasOption("verbose-init")) {
+            processamento.vebosePossibilidadesIniciais = true;
+        }
+        if (cmd.hasOption("verbose-fim")) {
+            processamento.veboseFimEtapa = true;
+        }
+
+        String strfailcom = cmd.getOptionValue("commit-fail");
+        if (strfailcom != null && !strfailcom.isEmpty()) {
+            processamento.falhaInCommitCount = true;
+            processamento.falhaCommitCount = Integer.parseInt(strfailcom.trim());
         }
 
         String inputFilePath = cmd.getOptionValue("input");
@@ -56,26 +100,25 @@ public class PipeGraph {
             inputFilePath = "/home/strike/Nuvem/nextcloud/Workspace-nuvem/maior-grafo-direto-striped.es";
         }
 
+        if (inputFilePath == null || inputFilePath.isEmpty()) {
+            formatter.printHelp("PipeGraph", options);
+            System.out.println("input is requeried");
+            return;
+        }
+
         processamento.loadGraph(inputFilePath);
+        if (cmd.hasOption("load-start")) {
+            processamento.loadStartFromCache();
+        }
+        processamento.prepareStart();
 
         String loadProcess = cmd.getOptionValue("load");
         if (loadProcess != null) {
             processamento.loadCaminho(loadProcess);
         }
 
-        processamento.prepareStart();
-
-        if (cmd.hasOption("continue")) {
+        if (cmd.hasOption("check-possibility")) {
 
         }
-
-        if (cmd.hasOption("possibility")) {
-
-        }
-
-        if (cmd.hasOption("verbose")) {
-            processamento.verbose = true;
-        }
-
     }
 }

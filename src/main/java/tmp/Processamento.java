@@ -33,19 +33,19 @@ public class Processamento {
 
     /* Parametos */
     boolean verbose = false;
-    final boolean vebosePossibilidadesIniciais = false;
-    final boolean veboseFimEtapa = false;
-    final boolean verboseRankingOption = false;
+    boolean vebosePossibilidadesIniciais = false;
+    boolean veboseFimEtapa = false;
+    boolean verboseRankingOption = false;
 
-    final boolean rankearOpcoes = true;
-    final int rankearOpcoesProfundidade = 2;
-    final boolean rankearSegundaOpcoes = false;
+    boolean rankearOpcoes = true;
+    int rankearOpcoesProfundidade = 2;
+    boolean rankearSegundaOpcoes = false;
 
-    final boolean anteciparVazio = true;
-    final boolean descartarOpcoesNaoOptimais = true;
+    boolean anteciparVazio = true;
+    boolean descartarOpcoesNaoOptimais = true;
 
-    final boolean falhaPrimeiroRollBack = false;
-    final boolean falhaInCommitCount = false;
+    boolean falhaPrimeiroRollBack = false;
+    boolean falhaInCommitCount = false;
     int falhaCommitCount = 0;
 
     final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
@@ -88,6 +88,13 @@ public class Processamento {
         return comparatorProfundidade;
     }
 
+    public Comparator<Integer> getComparatorTrabalhoPorFazer() {
+        if (comparatorTrabalhoPorFazer == null) {
+            comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveis);
+        }
+        return comparatorTrabalhoPorFazer;
+    }
+
     /* */
     public String getEstrategiaString() {
         return (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
@@ -99,6 +106,7 @@ public class Processamento {
     }
 
     private void loadGraph(UndirectedSparseGraphTO graph) {
+        this.insumo = graph;
         this.vertices = (Collection<Integer>) graph.getVertices();
         this.trabalhoPorFazer = new LinkedList<>();
         this.caminhosPossiveis = new HashMap<>();
@@ -154,11 +162,12 @@ public class Processamento {
 
     void prepareStart() {
         bfsalg = new BFSTmp(vertices.size());
-        initialLoad();
-        MooreGraphGen8.ComparatorTrabalhoPorFazer comparatorTrabalhoPorFazer = new MooreGraphGen8.ComparatorTrabalhoPorFazer(caminhosPossiveis);
+        if (caminhosPossiveis.isEmpty()) {
+            initialLoad();
+        }
 
         if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
-            Collections.sort(trabalhoPorFazer, comparatorTrabalhoPorFazer);
+            Collections.sort(trabalhoPorFazer, getComparatorTrabalhoPorFazer());
         } else {
             Collections.sort(trabalhoPorFazer);
         }
@@ -198,19 +207,31 @@ public class Processamento {
                 caminhosPossiveis.put(v, new ArrayList<>());
             }
         }
-
         System.out.println("Calculando possibilidades de caminho");
+
         for (int i = 0; i < trabalhoPorFazer.size(); i++) {
             Integer v = trabalhoPorFazer.get(i);
             bfsalg.labelDistances(insumo, v);
             caminhosPossiveis.put(v, new ArrayList<>());
-            for (int j = i; j < trabalhoPorFazer.size(); j++) {
+            int countp = 0;
+            int dv = k - insumo.degree(v);
+            for (int j = 0; j < trabalhoPorFazer.size(); j++) {
                 Integer u = trabalhoPorFazer.get(j);
                 if (bfsalg.getDistance(insumo, u) == 4) {
-                    caminhosPossiveis.get(v).add(u);
+                    countp++;
+                    if (j >= i) {
+                        caminhosPossiveis.get(v).add(u);
+                    }
                 }
+            }
+            if (countp < dv) {
+                throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v));
             }
         }
     }
 
+    void loadStartFromCache() {
+        trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
+        caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+    }
 }

@@ -14,9 +14,13 @@ import java.util.TreeMap;
  *
  * @author strike
  */
-public class Strategy1 {
+public class StrategyEstagnacao implements IGenStrategy {
 
-    void generateGrapStrategy1(Processamento processamento) {
+    public String getName() {
+        return "Estagnação de Vertice";
+    }
+
+    public void generateGraph(Processamento processamento) {
         if (processamento.vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
             List<Integer> ant = processamento.caminhosPossiveis.get(processamento.trabalhoPorFazer.get(0));
