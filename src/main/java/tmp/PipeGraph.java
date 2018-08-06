@@ -14,8 +14,6 @@ import org.apache.commons.cli.ParseException;
  */
 public class PipeGraph {
 
-    private static BFSTmp bfsalg = null;
-
     public static void main(String... args) {
         Processamento processamento = new Processamento();
 
