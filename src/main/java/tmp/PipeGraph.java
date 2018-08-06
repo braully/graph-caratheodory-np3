@@ -80,6 +80,4 @@ public class PipeGraph {
         }
 
     }
-
-    ComparatorMap comparatorProfundidade = new ComparatorMap(2);
 }
