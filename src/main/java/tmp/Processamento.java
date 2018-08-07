@@ -120,6 +120,7 @@ public class Processamento {
                 k = dg;
             }
         }
+        this.numVertices = vertices.size();
         this.numAretasFinais = ((k * k + 1) * k) / 2;
         this.numArestasIniciais = this.insumo.getEdgeCount();
     }
@@ -128,16 +129,18 @@ public class Processamento {
         try {
             BufferedReader bf = new BufferedReader(new FileReader(loadProcess));
             String line = null;
+            int count = insumo.getEdgeCount();
             while ((line = bf.readLine()) != null) {
                 if (line != null && line.length() > 0) {
                     String[] args = line.split(" ");
-                    System.out.print("Load-Status from Args");
                     String strpattern = "\\{(\\d+)\\}\\((\\d+),(\\d+)\\)\\[([0-9,]+)\\]";
                     Pattern pattern = Pattern.compile(strpattern);
                     for (String str : args) {
                         Matcher matcher = pattern.matcher(str);
-                        System.out.print(str);
-                        System.out.print("->");
+                        if (verbose) {
+                            System.out.print(str);
+                            System.out.print("->");
+                        }
                         if (matcher.matches()) {
                             Integer numEdge = Integer.parseInt(matcher.group(1));
                             Integer e1 = Integer.parseInt(matcher.group(2));
@@ -148,15 +151,25 @@ public class Processamento {
                                 throw new IllegalStateException(String.format("Incorrect load info edge %d expected %d for: %s ", aresta, numEdge, str));
                             }
                             caminhoPercorrido.put(aresta, caminho);
-                            System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
-                            System.out.print(caminho);
-                            System.out.print("  ");
+                            if (verbose) {
+                                System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
+                                System.out.print(caminho);
+                                System.out.print("  ");
+                            }
+                            if (insumo.degree(e1) == k) {
+                                trabalhoPorFazer.remove(e1);
+                            }
+                            if (insumo.degree(e2) == k) {
+                                trabalhoPorFazer.remove(e2);
+                            }
                             Map<Integer, List<Integer>> rankingAtual = historicoRanking.getOrDefault(aresta, new HashMap<>());
                             historicoRanking.putIfAbsent(aresta, rankingAtual);
                         }
                     }
                 }
             }
+            System.out.print("Loaded " + (insumo.getEdgeCount() - count) + " edges added. ");
+            printGraphCount();
         } catch (IOException ex) {
             Logger.getLogger(PipeGraph.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -174,20 +187,26 @@ public class Processamento {
             Collections.sort(trabalhoPorFazer);
         }
 
-        System.out.print("Trabalho por fazer: \n");
+        System.out.printf("Trabalho por fazer[%d]: \n", trabalhoPorFazer.size());
         for (Integer e : trabalhoPorFazer) {
-            System.out.printf("%d (%d), ", e, insumo.degree(e));
+            if (verbose) {
+                System.out.printf("%d (%d), ", e, insumo.degree(e));
+            }
         }
-        System.out.println();
+        printGraphCount();
 
-        System.out.print("Caminhos possiveis: \n");
+        if (verbose) {
+            System.out.print("Caminhos possiveis: \n");
+        }
         List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
         for (Integer e : trabalhoPorFazer) {
             List<Integer> at = caminhosPossiveis.get(e);
-            if (!at.equals(ant)) {
-                System.out.println("----------------------------------------------------------------------------------------------");
+            if (verbose) {
+                if (!at.equals(ant)) {
+                    System.out.println("----------------------------------------------------------------------------------------------");
+                }
+                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
             }
-            System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
             ant = at;
             int dv = k - insumo.degree(e);
             if (dv > at.size()) {
@@ -211,7 +230,7 @@ public class Processamento {
                 caminhosPossiveis.put(v, new ArrayList<>());
             }
         }
-        System.out.println("Calculando possibilidades de caminho");
+        System.out.print("Calculando possibilidades de caminho...");
 
         for (int i = 0; i < trabalhoPorFazer.size(); i++) {
             Integer v = trabalhoPorFazer.get(i);
@@ -232,6 +251,7 @@ public class Processamento {
                 throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v));
             }
         }
+        System.out.println("Grafo viavel");
     }
 
     void loadStartFromCache() {
@@ -255,5 +275,9 @@ public class Processamento {
                 }
             }
         }
+    }
+
+    void printGraphCount() {
+        System.out.println("Vertices : " + (numVertices - trabalhoPorFazer.size()) + "/" + numVertices + " Edges: " + insumo.getEdgeCount() + "/" + numAretasFinais);
     }
 }

@@ -28,7 +28,7 @@ public class PipeGraph {
         Options options = new Options();
         options.addOption(input);
 
-        Option loadprocess = new Option("c", "contiue", true, "continue process from comb state");
+        Option loadprocess = new Option("c", "continue", true, "continue process from comb state");
         loadprocess.setRequired(false);
         options.addOption(loadprocess);
 
@@ -109,13 +109,16 @@ public class PipeGraph {
 
         processamento.loadGraph(inputFilePath);
         if (cmd.hasOption("load-start")) {
+            System.out.print("Loading from cache");
             processamento.loadStartFromCache();
+            System.out.print("...Ok");
         }
         processamento.prepareStart();
 
-        String loadProcess = cmd.getOptionValue("load");
+        String loadProcess = cmd.getOptionValue("continue");
         if (loadProcess != null) {
             processamento.loadCaminho(loadProcess);
+            System.out.println("...Ok");
         }
 
         if (cmd.hasOption("check-possibility")) {
@@ -132,12 +135,12 @@ public class PipeGraph {
             }
         }
 
-        if (operationsToExecute.isEmpty()) {
-            operationsToExecute.add(opers[0]);
-        }
-
-        for (IGenStrategy operation : operationsToExecute) {
-            operation.generateGraph(processamento);
-        }
+//        if (operationsToExecute.isEmpty()) {
+//            operationsToExecute.add(opers[0]);
+//        }
+//
+//        for (IGenStrategy operation : operationsToExecute) {
+//            operation.generateGraph(processamento);
+//        }
     }
 }
