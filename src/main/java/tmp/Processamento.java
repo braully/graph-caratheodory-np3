@@ -199,6 +199,8 @@ public class Processamento {
 
     public void initialLoad() {
         System.out.println("Calculando trabalho a fazer");
+        trabalhoPorFazer.clear();
+        caminhosPossiveis.clear();
 
         for (Integer v : vertices) {
             int remain = k - insumo.degree(v);
@@ -233,5 +235,23 @@ public class Processamento {
     void loadStartFromCache() {
         trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
         caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+    }
+
+    void recheckPossibilities() {
+        for (Integer v : vertices) {
+            int remain = k - insumo.degree(v);
+            if (remain > 0) {
+                int countp = 0;
+                bfsalg.labelDistances(insumo, v);
+                for (Integer u : vertices) {
+                    if (bfsalg.getDistance(insumo, u) == 4) {
+                        countp++;
+                    }
+                }
+                if (countp < remain) {
+                    throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")");
+                }
+            }
+        }
     }
 }
