@@ -76,7 +76,7 @@ public class Processamento {
     BFSTmp bfsalg;
     BFSTmp bfsRanking;
     BFSTmp bfsRankingSegundaOpcao;
-    long longestresult = 12160;
+    long longestresult = 12214;
     Integer melhorOpcaoLocal;
     Comparator<Integer> comparatorTrabalhoPorFazer;
     ComparatorMap comparatorProfundidade;
@@ -120,6 +120,8 @@ public class Processamento {
                 k = dg;
             }
         }
+        this.numAretasFinais = ((k * k + 1) * k) / 2;
+        this.numArestasIniciais = this.insumo.getEdgeCount();
     }
 
     void loadCaminho(String loadProcess) {
