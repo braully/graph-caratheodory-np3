@@ -135,12 +135,12 @@ public class PipeGraph {
             }
         }
 
-//        if (operationsToExecute.isEmpty()) {
-//            operationsToExecute.add(opers[0]);
-//        }
-//
-//        for (IGenStrategy operation : operationsToExecute) {
-//            operation.generateGraph(processamento);
-//        }
+        if (operationsToExecute.isEmpty()) {
+            operationsToExecute.add(opers[0]);
+        }
+
+        for (IGenStrategy operation : operationsToExecute) {
+            operation.generateGraph(processamento);
+        }
     }
 }

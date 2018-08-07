@@ -176,7 +176,9 @@ public class Processamento {
     }
 
     void prepareStart() {
-        bfsalg = new BFSTmp(vertices.size());
+        bfsalg = new BFSTmp(numVertices);
+        bfsRanking = new BFSTmp(numVertices);
+        bfsRankingSegundaOpcao = new BFSTmp(numVertices);
         if (caminhosPossiveis.isEmpty()) {
             initialLoad();
         }

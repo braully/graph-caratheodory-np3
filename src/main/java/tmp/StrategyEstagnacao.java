@@ -21,6 +21,7 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     public void generateGraph(Processamento processamento) {
+        System.out.println(StrategyEstagnacao.class.getSimpleName());
         if (processamento.vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
             List<Integer> ant = processamento.caminhosPossiveis.get(processamento.trabalhoPorFazer.get(0));
@@ -89,6 +90,8 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     /* */
     void verboseInicioEtapa(Processamento processamento) {
+        System.out.print("Start trabalho: ");
+        System.out.println(processamento.trabalhoAtual);
 //        if (falhaInCommitCount) {
 //            bfsalg.labelDistances(insumo, trabalhoAtual);
 //            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
