@@ -22,7 +22,7 @@ import java.util.TreeSet;
  */
 public class MooreGraphGen3 {
 
-    private static final boolean verbose = false;
+    private static final boolean verbose = true;
 
     private static int K = 0;
     private static int NUM_ARESTAS = 0;

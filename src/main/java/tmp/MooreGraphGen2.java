@@ -20,7 +20,7 @@ public class MooreGraphGen2 {
     private static int NUM_ARESTAS = ((K * K + 1) * K) / 2;
 
     public static void main(String... args) {
-        K = 7;
+        K = 57;
 
         List<Integer> startArray = new ArrayList<>();
 
