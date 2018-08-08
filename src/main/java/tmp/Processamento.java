@@ -60,6 +60,7 @@ public class Processamento {
     UndirectedSparseGraphTO insumo;
     Collection<Integer> vertices;
     LinkedList<Integer> trabalhoPorFazer;
+    LinkedList<Integer> trabalhoPorFazerOrigianl;
     Map<Integer, List<Integer>> caminhosPossiveis;
     Map<Integer, List<Integer>> caminhosPossiveisOriginal;
     TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
@@ -78,22 +79,7 @@ public class Processamento {
     BFSTmp bfsRankingSegundaOpcao;
     long longestresult = 12214;
     Integer melhorOpcaoLocal;
-    Comparator<Integer> comparatorTrabalhoPorFazer;
-    ComparatorMap comparatorProfundidade;
 
-    public ComparatorMap getComparatorProfundidade() {
-        if (comparatorProfundidade == null) {
-            comparatorProfundidade = new ComparatorMap(rankearOpcoesProfundidade);
-        }
-        return comparatorProfundidade;
-    }
-
-    public Comparator<Integer> getComparatorTrabalhoPorFazer() {
-        if (comparatorTrabalhoPorFazer == null) {
-            comparatorTrabalhoPorFazer = new ComparatorTrabalhoPorFazer(caminhosPossiveis);
-        }
-        return comparatorTrabalhoPorFazer;
-    }
 
     /* */
     public String getEstrategiaString() {
@@ -184,8 +170,6 @@ public class Processamento {
         }
 
         if (ordenarTrabalhoPorFazerPorPrimeiraOpcao) {
-            Collections.sort(trabalhoPorFazer, getComparatorTrabalhoPorFazer());
-        } else {
             Collections.sort(trabalhoPorFazer);
         }
 
@@ -199,23 +183,22 @@ public class Processamento {
 
         if (verbose) {
             System.out.print("Caminhos possiveis: \n");
-        }
-        List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
-        for (Integer e : trabalhoPorFazer) {
-            List<Integer> at = caminhosPossiveis.get(e);
-            if (verbose) {
-                if (!at.equals(ant)) {
-                    System.out.println("----------------------------------------------------------------------------------------------");
+            List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
+            for (Integer e : trabalhoPorFazer) {
+                List<Integer> at = caminhosPossiveis.get(e);
+                if (verbose) {
+                    if (!at.equals(ant)) {
+                        System.out.println("----------------------------------------------------------------------------------------------");
+                    }
+                    System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
                 }
-                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
-            }
-            ant = at;
-            int dv = k - insumo.degree(e);
-            if (dv > at.size()) {
+                ant = at;
+                int dv = k - insumo.degree(e);
+                if (dv > at.size()) {
 //                throw new IllegalStateException("Grafo inviavel: vetrice " + e + " dv=" + dv + " possi(" + at.size() + ")=" + at);
+                }
             }
         }
-
         System.out.println();
 
     }
@@ -253,6 +236,8 @@ public class Processamento {
                 throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v));
             }
         }
+        this.caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);
+        this.trabalhoPorFazerOrigianl = new LinkedList<>(trabalhoPorFazer);
         System.out.println("Grafo viavel");
     }
 
@@ -268,7 +253,7 @@ public class Processamento {
                 int countp = 0;
                 bfsalg.labelDistances(insumo, v);
                 for (Integer u : vertices) {
-                    if (bfsalg.getDistance(insumo, u) == 4) {
+                    if (bfsalg.getDistance(insumo, u) == 4 && insumo.degree(u) < k) {
                         countp++;
                     }
                 }

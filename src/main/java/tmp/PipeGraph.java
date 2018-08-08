@@ -18,7 +18,8 @@ import org.apache.commons.cli.ParseException;
 public class PipeGraph {
 
     static final IGenStrategy[] operations = new IGenStrategy[]{
-        new StrategyEstagnacao()
+        new StrategyEstagnacao(),
+        new StrategyAvoidCollid()
     };
 
     public static void main(String... args) {
@@ -132,6 +133,7 @@ public class PipeGraph {
             String value = execs[i].getOpt();
             if (cmd.hasOption(value)) {
                 operationsToExecute.add(oper);
+                processamento.recheckPossibilities();
             }
         }
 
