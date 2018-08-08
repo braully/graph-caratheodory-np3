@@ -267,4 +267,8 @@ public class Processamento {
     void printGraphCount() {
         System.out.println("Vertices : " + (numVertices - trabalhoPorFazer.size()) + "/" + numVertices + " Edges: " + insumo.getEdgeCount() + "/" + numAretasFinais);
     }
+
+    boolean verticeComplete(Integer i) {
+        return insumo.degree(i) == k;
+    }
 }

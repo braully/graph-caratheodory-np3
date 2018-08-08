@@ -112,8 +112,8 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     /* */
     void verboseInicioEtapa(Processamento processamento) {
-        System.out.print("Start trabalho: ");
-        System.out.println(processamento.trabalhoAtual);
+//        System.out.print("Start trabalho: ");
+//        System.out.println(processamento.trabalhoAtual);
 //        if (falhaInCommitCount) {
 //            bfsalg.labelDistances(insumo, trabalhoAtual);
 //            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);

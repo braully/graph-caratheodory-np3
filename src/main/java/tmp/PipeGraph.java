@@ -19,7 +19,8 @@ public class PipeGraph {
 
     static final IGenStrategy[] operations = new IGenStrategy[]{
         new StrategyEstagnacao(),
-        new StrategyAvoidCollid()
+        new StrategyAvoidCollid(),
+        new StrategyBlock()
     };
 
     public static void main(String... args) {
@@ -49,12 +50,19 @@ public class PipeGraph {
         Option poss = new Option("cp", "check-possibility", false, "check possiblities");
         options.addOption(poss);
 
+        Option sanitize = new Option("s", "sanitize", false, "sanitizar grafo");
+        options.addOption(sanitize);
+
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
 
         Option commitfail = new Option("cf", "commit-fail", true, "Commit count fail");
         options.addOption(commitfail);
+
+        Option merge = new Option("mc", "merege-continue", true, "merge multiple continue process from comb state");
+        loadprocess.setRequired(false);
+        options.addOption(merge);
 
         OptionGroup exec = new OptionGroup();
         exec.setRequired(false);
