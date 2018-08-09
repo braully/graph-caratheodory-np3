@@ -93,11 +93,12 @@ public class StrategyBlock
 
     @Override
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-        Pair<Integer> desfazer = super.desfazerUltimoTrabalho(processamento);
-        blocoidx--;
+//        Pair<Integer> desfazer = super.desfazerUltimoTrabalho(processamento);
+//        blocoidx--;
 //        Integer idx = bloco.indexOf(desfazer.getFirst());
 //        blocoidx = idx;
-        return desfazer;
+//        return desfazer;
+        return super.desfazerUltimoTrabalho(processamento);
     }
 
     boolean temTrabalhoNoBloco(Processamento processamento, LinkedList<Integer> bloco) {
