@@ -69,7 +69,6 @@ public class StrategyBlock
                     }
                 }
                 ordenacaoFimEtapa(processamento);
-
             }
             if (!temTrabalhoNoBloco(processamento, bloco)) {
                 blocosConcluidos.put(firstEntry.getKey(), firstEntry.getValue());
