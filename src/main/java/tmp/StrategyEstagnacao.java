@@ -42,6 +42,10 @@ public class StrategyEstagnacao implements IGenStrategy {
         ordenacaoFimEtapa(processamento);
         verboseInicioGeracao(processamento);
 
+        if (processamento.caminhoPercorrido.isEmpty()) {
+            //Marco zero
+            processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
+        }
         while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
             processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);

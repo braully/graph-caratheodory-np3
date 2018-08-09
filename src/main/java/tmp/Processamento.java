@@ -198,7 +198,6 @@ public class Processamento {
             }
         }
         System.out.println();
-
     }
 
     public void initialLoad() {
