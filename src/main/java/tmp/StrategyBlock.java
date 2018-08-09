@@ -12,6 +12,7 @@ public class StrategyBlock
         implements IGenStrategy {
 
     int blocoidx = 0;
+    LinkedList<Integer> bloco;
 
     public String getName() {
         return "Gerar em Bloco";
@@ -29,17 +30,21 @@ public class StrategyBlock
             if (!at.equals(ant)) {
                 count++;
                 blocos.put(count, new LinkedList<>());
-                System.out.println("----------------------------------------------------------------------------------------------");
+                if (processamento.vebosePossibilidadesIniciais) {
+                    System.out.println("----------------------------------------------------------------------------------------------");
+                }
             }
             blocos.get(count).add(e);
-            System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+            if (processamento.vebosePossibilidadesIniciais) {
+                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+            }
             ant = at;
         }
 //        blocos.pollLastEntry();
 
         while (!blocos.isEmpty() && !processamento.trabalhoPorFazer.isEmpty()) {
             Map.Entry<Integer, LinkedList<Integer>> firstEntry = blocos.firstEntry();
-            LinkedList<Integer> bloco = firstEntry.getValue();
+            bloco = firstEntry.getValue();
             System.out.printf("Processando bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
 
             blocoidx = 0;
@@ -65,10 +70,10 @@ public class StrategyBlock
                 }
                 ordenacaoFimEtapa(processamento);
                 if (blocoidx >= bloco.size()) {
-                    blocoidx = blocoidx - bloco.size();
+                    blocoidx = 0;
                 }
                 if (blocoidx < 0) {
-                    blocoidx = 0;
+                    blocoidx = bloco.size() - 1;
                 }
             }
             if (!temTrabalhoNoBloco(processamento, bloco)) {
@@ -88,8 +93,11 @@ public class StrategyBlock
 
     @Override
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
+        Pair<Integer> desfazer = super.desfazerUltimoTrabalho(processamento);
         blocoidx--;
-        return super.desfazerUltimoTrabalho(processamento);
+//        Integer idx = bloco.indexOf(desfazer.getFirst());
+//        blocoidx = idx;
+        return desfazer;
     }
 
     boolean temTrabalhoNoBloco(Processamento processamento, LinkedList<Integer> bloco) {

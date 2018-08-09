@@ -174,7 +174,6 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-
         if (processamento.falhaPrimeiroRollBack) {
             throw new IllegalStateException("Interrução forçada");
         }
@@ -392,7 +391,8 @@ public class StrategyEstagnacao implements IGenStrategy {
                 processamento.opcoesPossiveis.subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
             } else {
 //                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
-                processamento.opcoesPossiveis.subList(0, rankingAtual.size()).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
+                List<Integer> subList = processamento.opcoesPossiveis.subList(0, rankingAtual.size());
+                subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
                 //Reaproveintando ranking anteriormente calculado
             }
         }

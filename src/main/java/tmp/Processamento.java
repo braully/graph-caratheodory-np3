@@ -181,17 +181,15 @@ public class Processamento {
         }
         printGraphCount();
 
-        if (verbose) {
+        if (vebosePossibilidadesIniciais) {
             System.out.print("Caminhos possiveis: \n");
             List<Integer> ant = caminhosPossiveis.get(trabalhoPorFazer.get(0));
             for (Integer e : trabalhoPorFazer) {
                 List<Integer> at = caminhosPossiveis.get(e);
-                if (verbose) {
-                    if (!at.equals(ant)) {
-                        System.out.println("----------------------------------------------------------------------------------------------");
-                    }
-                    System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+                if (!at.equals(ant)) {
+                    System.out.println("----------------------------------------------------------------------------------------------");
                 }
+                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
                 ant = at;
                 int dv = k - insumo.degree(e);
                 if (dv > at.size()) {
