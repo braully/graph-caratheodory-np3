@@ -1,6 +1,5 @@
 package tmp;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,9 +9,6 @@ import java.util.TreeMap;
 public class StrategyBlock
         extends StrategyEstagnacao
         implements IGenStrategy {
-
-    int blocoidx = 0;
-    LinkedList<Integer> bloco;
 
     public String getName() {
         return "Gerar em Bloco";
@@ -45,15 +41,13 @@ public class StrategyBlock
         }
 //        blocos.pollLastEntry();
 
-        while (!blocos.isEmpty() && !processamento.trabalhoPorFazer.isEmpty()) {
+        while (!blocos.isEmpty()) {
             Map.Entry<Integer, LinkedList<Integer>> firstEntry = blocos.firstEntry();
-            bloco = firstEntry.getValue();
+            LinkedList<Integer> bloco = firstEntry.getValue();
             System.out.printf("Processando bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
 
-            blocoidx = 0;
-
             while (temTrabalhoNoBloco(processamento, bloco)) {
-                processamento.trabalhoAtual = bloco.get(blocoidx);
+                processamento.trabalhoAtual = UtilTmp.getOverflow(bloco, processamento.getPosicaoAtual());
                 processamento.marcoInicial = processamento.insumo.getEdgeCount();
                 verboseInicioEtapa(processamento);
 
@@ -70,40 +64,29 @@ public class StrategyBlock
                     processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
                     verboseFimEtapa(processamento);
                 }
-//                ordenacaoFimEtapa(processamento);
-                if (blocoidx >= bloco.size()) {
-                    blocoidx = 0;
-                }
-                if (blocoidx < 0) {
-                    blocoidx = bloco.size() - 1;
-                }
             }
-            if (!temTrabalhoNoBloco(processamento, bloco)) {
-                blocosConcluidos.put(firstEntry.getKey(), firstEntry.getValue());
-                blocos.remove(firstEntry.getKey());
-                System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
-            }
+            blocosConcluidos.put(firstEntry.getKey(), firstEntry.getValue());
+            blocos.remove(firstEntry.getKey());
+            System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
             verboseFimEtapa(processamento);
         }
         verboseResultadoFinal(processamento);
     }
 
-    @Override
-    void adicionarMellhorOpcao(Processamento processamento) {
-        super.adicionarMellhorOpcao(processamento);
-        blocoidx++;
-    }
-
-    @Override
-    Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-//        Pair<Integer> desfazer = super.desfazerUltimoTrabalho(processamento);
-//        blocoidx--;
-//        Integer idx = bloco.indexOf(desfazer.getFirst());
-//        blocoidx = idx;
-//        return desfazer;
-        return super.desfazerUltimoTrabalho(processamento);
-    }
-
+//    @Override
+//    void adicionarMellhorOpcao(Processamento processamento) {
+//        super.adicionarMellhorOpcao(processamento);
+//    }
+//    @Override
+//    Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
+////        Pair<Integer> desfazer = super.desfazerUltimoTrabalho(processamento);
+////        blocoidx--;
+////        Integer idx = bloco.indexOf(desfazer.getFirst());
+////        blocoidx = idx;
+////        return desfazer;
+//        return super.desfazerUltimoTrabalho(processamento);
+//    }
+//
     boolean temTrabalhoNoBloco(Processamento processamento, LinkedList<Integer> bloco) {
         boolean ret = true;
         for (Integer i : bloco) {

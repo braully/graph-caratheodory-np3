@@ -289,6 +289,12 @@ public class Processamento {
         sub.bfsRanking = new BFSTmp(numVertices);
         sub.bfsRankingSegundaOpcao = new BFSTmp(numVertices);
 
+        /* verboses */
+        sub.verbose = this.verbose;
+        sub.verboseRankingOption = this.verboseRankingOption;
+        sub.veboseFimEtapa = this.veboseFimEtapa;
+        sub.vebosePossibilidadesIniciais = this.vebosePossibilidadesIniciais;
+
         return sub;
     }
 
@@ -363,5 +369,9 @@ public class Processamento {
 
     List<Integer> getOpcoesPossiveisAtuais() {
         return caminhosPossiveis.get(trabalhoAtual);
+    }
+
+    public Integer getPosicaoAtual() {
+        return insumo.getEdgeCount();
     }
 }

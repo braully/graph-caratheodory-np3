@@ -1,6 +1,7 @@
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
+import static com.google.common.math.IntMath.mod;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -446,5 +447,14 @@ public class UtilTmp {
             clone.put(e.getKey(), new ArrayList<>(e.getValue()));
         }
         return clone;
+    }
+
+    static synchronized Integer getOverflow(List<Integer> bloco, Integer posicaoAtual) {
+        Integer ret = null;
+        if (bloco != null) {
+            int size = bloco.size();
+            bloco.get(posicaoAtual % size);
+        }
+        return ret;
     }
 }
