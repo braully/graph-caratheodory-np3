@@ -49,6 +49,7 @@ public class StrategyEstagnacao implements IGenStrategy {
         while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
             estagnarVertice(processamento);
+            ordenacaoFimEtapa(processamento);
         }
 //        printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
         verboseResultadoFinal(processamento);
@@ -72,7 +73,6 @@ public class StrategyEstagnacao implements IGenStrategy {
         if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
             processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
         }
-        ordenacaoFimEtapa(processamento);
         verboseFimEtapa(processamento);
     }
 
