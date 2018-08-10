@@ -227,35 +227,7 @@ public class StrategyEstagnacao implements IGenStrategy {
         if (processamento.verbose) {
             System.out.printf("+[%5d](%4d,%4d) ", aresta, processamento.trabalhoAtual, melhorOpcaoLocal);
         }
-        if (processamento.dumpResultadoPeriodicamente && System.currentTimeMillis() - processamento.lastime > UtilTmp.ALERT_HOUR) {
-            System.out.println("Alert hour ");
-            UtilTmp.dumpStringIdentified(processamento.getEstrategiaString());
-            UtilTmp.dumpString(String.format(" rbcount[%d,%d,%d,%d]=%d", processamento.rbcount[0], processamento.rbcount[1],
-                    processamento.rbcount[2], processamento.rbcount[3],
-                    (processamento.rbcount[0] + processamento.rbcount[1] + processamento.rbcount[2] + processamento.rbcount[3])));
-            processamento.rbcount[0] = processamento.rbcount[1] = processamento.rbcount[2] = processamento.rbcount[3] = 0;
-            processamento.lastime = System.currentTimeMillis();
-            //                        printVertAddArray(insumo, numArestasIniciais);
-
-            String lastAdd = String.format(" last+[%5d](%4d,%4d) \n", aresta, processamento.trabalhoAtual, melhorOpcaoLocal);
-            UtilTmp.dumpString(lastAdd);
-            UtilTmp.printCurrentItme();
-
-            if (processamento.longestresult < processamento.insumo.getEdgeCount() || System.currentTimeMillis() - processamento.lastime2 > UtilTmp.ALERT_HOUR_12) {
-                processamento.lastime2 = System.currentTimeMillis();
-                if (processamento.longestresult < processamento.insumo.getEdgeCount()) {
-                    System.out.print("new longest  result: ");
-                    processamento.longestresult = processamento.insumo.getEdgeCount();
-                    System.out.println(processamento.longestresult);
-                }
-                UtilTmp.dumpVertAddArray(processamento.insumo,
-                        processamento.numArestasIniciais,
-                        processamento.caminhoPercorrido);
-                if (processamento.k > 7) {
-                    UtilTmp.dumpOverrideString(processamento.insumo.getEdgeString(), ".graph.g9." + processamento.getEstrategiaString());
-                }
-            }
-        }
+        processamento.dumpResultadoSeInteressante();
     }
 
     void verboseResultadoFinal(Processamento processamento) {

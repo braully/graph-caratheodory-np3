@@ -62,7 +62,12 @@ public class PipeGraph {
         options.addOption(output);
 
         Option commitfail = new Option("cf", "commit-fail", true, "Commit count fail");
+        commitfail.setRequired(false);
         options.addOption(commitfail);
+
+        Option parallel = new Option("p", "parallel", true, "Parallel process");
+        parallel.setRequired(false);
+        options.addOption(parallel);
 
         Option merge = new Option("mc", "merege-continue", true, "merge multiple continue process from comb state");
         loadprocess.setRequired(false);
@@ -134,11 +139,6 @@ public class PipeGraph {
             System.out.println("...Ok");
         }
 
-        String mc = cmd.getOptionValue("merge-continue");
-        if (mc != null) {
-            Processamento subprocessamento = processamento.fork();
-        }
-
         if (cmd.hasOption("check-possibility")) {
             processamento.recheckPossibilities();
             System.out.println("Graph...Ok");
@@ -154,10 +154,28 @@ public class PipeGraph {
             }
         }
 
-        if (operationsToExecute.isEmpty()) {
-            operationsToExecute.add(opers[0]);
+        String strparallel = cmd.getOptionValue("parallel");
+        if (strparallel != null && !strparallel.isEmpty()) {
+            processamento.ordenarTrabalhoPorCaminhosPossiveis();
+            /* */
+            List<TrabalhoProcessamento> processos = new ArrayList<>();
+            Integer numThreads = Integer.parseInt(strparallel.trim().replaceAll("\\D", ""));
+            int size = processamento.trabalhoPorFazer.size();
+            numThreads = Integer.min(size, numThreads);
+            for (Integer i = 0; i < numThreads; i++) {
+                processos.add(new TrabalhoProcessamento(i));
+            }
+            processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
         }
 
+        String mc = cmd.getOptionValue("merge-continue");
+        if (mc != null) {
+            Processamento subprocessamento = processamento.fork();
+        }
+
+//        if (operationsToExecute.isEmpty()) {
+//            operationsToExecute.add(opers[0]);
+//        }
         for (IGenStrategy operation : operationsToExecute) {
             operation.generateGraph(processamento);
         }

@@ -10,6 +10,7 @@ import com.github.braully.graph.UtilGraph;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static tmp.UtilTmp.fileDump;
+import static tmp.UtilTmp.hostname;
+import static tmp.UtilTmp.max_length_file;
 
 /**
  *
@@ -268,7 +272,7 @@ public class Processamento {
         return insumo.degree(i) == k;
     }
 
-    Processamento fork() {
+    synchronized Processamento fork() {
         Processamento sub = new Processamento();
 //        this.insumo = graph;
         sub.vertices = this.vertices;
@@ -287,5 +291,74 @@ public class Processamento {
         sub.bfsRankingSegundaOpcao = new BFSTmp(numVertices);
 
         return sub;
+    }
+
+    void dumpResultadoSeInteressante() {
+        dumpResultadoSeInteressante(this);
+    }
+
+    void dumpResultadoSeInteressante(Processamento processamento) {
+        if (processamento.dumpResultadoPeriodicamente && System.currentTimeMillis() - processamento.lastime > UtilTmp.ALERT_HOUR) {
+            System.out.println("Alert hour ");
+            UtilTmp.dumpStringIdentified(processamento.getEstrategiaString());
+            UtilTmp.dumpString(String.format(" rbcount[%d,%d,%d,%d]=%d", processamento.rbcount[0], processamento.rbcount[1],
+                    processamento.rbcount[2], processamento.rbcount[3],
+                    (processamento.rbcount[0] + processamento.rbcount[1] + processamento.rbcount[2] + processamento.rbcount[3])));
+            processamento.rbcount[0] = processamento.rbcount[1] = processamento.rbcount[2] = processamento.rbcount[3] = 0;
+            processamento.lastime = System.currentTimeMillis();
+            //                        printVertAddArray(insumo, numArestasIniciais);
+
+            String lastAdd = String.format(" last+[%5d](%4d,%4d) \n", insumo.getEdgeCount(), processamento.trabalhoAtual, melhorOpcaoLocal);
+            UtilTmp.dumpString(lastAdd);
+            UtilTmp.printCurrentItme();
+
+            if (processamento.longestresult < processamento.insumo.getEdgeCount() || System.currentTimeMillis() - processamento.lastime2 > UtilTmp.ALERT_HOUR_12) {
+                processamento.lastime2 = System.currentTimeMillis();
+                if (processamento.longestresult < processamento.insumo.getEdgeCount()) {
+                    System.out.print("new longest  result: ");
+                    processamento.longestresult = processamento.insumo.getEdgeCount();
+                    System.out.println(processamento.longestresult);
+                }
+                UtilTmp.dumpVertAddArray(processamento.insumo,
+                        processamento.numArestasIniciais,
+                        processamento.caminhoPercorrido);
+                if (processamento.k > 7) {
+                    UtilTmp.dumpOverrideString(processamento.insumo.getEdgeString(), ".graph.g9." + processamento.getEstrategiaString());
+                }
+            }
+        }
+    }
+
+    void printGraphCaminhoPercorrido() {
+        try {
+            System.out.print("vert-adds: ");
+            for (int i = numArestasIniciais; i < insumo.getEdgeCount(); i++) {
+                Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
+                String str = String.format("{%d}(%d,%d)",
+                        i, insumo.getEndpoints(i).getFirst(),
+                        insumo.getEndpoints(i).getSecond());
+                System.out.printf(str);
+                System.out.print("[");
+
+                for (Integer j : opcoesTestadas) {
+                    String jstr = j.toString();
+                    System.out.print(jstr);
+                    System.out.print(",");
+                }
+
+                System.out.print("] ");
+            }
+            System.out.println();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    void ordenarTrabalhoPorFazerNatual() {
+        Collections.sort(trabalhoPorFazer);
+    }
+
+    void ordenarTrabalhoPorCaminhosPossiveis() {
+        Collections.sort(trabalhoPorFazer, new ComparatorTrabalhoPorFazer(this.caminhosPossiveis));
     }
 }
