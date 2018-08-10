@@ -34,6 +34,10 @@ public class PipeGraph {
         loadprocess.setRequired(false);
         options.addOption(loadprocess);
 
+        Option mergecontinue = new Option("mc", "merge-continue", true, "continue process from comb state");
+        mergecontinue.setRequired(false);
+        options.addOption(mergecontinue);
+
         Option loadstart = new Option("l", "load-start", false, "load start information");
         loadstart.setRequired(false);
         options.addOption(loadstart);
@@ -128,6 +132,11 @@ public class PipeGraph {
         if (loadProcess != null) {
             processamento.loadCaminho(loadProcess);
             System.out.println("...Ok");
+        }
+
+        String mc = cmd.getOptionValue("merge-continue");
+        if (mc != null) {
+            Processamento subprocessamento = processamento.fork();
         }
 
         if (cmd.hasOption("check-possibility")) {

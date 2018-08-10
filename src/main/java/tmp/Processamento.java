@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -267,5 +266,26 @@ public class Processamento {
 
     boolean verticeComplete(Integer i) {
         return insumo.degree(i) == k;
+    }
+
+    Processamento fork() {
+        Processamento sub = new Processamento();
+//        this.insumo = graph;
+        sub.vertices = this.vertices;
+        sub.caminhosPossiveis = caminhosPossiveis;
+        sub.k = k;
+        sub.numVertices = numVertices;
+        sub.numAretasFinais = numAretasFinais;
+        sub.numArestasIniciais = numArestasIniciais;
+
+        sub.insumo = insumo.clone();
+        sub.trabalhoPorFazer = new LinkedList<>(trabalhoPorFazer);
+        sub.caminhoPercorrido = UtilTmp.cloneMap(caminhoPercorrido);
+        sub.historicoRanking = new TreeMap<>();
+        sub.bfsalg = new BFSTmp(numVertices);
+        sub.bfsRanking = new BFSTmp(numVertices);
+        sub.bfsRankingSegundaOpcao = new BFSTmp(numVertices);
+
+        return sub;
     }
 }

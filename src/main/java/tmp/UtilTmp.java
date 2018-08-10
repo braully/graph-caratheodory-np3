@@ -439,4 +439,12 @@ public class UtilTmp {
         }
         return clone;
     }
+
+    static TreeMap<Integer, Collection<Integer>> cloneMap(TreeMap<Integer, Collection<Integer>> caminhoPercorrido) {
+        TreeMap<Integer, Collection<Integer>> clone = new TreeMap<>();
+        for (Map.Entry<Integer, Collection<Integer>> e : caminhoPercorrido.entrySet()) {
+            clone.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+        return clone;
+    }
 }
