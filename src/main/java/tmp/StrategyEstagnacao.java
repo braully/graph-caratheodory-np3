@@ -299,6 +299,7 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     Integer avaliarMelhorOpcao(Processamento processsamento) {
+        processsamento.opcoesPossiveis = processsamento.caminhosPossiveis.get(processsamento.trabalhoAtual);
         processsamento.bfsalg.labelDistances(processsamento.insumo, processsamento.trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
         sortAndRanking(processsamento);

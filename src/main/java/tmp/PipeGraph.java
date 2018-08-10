@@ -157,6 +157,7 @@ public class PipeGraph {
         String strparallel = cmd.getOptionValue("parallel");
         if (strparallel != null && !strparallel.isEmpty()) {
             processamento.ordenarTrabalhoPorCaminhosPossiveis();
+            UtilTmp.printCurrentItme();
             /* */
             List<TrabalhoProcessamento> processos = new ArrayList<>();
             Integer numThreads = Integer.parseInt(strparallel.trim().replaceAll("\\D", ""));
