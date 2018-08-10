@@ -453,7 +453,7 @@ public class UtilTmp {
         Integer ret = null;
         if (bloco != null) {
             int size = bloco.size();
-            bloco.get(posicaoAtual % size);
+            ret = bloco.get(posicaoAtual % size);
         }
         return ret;
     }
