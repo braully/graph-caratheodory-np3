@@ -20,11 +20,14 @@ public class StrategyBlock
 
     public void generateGraph(Processamento processamento) {
         verboseInicioGeracao(processamento);
+        ordenacaoFimEtapa(processamento);
+        
         TreeMap<Integer, LinkedList<Integer>> blocos = new TreeMap<>();
         TreeMap<Integer, LinkedList<Integer>> blocosConcluidos = new TreeMap<>();
         Integer count = 0;
         List<Integer> ant = processamento.caminhosPossiveis.get(processamento.trabalhoPorFazer.get(0));
         blocos.put(count, new LinkedList<>());
+
         for (Integer e : processamento.trabalhoPorFazer) {
             List<Integer> at = processamento.caminhosPossiveis.get(e);
             if (!at.equals(ant)) {
@@ -68,7 +71,7 @@ public class StrategyBlock
                     processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
                     verboseFimEtapa(processamento);
                 }
-                ordenacaoFimEtapa(processamento);
+//                ordenacaoFimEtapa(processamento);
                 if (blocoidx >= bloco.size()) {
                     blocoidx = 0;
                 }
@@ -81,6 +84,7 @@ public class StrategyBlock
                 blocos.remove(firstEntry.getKey());
                 System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
             }
+            verboseFimEtapa(processamento);
         }
         verboseResultadoFinal(processamento);
     }
