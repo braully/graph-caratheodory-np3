@@ -48,28 +48,32 @@ public class StrategyEstagnacao implements IGenStrategy {
         }
         while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
-            processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);
-            processamento.marcoInicial = processamento.insumo.getEdgeCount();
-
-            verboseInicioEtapa(processamento);
-//            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
-
-            while (trabalhoNaoAcabou(processamento)
-                    && temOpcoesDisponiveis(processamento)) {
-                if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
-                    processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-                }
-                processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
-                adicionarMellhorOpcao(processamento);
-            }
-            if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
-                processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
-            }
-            ordenacaoFimEtapa(processamento);
-            verboseFimEtapa(processamento);
+            estagnarVertice(processamento);
         }
 //        printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
         verboseResultadoFinal(processamento);
+    }
+
+    public void estagnarVertice(Processamento processamento) throws IllegalStateException {
+        processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);
+        processamento.marcoInicial = processamento.insumo.getEdgeCount();
+
+        verboseInicioEtapa(processamento);
+//            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
+
+        while (trabalhoNaoAcabou(processamento)
+                && temOpcoesDisponiveis(processamento)) {
+            if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
+                processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
+            }
+            processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
+            adicionarMellhorOpcao(processamento);
+        }
+        if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
+            processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
+        }
+        ordenacaoFimEtapa(processamento);
+        verboseFimEtapa(processamento);
     }
 
     public void ordenacaoFimEtapa(Processamento processamento) {
