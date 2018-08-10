@@ -54,7 +54,6 @@ public class StrategyBlock
 
             while (temTrabalhoNoBloco(processamento, bloco)) {
                 processamento.trabalhoAtual = bloco.get(blocoidx);
-                processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);
                 processamento.marcoInicial = processamento.insumo.getEdgeCount();
                 verboseInicioEtapa(processamento);
 

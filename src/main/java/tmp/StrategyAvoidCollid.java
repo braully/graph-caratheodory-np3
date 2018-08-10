@@ -27,7 +27,6 @@ public class StrategyAvoidCollid
         }
         while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
-            processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);
             processamento.marcoInicial = processamento.insumo.getEdgeCount();
             verboseInicioEtapa(processamento);
 

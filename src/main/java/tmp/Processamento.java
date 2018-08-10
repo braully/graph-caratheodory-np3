@@ -74,7 +74,6 @@ public class Processamento {
     int len;
     int k;
     Integer trabalhoAtual;
-    List<Integer> opcoesPossiveis;
     int marcoInicial;
 
     BFSTmp bfsalg;
@@ -360,5 +359,9 @@ public class Processamento {
 
     void ordenarTrabalhoPorCaminhosPossiveis() {
         Collections.sort(trabalhoPorFazer, new ComparatorTrabalhoPorFazer(this.caminhosPossiveis));
+    }
+
+    List<Integer> getOpcoesPossiveisAtuais() {
+        return caminhosPossiveis.get(trabalhoAtual);
     }
 }

@@ -56,7 +56,6 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     public void estagnarVertice(Processamento processamento) throws IllegalStateException {
-        processamento.opcoesPossiveis = processamento.caminhosPossiveis.get(processamento.trabalhoAtual);
         processamento.marcoInicial = processamento.insumo.getEdgeCount();
 
         verboseInicioEtapa(processamento);
@@ -299,19 +298,18 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     Integer avaliarMelhorOpcao(Processamento processsamento) {
-        processsamento.opcoesPossiveis = processsamento.caminhosPossiveis.get(processsamento.trabalhoAtual);
         processsamento.bfsalg.labelDistances(processsamento.insumo, processsamento.trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
         sortAndRanking(processsamento);
         Collection<Integer> jaSelecionados = processsamento.caminhoPercorrido.get(processsamento.insumo.getEdgeCount());
         Integer indice = jaSelecionados.size();
-        Integer melhorOpcao = getOpcao(processsamento.opcoesPossiveis, jaSelecionados);
+        Integer melhorOpcao = getOpcao(processsamento.getOpcoesPossiveisAtuais(), jaSelecionados);
         return melhorOpcao;
     }
 
     void sortAndRanking(Processamento processamento) {
         Integer[] bfs = processamento.bfsalg.bfs;
-        processamento.opcoesPossiveis.sort(getComparatorProfundidade(processamento).setBfs(bfs));
+        processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
         int posicaoAtual = processamento.insumo.getEdgeCount();
         Collection<Integer> opcoesPassadas = processamento.caminhoPercorrido.get(processamento.insumo.getEdgeCount());
         if (processamento.rankearOpcoes) {
@@ -323,8 +321,8 @@ public class StrategyEstagnacao implements IGenStrategy {
 //                for (i = 0; i < processamento.ranking.length; i++) {
 //                    processamento.ranking[i] = 0;
 //                }
-                for (i = 0; i < processamento.opcoesPossiveis.size(); i++) {
-                    Integer val = processamento.opcoesPossiveis.get(i);
+                for (i = 0; i < processamento.getOpcoesPossiveisAtuais().size(); i++) {
+                    Integer val = processamento.getOpcoesPossiveisAtuais().get(i);
                     if (bfs[val] == 4) {
                         processamento.bfsRanking.bfsRanking(processamento.insumo, processamento.trabalhoAtual, val);
 //                        processamento.ranking[val] = processamento.bfsRanking.depthcount[4];
@@ -369,10 +367,10 @@ public class StrategyEstagnacao implements IGenStrategy {
 //                    }
                 }
 //                opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
-                processamento.opcoesPossiveis.subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
+                processamento.getOpcoesPossiveisAtuais().subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
             } else {
 //                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
-                List<Integer> subList = processamento.opcoesPossiveis.subList(0, rankingAtual.size());
+                List<Integer> subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
                 subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
                 //Reaproveintando ranking anteriormente calculado
             }
