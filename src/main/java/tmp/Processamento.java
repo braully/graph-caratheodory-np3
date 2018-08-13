@@ -293,6 +293,9 @@ public class Processamento {
         sub.veboseFimEtapa = this.veboseFimEtapa;
         sub.vebosePossibilidadesIniciais = this.vebosePossibilidadesIniciais;
 
+        /* ranking */
+        sub.rankearOpcoes = this.rankearOpcoes;
+        sub.rankearOpcoesProfundidade = this.rankearOpcoesProfundidade;
         return sub;
     }
 
