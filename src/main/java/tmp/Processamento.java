@@ -10,7 +10,6 @@ import com.github.braully.graph.UtilGraph;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,9 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static tmp.UtilTmp.fileDump;
-import static tmp.UtilTmp.hostname;
-import static tmp.UtilTmp.max_length_file;
 
 /**
  *
@@ -47,7 +43,9 @@ public class Processamento {
     boolean anteciparVazio = true;
     boolean descartarOpcoesNaoOptimais = true;
 
-    boolean falhaPrimeiroRollBack = false;
+    boolean falhaInRollBack = false;
+    int falhaRollbackCount = 0;
+
     boolean falhaInCommitCount = false;
     int falhaCommitCount = 0;
 

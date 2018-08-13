@@ -65,6 +65,10 @@ public class PipeGraph {
         commitfail.setRequired(false);
         options.addOption(commitfail);
 
+        Option rollbackfail = new Option("rf", "rollback-fail", true, "Rollback count fail");
+        rollbackfail.setRequired(false);
+        options.addOption(rollbackfail);
+
         Option parallel = new Option("p", "parallel", true, "Parallel process");
         parallel.setRequired(false);
         options.addOption(parallel);
@@ -112,6 +116,12 @@ public class PipeGraph {
         if (strfailcom != null && !strfailcom.isEmpty()) {
             processamento.falhaInCommitCount = true;
             processamento.falhaCommitCount = Integer.parseInt(strfailcom.trim());
+        }
+
+        String strrollbackfail = cmd.getOptionValue("rollback-fail");
+        if (strrollbackfail != null && !strrollbackfail.isEmpty()) {
+            processamento.falhaInRollBack = true;
+            processamento.falhaRollbackCount = Integer.parseInt(strrollbackfail.trim());
         }
 
         String inputFilePath = cmd.getOptionValue("input");

@@ -181,8 +181,10 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-        if (processamento.falhaPrimeiroRollBack) {
-            throw new IllegalStateException("Interrução forçada");
+        if (processamento.falhaInRollBack) {
+            if (processamento.falhaRollbackCount-- <= 0) {
+                throw new IllegalStateException("Interrução forçada");
+            }
         }
 
         processamento.caminhoPercorrido.tailMap(processamento.insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
