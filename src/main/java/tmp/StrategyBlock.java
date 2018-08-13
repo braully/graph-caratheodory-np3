@@ -45,32 +45,43 @@ public class StrategyBlock
             Map.Entry<Integer, LinkedList<Integer>> firstEntry = blocos.firstEntry();
             LinkedList<Integer> bloco = firstEntry.getValue();
             System.out.printf("Processando bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
+            processamento.marcoInicial = processamento.insumo.getEdgeCount();
 
-            while (temTrabalhoNoBloco(processamento, bloco)) {
-                processamento.trabalhoAtual = UtilTmp.getOverflow(bloco, processamento.getPosicaoAtual());
-                processamento.marcoInicial = processamento.insumo.getEdgeCount();
-                verboseInicioEtapa(processamento);
+            estagnarBloco(processamento, bloco);
 
-                if (trabalhoNaoAcabou(processamento)
-                        && temOpcoesDisponiveis(processamento)) {
-                    if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
-                        processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-                    }
-                    processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
-                    adicionarMellhorOpcao(processamento);
-                }
-                if (trabalhoAcabou(processamento, processamento.trabalhoAtual)
-                        && temFuturo(processamento.trabalhoAtual)) {
-                    processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
-                    verboseFimEtapa(processamento);
-                }
+            if (processamento.marcoInicial < processamento.insumo.getEdgeCount()) {
+                processamento.printGraphCaminhoPercorrido();
+                throw new IllegalStateException("Grafo inviavel no bloco: " + bloco);
             }
+
+            if (trabalhoAcabou(processamento, processamento.trabalhoAtual)
+                    && temFuturo(processamento.trabalhoAtual)) {
+                processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
+                verboseFimEtapa(processamento);
+            }
+
             blocosConcluidos.put(firstEntry.getKey(), firstEntry.getValue());
             blocos.remove(firstEntry.getKey());
             System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
             verboseFimEtapa(processamento);
         }
         verboseResultadoFinal(processamento);
+    }
+
+    public void estagnarBloco(Processamento processamento, LinkedList<Integer> bloco) {
+        while (temTrabalhoNoBloco(processamento, bloco)) {
+            processamento.trabalhoAtual = UtilTmp.getOverflow(bloco, processamento.getPosicaoAtual());
+            verboseInicioEtapa(processamento);
+
+            if (trabalhoNaoAcabou(processamento)
+                    && temOpcoesDisponiveis(processamento)) {
+                if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
+                    processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
+                }
+                processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
+                adicionarMellhorOpcao(processamento);
+            }
+        }
     }
 
 //    @Override
