@@ -54,12 +54,6 @@ public class StrategyBlock
                 throw new IllegalStateException("Grafo inviavel no bloco: " + bloco);
             }
 
-            if (trabalhoAcabou(processamento, processamento.trabalhoAtual)
-                    && temFuturo(processamento.trabalhoAtual)) {
-                processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
-                verboseFimEtapa(processamento);
-            }
-
             blocosConcluidos.put(firstEntry.getKey(), firstEntry.getValue());
             blocos.remove(firstEntry.getKey());
             System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
