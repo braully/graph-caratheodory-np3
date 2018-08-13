@@ -308,6 +308,7 @@ public class Processamento {
         sub.insumo = insumo.clone();
         sub.trabalhoPorFazer = new LinkedList<>(trabalhoPorFazer);
         sub.caminhoPercorrido = UtilTmp.cloneMap(caminhoPercorrido);
+//        sub.caminhosPossiveis = UtilTmp.cloneMap(caminhosPossiveis);
         sub.historicoRanking = new TreeMap<>();
         sub.bfsalg = new BFSTmp(numVertices);
         sub.bfsRanking = new BFSTmp(numVertices);
