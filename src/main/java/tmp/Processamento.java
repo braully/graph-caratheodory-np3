@@ -7,6 +7,7 @@ package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
 import com.github.braully.graph.UtilGraph;
+import edu.uci.ics.jung.graph.util.Pair;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,9 +16,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -205,6 +208,7 @@ public class Processamento {
         System.out.println("Calculando trabalho a fazer");
         trabalhoPorFazer.clear();
         caminhosPossiveis.clear();
+        caminhosPossiveisOriginal.clear();
 
         for (Integer v : vertices) {
             int remain = k - insumo.degree(v);
@@ -219,6 +223,7 @@ public class Processamento {
             Integer v = trabalhoPorFazer.get(i);
             bfsalg.labelDistances(insumo, v);
             caminhosPossiveis.put(v, new ArrayList<>());
+            caminhosPossiveisOriginal.put(v, new ArrayList<>());
             int countp = 0;
             int dv = k - insumo.degree(v);
             for (int j = 0; j < trabalhoPorFazer.size(); j++) {
@@ -397,4 +402,47 @@ public class Processamento {
         return insumo.getEdgeCount();
     }
 
+    void mergeProcessamentos(List<Processamento> processamentos) {
+        System.out.println("Merge current processamento");
+        printGraphCount();
+        System.out.println("With anothers " + processamentos.size() + " processamentos");
+        int count = 0;
+        int added = 0;
+        for (Processamento p : processamentos) {
+            System.out.println("Merging process " + count++);
+            added = 0;
+            Set<Map.Entry<Integer, Collection<Integer>>> entrySet = p.caminhoPercorrido.entrySet();
+            for (Map.Entry<Integer, Collection<Integer>> e : entrySet) {
+                Pair endpoints = p.insumo.getEndpoints(e.getKey());
+                Integer first = (Integer) endpoints.getFirst();
+                Integer second = (Integer) endpoints.getSecond();
+                if (addEdgeIfConsistent(first, second)) {
+                    added++;
+                }
+            }
+            System.out.println("Added " + added);
+        }
+        removerTrabalhoPorFazerVerticesCompletos();
+        printGraphCount();
+    }
+
+    boolean addEdgeIfConsistent(Integer first, Integer second) {
+        boolean ret = false;
+        bfsRankingSegundaOpcao.bfs(insumo, first);
+        if (bfsRankingSegundaOpcao.getDistance(insumo, second) == 4) {
+            insumo.addEdge(first, second);
+            ret = true;
+        }
+        return ret;
+    }
+
+    private void removerTrabalhoPorFazerVerticesCompletos() {
+        Set<Integer> removeList = new HashSet<>();
+        for (Integer v : trabalhoPorFazer) {
+            if (this.verticeComplete(v)) {
+                removeList.add(v);
+            }
+        }
+        trabalhoPorFazer.removeAll(removeList);
+    }
 }

@@ -196,6 +196,12 @@ public class PipeGraph {
                 processos.add(new TrabalhoProcessamento(i));
             }
             processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
+
+            List<Processamento> processamentos = new ArrayList<>();
+            for (TrabalhoProcessamento processo : processos) {
+                processamentos.add(processo.last);
+            }
+            processamento.mergeProcessamentos(processamentos);
         }
 
         String mc = cmd.getOptionValue("merge-continue");
