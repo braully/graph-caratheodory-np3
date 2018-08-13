@@ -10,11 +10,11 @@ import java.util.TreeMap;
 public class StrategyBlockParallel
         extends StrategyBlock
         implements IGenStrategy {
-
+    
     public String getName() {
         return "Gerar em Bloco Paralelamente";
     }
-
+    
     @Override
     public void processarBlocos(TreeMap<Integer, LinkedList<Integer>> blocos, Processamento processamento) throws IllegalStateException {
         Map<Integer, List<Integer>> blocksBySize = new HashMap<>();
@@ -28,8 +28,29 @@ public class StrategyBlockParallel
             }
             blocksBySize.putIfAbsent(size, list);
         }
-
+        
         System.out.println(" " + blocos.size() + " Blocos ");
         System.out.println(blocksBySize.get(great).size() + " blocos de tamanho " + great + " serão processados");
+        
+        UtilTmp.printCurrentItme();
+        /* */
+        List<TrabalhoProcessamento> processos = new ArrayList<>();
+        Integer numThreads = blocksBySize.get(great).size();
+        List<Integer> blocosPraProcessar = blocksBySize.get(great);
+        
+        for (Integer i = 0; i < numThreads; i++) {
+            LinkedList<Integer> bloco = blocos.get(blocosPraProcessar.get(i));
+//            Integer vp = blocos.get().get(0);
+            Integer vertice = bloco.get(0);
+            processos.add(new TrabalhoProcessamento(vertice));
+        }
+        processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
+        
+        List<Processamento> processamentos = new ArrayList<>();
+        for (TrabalhoProcessamento processo : processos) {
+            processamentos.add(processo.last);
+        }
+        System.out.println("Barreira atingida");
+        processamento.mergeProcessamentos(processamentos);
     }
 }
