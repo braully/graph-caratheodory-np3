@@ -96,6 +96,7 @@ public class Processamento {
         this.vertices = (Collection<Integer>) graph.getVertices();
         this.trabalhoPorFazer = new LinkedList<>();
         this.caminhosPossiveis = new HashMap<>();
+        this.caminhosPossiveisOriginal = new HashMap<>();
         this.caminhoPercorrido = new TreeMap<>();
         this.historicoRanking = new TreeMap<>();
 
@@ -227,13 +228,14 @@ public class Processamento {
                     if (j >= i) {
                         caminhosPossiveis.get(v).add(u);
                     }
+                    caminhosPossiveisOriginal.get(v).add(u);
                 }
             }
             if (countp < dv) {
                 throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v));
             }
         }
-        this.caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);
+//        this.caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);
         this.trabalhoPorFazerOrigianl = new LinkedList<>(trabalhoPorFazer);
         System.out.println("Grafo viavel");
     }
@@ -292,6 +294,7 @@ public class Processamento {
 //        this.insumo = graph;
         sub.vertices = this.vertices;
         sub.caminhosPossiveis = caminhosPossiveis;
+        sub.caminhosPossiveisOriginal = caminhosPossiveisOriginal;
         sub.k = k;
         sub.numVertices = numVertices;
         sub.numAretasFinais = numAretasFinais;
