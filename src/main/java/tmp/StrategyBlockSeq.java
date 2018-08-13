@@ -16,6 +16,7 @@ public class StrategyBlockSeq
             processamento.marcoInicial = processamento.insumo.getEdgeCount();
             processamento.trabalhoAtual = v;
             estagnarVertice(processamento);
+            verboseFimEtapa(processamento);
         }
     }
 }

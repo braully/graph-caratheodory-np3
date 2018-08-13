@@ -261,6 +261,24 @@ public class Processamento {
         }
     }
 
+    void sanitizeGraphPossibility() {
+        for (Integer v : vertices) {
+            int remain = k - insumo.degree(v);
+            if (remain > 0) {
+                int countp = 0;
+                bfsalg.labelDistances(insumo, v);
+                for (Integer u : vertices) {
+                    if (bfsalg.getDistance(insumo, u) == 4 && insumo.degree(u) < k) {
+                        countp++;
+                    }
+                }
+                if (countp < remain) {
+                    throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")");
+                }
+            }
+        }
+    }
+
     void printGraphCount() {
         System.out.println("Vertices : " + (numVertices - trabalhoPorFazer.size()) + "/" + numVertices + " Edges: " + insumo.getEdgeCount() + "/" + numAretasFinais);
     }
@@ -375,4 +393,5 @@ public class Processamento {
     public Integer getPosicaoAtual() {
         return insumo.getEdgeCount();
     }
+
 }

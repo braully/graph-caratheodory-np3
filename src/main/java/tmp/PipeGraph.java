@@ -165,6 +165,14 @@ public class PipeGraph {
             System.out.println("Graph...Ok");
         }
 
+        if (cmd.hasOption("sanitize")) {
+            System.out.println("Sanitize Graph ");
+            processamento.sanitizeGraphPossibility();
+            System.out.println("Recheck possibility ");
+            processamento.recheckPossibilities();
+            System.out.println("Graph...Ok");
+        }
+
         List<IGenStrategy> operationsToExecute = new ArrayList<IGenStrategy>();
         for (int i = 0; i < opers.length; i++) {
             IGenStrategy oper = opers[i];

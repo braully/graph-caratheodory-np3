@@ -17,6 +17,7 @@ public class StrategyBlock
     public void generateGraph(Processamento processamento) {
         verboseInicioGeracao(processamento);
         ordenacaoFimEtapa(processamento);
+        UtilTmp.printCurrentItme();
 
         TreeMap<Integer, LinkedList<Integer>> blocos = new TreeMap<>();
         TreeMap<Integer, LinkedList<Integer>> blocosConcluidos = new TreeMap<>();
