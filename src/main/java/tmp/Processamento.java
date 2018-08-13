@@ -40,7 +40,7 @@ public class Processamento {
     boolean verboseRankingOption = false;
 
     boolean rankearOpcoes = true;
-    int rankearOpcoesProfundidade = 2;
+    int rankearOpcoesProfundidade = 3;
     boolean rankearSegundaOpcoes = false;
 
     boolean anteciparVazio = true;

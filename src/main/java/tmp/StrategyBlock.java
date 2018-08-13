@@ -20,7 +20,6 @@ public class StrategyBlock
         UtilTmp.printCurrentItme();
 
         TreeMap<Integer, LinkedList<Integer>> blocos = new TreeMap<>();
-        TreeMap<Integer, LinkedList<Integer>> blocosConcluidos = new TreeMap<>();
         Integer count = 0;
         List<Integer> ant = processamento.caminhosPossiveis.get(processamento.trabalhoPorFazer.get(0));
         blocos.put(count, new LinkedList<>());
@@ -41,7 +40,12 @@ public class StrategyBlock
             ant = at;
         }
 //        blocos.pollLastEntry();
+        processarBlocos(blocos, processamento);
+        verboseResultadoFinal(processamento);
+    }
 
+    public void processarBlocos(TreeMap<Integer, LinkedList<Integer>> blocos, Processamento processamento) throws IllegalStateException {
+        TreeMap<Integer, LinkedList<Integer>> blocosConcluidos = new TreeMap<>();
         while (!blocos.isEmpty()) {
             Map.Entry<Integer, LinkedList<Integer>> firstEntry = blocos.firstEntry();
             LinkedList<Integer> bloco = firstEntry.getValue();
@@ -60,7 +64,6 @@ public class StrategyBlock
             System.out.printf("Concluido bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
             verboseFimEtapa(processamento);
         }
-        verboseResultadoFinal(processamento);
     }
 
     public void estagnarBloco(Processamento processamento, LinkedList<Integer> bloco) {
