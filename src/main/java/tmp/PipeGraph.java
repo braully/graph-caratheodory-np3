@@ -188,7 +188,6 @@ public class PipeGraph {
             String value = execs[i].getOpt();
             if (cmd.hasOption(value)) {
                 operationsToExecute.add(oper);
-                processamento.recheckPossibilities();
             }
         }
 
