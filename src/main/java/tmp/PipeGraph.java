@@ -75,9 +75,17 @@ public class PipeGraph {
         rollbackfail.setRequired(false);
         options.addOption(rollbackfail);
 
-        Option parallel = new Option("p", "parallel", true, "Parallel process");
+        Option parallel = new Option("np", "nparallel", true, "Parallel process");
         parallel.setRequired(false);
         options.addOption(parallel);
+
+        Option vparallel = new Option("vp", "vparallel", true, "Parallel process");
+        vparallel.setRequired(false);
+        options.addOption(vparallel);
+
+        Option iparallel = new Option("iparallel", "iparallel", true, "Parallel process");
+        iparallel.setRequired(false);
+        options.addOption(iparallel);
 
         Option merge = new Option("mc", "merege-continue", true, "merge multiple continue process from comb state");
         loadprocess.setRequired(false);
@@ -184,24 +192,52 @@ public class PipeGraph {
             }
         }
 
-        String strparallel = cmd.getOptionValue("parallel");
-        if (strparallel != null && !strparallel.isEmpty()) {
+        if (cmd.hasOption("nparallel") || cmd.hasOption("vparallel") || cmd.hasOption("iparallel")) {
             processamento.ordenarTrabalhoPorCaminhosPossiveis();
-            UtilTmp.printCurrentItme();
-            /* */
-            List<TrabalhoProcessamento> processos = new ArrayList<>();
+        }
+
+        List<TrabalhoProcessamento> processos = new ArrayList<>();
+        String strparallel = cmd.getOptionValue("nparallel");
+        if (strparallel != null && !strparallel.isEmpty()) {
             Integer numThreads = Integer.parseInt(strparallel.trim().replaceAll("\\D", ""));
             int size = processamento.trabalhoPorFazer.size();
             numThreads = Integer.min(size, numThreads);
             for (Integer i = 0; i < numThreads; i++) {
                 processos.add(new TrabalhoProcessamento(i));
             }
-            processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
+        }
 
+        strparallel = cmd.getOptionValue("iparallel");
+        if (strparallel != null && !strparallel.isEmpty()) {
+            String[] strs = strparallel.trim().split(",");
+            for (String str : strs) {
+                Integer idx = Integer.parseInt(str.trim().replaceAll("\\D", ""));
+                processos.add(new TrabalhoProcessamento(idx));
+            }
+        }
+
+        strparallel = cmd.getOptionValue("vparallel");
+        if (strparallel != null && !strparallel.isEmpty()) {
+            String[] strs = strparallel.trim().split(",");
+            for (String str : strs) {
+                Integer vert = Integer.parseInt(str.trim().replaceAll("\\D", ""));
+                Integer idx = processamento.trabalhoPorFazer.indexOf(vert);
+                if (idx != null && idx >= 0) {
+                    processos.add(new TrabalhoProcessamento(idx));
+                } else {
+                    System.out.println("Index not found for vet: " + str);
+                }
+            }
+        }
+
+        if (!processos.isEmpty()) {
+            UtilTmp.printCurrentItme();
+            processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
             List<Processamento> processamentos = new ArrayList<>();
             for (TrabalhoProcessamento processo : processos) {
                 processamentos.add(processo.last);
             }
+            UtilTmp.printCurrentItme();
             processamento.mergeProcessamentos(processamentos);
         }
 
