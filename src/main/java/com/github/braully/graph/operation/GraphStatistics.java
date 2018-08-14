@@ -11,12 +11,12 @@ import java.util.Queue;
 import org.apache.log4j.Logger;
 
 public class GraphStatistics implements IGraphOperation {
-    
+
     static final String type = "Graph Class";
     static final String description = "Statistics";
-    
+
     private static final Logger log = Logger.getLogger(GraphWS.class);
-    
+
     @Override
     public Map<String, Object> doOperation(UndirectedSparseGraphTO<Integer, Integer> graph) {
         /* Processar a buscar pelo hullset e hullnumber */
@@ -31,10 +31,10 @@ public class GraphStatistics implements IGraphOperation {
             } else {
                 response.put("Girth", "infinity");
             }
-            
+
             response.put("n", graph.getVertexCount());
             response.put("m", graph.getEdgeCount());
-            
+
             int Lambda = 0, lambda = Integer.MAX_VALUE;
             for (Integer i : (Collection<Integer>) graph.getVertices()) {
                 lambda = Math.min(lambda, graph.getNeighborCount(i));
@@ -66,15 +66,15 @@ public class GraphStatistics implements IGraphOperation {
          * Local inner class to represent vertices found at a certain depth.
          */
         class Node {
-            
+
             public int vertex, depth;
-            
+
             public Node(int vertex, int depth) {
                 this.vertex = vertex;
                 this.depth = depth;
             }
         }
-        
+
         String path = "";
         /* Used for labelling vertices. */
         int[] labels = new int[graph.getVertexCount()];
@@ -141,11 +141,11 @@ public class GraphStatistics implements IGraphOperation {
         /* We don't want any division by zero errors. */
         return best > 0 ? best : 1;
     }
-    
+
     public String getTypeProblem() {
         return type;
     }
-    
+
     public String getName() {
         return description;
     }

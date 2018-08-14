@@ -5,33 +5,45 @@
  */
 package tmp;
 
+import java.util.LinkedList;
+
 /**
  *
  * @author braully
  */
 public class TrabalhoProcessamento extends StrategyEstagnacao {
-    
+
     Integer indiceAtual;
     Processamento last;
-    
+    LinkedList<Integer> bloco;
+
     public String getName() {
         return "Executar Trabalho Processamento";
     }
-    
+
+    TrabalhoProcessamento(LinkedList<Integer> bloco) {
+        this.bloco = bloco;
+        this.indiceAtual = 0;
+    }
+
     public TrabalhoProcessamento(Integer indiceAtual) {
         this.indiceAtual = indiceAtual;
     }
-    
+
     @Override
     public void generateGraph(Processamento processamento) {
         last = processamento;
-        processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(indiceAtual);
+        if (bloco == null) {
+            processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(indiceAtual);
+        } else {
+            processamento.trabalhoAtual = bloco.get(indiceAtual);
+        }
         System.out.printf("Trabalho atual %d do indice %d \n", processamento.trabalhoAtual, indiceAtual);
         estagnarVertice(processamento);
         processamento.printGraphCaminhoPercorrido();
         System.out.printf("Concluido trabalho %d do indice %d \n", processamento.trabalhoAtual, indiceAtual);
     }
-    
+
     public void processarProximo() {
         indiceAtual++;
         generateGraph(last);

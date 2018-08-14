@@ -1,7 +1,9 @@
 package tmp;
 
+import com.github.braully.graph.operation.GraphStatistics;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -44,6 +46,10 @@ public class PipeGraph {
         loadstart.setRequired(false);
         options.addOption(loadstart);
 
+        Option stat = new Option("st", "stat", false, "statitics from graph");
+        stat.setRequired(false);
+        options.addOption(stat);
+
         Option verb = new Option("v", "verbose", false, "verbose processing");
         options.addOption(verb);
 
@@ -74,6 +80,10 @@ public class PipeGraph {
         Option rollbackfail = new Option("rf", "rollback-fail", true, "Rollback count fail");
         rollbackfail.setRequired(false);
         options.addOption(rollbackfail);
+
+        Option notfailinv = new Option("nfi", "not-fail-inviable", false, "Not fail on inviable graph");
+        notfailinv.setRequired(false);
+        options.addOption(notfailinv);
 
         Option parallel = new Option("np", "nparallel", true, "Parallel process");
         parallel.setRequired(false);
@@ -125,6 +135,9 @@ public class PipeGraph {
         if (cmd.hasOption("verbose-fim")) {
             processamento.veboseFimEtapa = true;
         }
+        if (cmd.hasOption("not-fail-inviable")) {
+            processamento.failInviable = false;
+        }
 
         String strfailcom = cmd.getOptionValue("commit-fail");
         if (strfailcom != null && !strfailcom.isEmpty()) {
@@ -161,6 +174,14 @@ public class PipeGraph {
             processamento.loadStartFromCache();
             System.out.print("...Ok");
         }
+
+        if (cmd.hasOption("stat")) {
+            GraphStatistics gs = new GraphStatistics();
+            Map result = gs.doOperation(processamento.insumo);
+            System.out.println("Statitics");
+            System.out.println(result);
+        }
+
         processamento.prepareStart();
 
         String loadProcess = cmd.getOptionValue("continue");

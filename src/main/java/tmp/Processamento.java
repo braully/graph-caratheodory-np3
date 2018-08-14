@@ -51,6 +51,7 @@ public class Processamento {
 
     boolean falhaInCommitCount = false;
     int falhaCommitCount = 0;
+    boolean failInviable = true;
 
     final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
     final boolean dumpResultadoPeriodicamente = true;
@@ -237,7 +238,12 @@ public class Processamento {
                 }
             }
             if (countp < dv) {
-                throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v));
+                String sterr = "Grafo inviavel: vetrice " + v + " dv=" + dv + " possi(" + countp + ")=" + caminhosPossiveis.get(v);
+                if (failInviable) {
+                    throw new IllegalStateException(sterr);
+                } else {
+                    System.err.println(sterr);
+                }
             }
         }
 //        this.caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);

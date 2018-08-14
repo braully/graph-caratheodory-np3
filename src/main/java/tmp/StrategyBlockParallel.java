@@ -41,9 +41,9 @@ public class StrategyBlockParallel
         for (Integer i = 0; i < numThreads; i++) {
             LinkedList<Integer> bloco = blocos.get(blocosPraProcessar.get(i));
 //            Integer vp = blocos.get().get(0);
-            Integer vertice = bloco.get(0);
-            Integer indexOf = processamento.trabalhoPorFazer.indexOf(vertice);
-            processos.add(new TrabalhoProcessamento(indexOf));
+//            Integer vertice = bloco.get(0);
+//            Integer indexOf = processamento.trabalhoPorFazer.indexOf(vertice);
+            processos.add(new TrabalhoProcessamento(bloco));
         }
         processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
         List<Processamento> processamentos = new ArrayList<>();
@@ -55,5 +55,7 @@ public class StrategyBlockParallel
         processos.parallelStream().forEach(p -> p.processarProximo());
         System.out.println("Merge");
         processamento.mergeProcessamentos(processamentos);
+        processamento.dumpResultadoSeInteressante();
+
     }
 }
