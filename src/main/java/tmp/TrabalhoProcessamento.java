@@ -10,18 +10,18 @@ package tmp;
  * @author braully
  */
 public class TrabalhoProcessamento extends StrategyEstagnacao {
-
+    
     Integer indiceAtual;
     Processamento last;
-
+    
     public String getName() {
         return "Executar Trabalho Processamento";
     }
-
+    
     public TrabalhoProcessamento(Integer indiceAtual) {
         this.indiceAtual = indiceAtual;
     }
-
+    
     @Override
     public void generateGraph(Processamento processamento) {
         last = processamento;
@@ -30,5 +30,10 @@ public class TrabalhoProcessamento extends StrategyEstagnacao {
         estagnarVertice(processamento);
         processamento.printGraphCaminhoPercorrido();
         System.out.printf("Concluido trabalho %d do indice %d \n", processamento.trabalhoAtual, indiceAtual);
+    }
+    
+    public void processarProximo() {
+        indiceAtual++;
+        generateGraph(last);
     }
 }

@@ -417,7 +417,7 @@ public class Processamento {
                 Pair endpoints = p.insumo.getEndpoints(e.getKey());
                 Integer first = (Integer) endpoints.getFirst();
                 Integer second = (Integer) endpoints.getSecond();
-                if (addEdgeIfConsistent(first, second)) {
+                if (addEdgeIfConsistent(first, second, e.getValue())) {
                     added++;
                 }
             }
@@ -425,6 +425,16 @@ public class Processamento {
         }
         removerTrabalhoPorFazerVerticesCompletos();
         printGraphCount();
+        printGraphCaminhoPercorrido();
+    }
+
+    private boolean addEdgeIfConsistent(Integer first, Integer second, Collection<Integer> value) {
+        int posicaoAtual = insumo.getEdgeCount();
+        boolean ret = addEdgeIfConsistent(first, second);
+        if (ret) {
+            caminhoPercorrido.put(posicaoAtual, new ArrayList<>(value));
+        }
+        return ret;
     }
 
     boolean addEdgeIfConsistent(Integer first, Integer second) {
@@ -446,4 +456,5 @@ public class Processamento {
         }
         trabalhoPorFazer.removeAll(removeList);
     }
+
 }

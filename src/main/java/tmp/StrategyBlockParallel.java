@@ -46,12 +46,14 @@ public class StrategyBlockParallel
             processos.add(new TrabalhoProcessamento(indexOf));
         }
         processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
-
         List<Processamento> processamentos = new ArrayList<>();
         for (TrabalhoProcessamento processo : processos) {
             processamentos.add(processo.last);
         }
         System.out.println("Barreira atingida");
+        UtilTmp.printCurrentItme();
+        processos.parallelStream().forEach(p -> p.processarProximo());
+        System.out.println("Merge");
         processamento.mergeProcessamentos(processamentos);
     }
 }
