@@ -105,9 +105,16 @@ public class StrategyEstagnacao implements IGenStrategy {
         //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
         //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
         if (opcaoViavel(processamento)) {
-            Integer aresta = (Integer) processamento.insumo.addEdge(processamento.trabalhoAtual, processamento.melhorOpcaoLocal);
-            Collection<Integer> subcaminho = processamento.caminhoPercorrido.getOrDefault(aresta, new ArrayList<>());
+            Integer posicaoAtual = processamento.getPosicaoAtual();
+            Collection<Integer> subcaminho = processamento.caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
             subcaminho.add(processamento.melhorOpcaoLocal);
+            if (processamento.verticeComplete(processamento.melhorOpcaoLocal)) {
+                throw new IllegalStateException("vertice statured " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
+            }
+            Integer aresta = (Integer) processamento.insumo.addEdge(processamento.trabalhoAtual, processamento.melhorOpcaoLocal);
+            if (!aresta.equals(posicaoAtual)) {
+                throw new IllegalStateException("Edge not added: " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
+            }
             processamento.caminhoPercorrido.putIfAbsent(aresta, subcaminho);
             if (trabalhoAcabou(processamento, processamento.melhorOpcaoLocal)) {
                 processamento.trabalhoPorFazer.remove(processamento.melhorOpcaoLocal);

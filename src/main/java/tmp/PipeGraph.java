@@ -38,6 +38,10 @@ public class PipeGraph {
         loadprocess.setRequired(false);
         options.addOption(loadprocess);
 
+        Option compresss = new Option("uc", "uncompress-possibility", false, "compress possiblity list");
+        compresss.setRequired(false);
+        options.addOption(compresss);
+
         Option mergecontinue = new Option("mc", "merge-continue", true, "continue process from comb state");
         mergecontinue.setRequired(false);
         options.addOption(mergecontinue);
@@ -137,6 +141,9 @@ public class PipeGraph {
         }
         if (cmd.hasOption("not-fail-inviable")) {
             processamento.failInviable = false;
+        }
+        if (cmd.hasOption("uncompress-possibility")) {
+            processamento.compressPossiblidades = false;
         }
 
         String strfailcom = cmd.getOptionValue("commit-fail");

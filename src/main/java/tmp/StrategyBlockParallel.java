@@ -52,7 +52,7 @@ public class StrategyBlockParallel
         }
         System.out.println("Barreira atingida");
         UtilTmp.printCurrentItme();
-        processos.parallelStream().forEach(p -> p.processarProximo());
+//        processos.parallelStream().forEach(p -> p.processarProximo());
         System.out.println("Merge");
         processamento.mergeProcessamentos(processamentos);
         processamento.dumpResultadoSeInteressante();

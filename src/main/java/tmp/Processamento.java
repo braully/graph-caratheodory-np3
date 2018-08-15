@@ -53,6 +53,8 @@ public class Processamento {
     int falhaCommitCount = 0;
     boolean failInviable = true;
 
+    boolean compressPossiblidades = true;
+
     final boolean ordenarTrabalhoPorFazerPorPrimeiraOpcao = true;
     final boolean dumpResultadoPeriodicamente = true;
 
@@ -231,7 +233,7 @@ public class Processamento {
                 Integer u = trabalhoPorFazer.get(j);
                 if (bfsalg.getDistance(insumo, u) == 4) {
                     countp++;
-                    if (j >= i) {
+                    if (j >= i || !compressPossiblidades) {
                         caminhosPossiveis.get(v).add(u);
                     }
                     caminhosPossiveisOriginal.get(v).add(u);
