@@ -275,6 +275,7 @@ public class Processamento {
     }
 
     void sanitizeGraphPossibility() {
+        Set<Integer> verticeSanitizar = new HashSet<>();
         for (Integer v : vertices) {
             int remain = k - insumo.degree(v);
             if (remain > 0) {
@@ -286,7 +287,8 @@ public class Processamento {
                     }
                 }
                 if (countp < remain) {
-                    throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")");
+//                    throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")");
+                    verticeSanitizar.add(v);
                 }
             }
         }
