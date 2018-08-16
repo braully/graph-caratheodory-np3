@@ -68,6 +68,7 @@ public class Processamento {
     TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
     Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
 //    LinkedList<Integer> edegesAdded = new LinkedList<>();
+    Map<Integer, TreeMap<Integer, Collection<Integer>>> pendencia = new HashMap<>();
 
     int numArestasIniciais;
     int numVertices;
@@ -251,6 +252,8 @@ public class Processamento {
                 }
             }
         }
+
+        ordenarTrabalhoPorCaminhosPossiveis();
 //        this.caminhosPossiveisOriginal = UtilTmp.cloneMap(caminhosPossiveis);
         this.trabalhoPorFazerOrigianl = new LinkedList<>(trabalhoPorFazer);
         System.out.println("Grafo viavel");
@@ -281,7 +284,7 @@ public class Processamento {
                     }
                 }
                 if (countp < remain) {
-                    String sterr = "Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")=" + caminhosPossiveis.get(v);
+                    String sterr = "Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")";
                     System.err.println(sterr);
                     inviavel = true;
                 }
@@ -317,17 +320,18 @@ public class Processamento {
             System.out.println("Sanitizando vertice " + v);
             int degree = insumoTmp.degree(v);
             Integer posicaoAtualAbsoluta = getPosicaoAtualAbsoluta(v);
-            for (int i = 0; i < degree; i++) {
+            for (int i = degree; i >= 0; i--) {
                 Integer indiceAresta = posicaoAtualAbsoluta - degree + i;
                 Pair endpoints = insumoTmp.getEndpoints(indiceAresta);
                 if (endpoints != null) {
-                    Collection<Integer> percorrido = caminhoPercorrido.get(posicaoAtualAbsoluta);
+                    Collection<Integer> percorrido = caminhoPercorrido.get(indiceAresta);
                     if (!endpoints.getFirst().equals(v)) {
                         throw new IllegalStateException("Vertices em sequencias incorrestas: " + v + " " + endpoints + " " + posicaoAtualAbsoluta);
                     }
-                    addPendencia(v, endpoints, percorrido);
+                    addPendencia(v, endpoints, new ArrayList<>(percorrido));
                     percorrido.clear();
                     insumoTmp.removeEdge(indiceAresta);
+                    caminhoPercorrido.remove(indiceAresta);
                     System.out.printf("-{%d}(%d,%d) ", indiceAresta, endpoints.getFirst(), endpoints.getSecond());
                 } else {
                     System.out.printf("**{%d}(%d,*) ", indiceAresta, v);
@@ -337,6 +341,10 @@ public class Processamento {
         System.out.println("grafo sanitizado");
         System.out.println("reecheck");
         recheckPossibilities(insumoTmp);
+        System.out.println("redesing graph");
+        this.insumo = insumoTmp;
+        resincTrabalhosPorFazer();
+        this.printGraphCount();
     }
 
     void printGraphCount() {
@@ -345,6 +353,15 @@ public class Processamento {
 
     boolean verticeComplete(Integer i) {
         return insumo.degree(i) == k;
+    }
+
+    void resincTrabalhosPorFazer() {
+        trabalhoPorFazer.clear();
+        for (Integer e : trabalhoPorFazerOrigianl) {
+            if (!verticeComplete(e)) {
+                trabalhoPorFazer.add(e);
+            }
+        }
     }
 
     synchronized Processamento fork() {
@@ -601,6 +618,8 @@ public class Processamento {
     }
 
     private void addPendencia(Integer v, Pair endpoints, Collection<Integer> percorrido) {
-
+        TreeMap<Integer, Collection<Integer>> pend = this.pendencia.getOrDefault(v, new TreeMap<>());
+        this.pendencia.putIfAbsent(v, pend);
+        pend.put((Integer) endpoints.getSecond(), percorrido);
     }
 }

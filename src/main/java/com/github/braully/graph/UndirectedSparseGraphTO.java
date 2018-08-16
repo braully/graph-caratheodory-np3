@@ -190,7 +190,10 @@ public class UndirectedSparseGraphTO<V, E extends Number> extends UndirectedSpar
     public UndirectedSparseGraphTO clone() {
         UndirectedSparseGraphTO clone = new UndirectedSparseGraphTO();
         clone.setVertices(this.getVertices());
-        clone.setPairs(this.getPairs());
+        for (Integer e : (Collection<Integer>) this.getEdges()) {
+            clone.addEdge(e, this.getEndpoints(e));
+        }
+//        clone.setPairs(this.getPairs());
         clone.setName(name);
         return clone;
     }
