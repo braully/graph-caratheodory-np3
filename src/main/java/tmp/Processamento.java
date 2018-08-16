@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -112,6 +113,10 @@ public class Processamento {
         this.numVertices = vertices.size();
         this.numAretasFinais = ((k * k + 1) * k) / 2;
         this.numArestasIniciais = this.insumo.getEdgeCount();
+
+        bfsalg = new BFSTmp(numVertices);
+        bfsRanking = new BFSTmp(numVertices);
+        bfsRankingSegundaOpcao = new BFSTmp(numVertices);
     }
 
     void loadCaminho(String loadProcess) {
@@ -139,20 +144,24 @@ public class Processamento {
 //                            if (!numEdge.equals(aresta)) {
 //                                throw new IllegalStateException(String.format("Incorrect load info edge %d expected %d for: %s ", aresta, numEdge, str));
 //                            }
-                            caminhoPercorrido.put(aresta, caminho);
-                            if (verbose) {
-                                System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
-                                System.out.print(caminho);
-                                System.out.print("  ");
+                            if (aresta != null) {
+                                caminhoPercorrido.put(aresta, caminho);
+                                if (verbose) {
+                                    System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
+                                    System.out.print(caminho);
+                                    System.out.print("  ");
+                                }
+                                if (insumo.degree(e1) == k) {
+                                    trabalhoPorFazer.remove(e1);
+                                }
+                                if (insumo.degree(e2) == k) {
+                                    trabalhoPorFazer.remove(e2);
+                                }
+                                Map<Integer, List<Integer>> rankingAtual = historicoRanking.getOrDefault(aresta, new HashMap<>());
+                                historicoRanking.putIfAbsent(aresta, rankingAtual);
+                            } else {
+                                System.out.println("Ignored: " + str);
                             }
-                            if (insumo.degree(e1) == k) {
-                                trabalhoPorFazer.remove(e1);
-                            }
-                            if (insumo.degree(e2) == k) {
-                                trabalhoPorFazer.remove(e2);
-                            }
-                            Map<Integer, List<Integer>> rankingAtual = historicoRanking.getOrDefault(aresta, new HashMap<>());
-                            historicoRanking.putIfAbsent(aresta, rankingAtual);
                         }
                     }
                 }
@@ -165,9 +174,7 @@ public class Processamento {
     }
 
     void prepareStart() {
-        bfsalg = new BFSTmp(numVertices);
-        bfsRanking = new BFSTmp(numVertices);
-        bfsRankingSegundaOpcao = new BFSTmp(numVertices);
+
         if (caminhosPossiveis.isEmpty()) {
             initialLoad();
         }
@@ -252,9 +259,17 @@ public class Processamento {
     void loadStartFromCache() {
         trabalhoPorFazer = (LinkedList<Integer>) UtilTmp.loadFromCache("trabalho-por-fazer-partial.dat");
         caminhosPossiveis = (Map<Integer, List<Integer>>) UtilTmp.loadFromCache("caminhos-possiveis.dat");
+
     }
 
     void recheckPossibilities() {
+        recheckPossibilities(insumo);
+    }
+
+    void recheckPossibilities(UndirectedSparseGraphTO insumo) {
+        System.out.println("Checking graph");
+        boolean inviavel = false;
+        Collection<Integer> vertices = insumo.getVertices();
         for (Integer v : vertices) {
             int remain = k - insumo.degree(v);
             if (remain > 0) {
@@ -266,14 +281,21 @@ public class Processamento {
                     }
                 }
                 if (countp < remain) {
-                    throw new IllegalStateException("Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")");
+                    String sterr = "Grafo inviavel: vetrice " + v + " dv=" + remain + " possi(" + countp + ")=" + caminhosPossiveis.get(v);
+                    System.err.println(sterr);
+                    inviavel = true;
                 }
             }
         }
+        if (inviavel) {
+            throw new IllegalStateException("Grafo inviavel vetrice ");
+        }
+        System.out.println("Graph... Ok");
     }
 
-    void sanitizeGraphPossibility() {
-        Set<Integer> verticeSanitizar = new HashSet<>();
+    public void sanitizeGraphPossibility() {
+        System.out.println("Sanitizando grafo");
+        TreeSet<Integer> verticeSanitizar = new TreeSet<>();
         for (Integer v : vertices) {
             int remain = k - insumo.degree(v);
             if (remain > 0) {
@@ -290,6 +312,31 @@ public class Processamento {
                 }
             }
         }
+        UndirectedSparseGraphTO insumoTmp = insumo.clone();
+        for (Integer v : verticeSanitizar) {
+            System.out.println("Sanitizando vertice " + v);
+            int degree = insumoTmp.degree(v);
+            Integer posicaoAtualAbsoluta = getPosicaoAtualAbsoluta(v);
+            for (int i = 0; i < degree; i++) {
+                Integer indiceAresta = posicaoAtualAbsoluta - degree + i;
+                Pair endpoints = insumoTmp.getEndpoints(indiceAresta);
+                if (endpoints != null) {
+                    Collection<Integer> percorrido = caminhoPercorrido.get(posicaoAtualAbsoluta);
+                    if (!endpoints.getFirst().equals(v)) {
+                        throw new IllegalStateException("Vertices em sequencias incorrestas: " + v + " " + endpoints + " " + posicaoAtualAbsoluta);
+                    }
+                    addPendencia(v, endpoints, percorrido);
+                    percorrido.clear();
+                    insumoTmp.removeEdge(indiceAresta);
+                    System.out.printf("-{%d}(%d,%d) ", indiceAresta, endpoints.getFirst(), endpoints.getSecond());
+                } else {
+                    System.out.printf("**{%d}(%d,*) ", indiceAresta, v);
+                }
+            }
+        }
+        System.out.println("grafo sanitizado");
+        System.out.println("reecheck");
+        recheckPossibilities(insumoTmp);
     }
 
     void printGraphCount() {
@@ -461,7 +508,7 @@ public class Processamento {
         boolean ret = false;
         bfsRankingSegundaOpcao.bfs(insumo, first);
         if (bfsRankingSegundaOpcao.getDistance(insumo, second) == 4) {
-            insumo.addEdge(first, second);
+            addEdge(first, second);
             ret = true;
         }
         return ret;
@@ -551,5 +598,9 @@ public class Processamento {
 
     int countEdges() {
         return insumo.getEdgeCount();
+    }
+
+    private void addPendencia(Integer v, Pair endpoints, Collection<Integer> percorrido) {
+
     }
 }

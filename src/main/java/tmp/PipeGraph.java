@@ -182,7 +182,7 @@ public class PipeGraph {
             System.out.print("...Ok");
         }
 
-        if (cmd.hasOption("stat")) {
+        if (cmd.hasOption("stat") && !cmd.hasOption("continue")) {
             GraphStatistics gs = new GraphStatistics();
             Map result = gs.doOperation(processamento.insumo);
             System.out.println("Statitics");
@@ -208,6 +208,13 @@ public class PipeGraph {
             System.out.println("Recheck possibility ");
             processamento.recheckPossibilities();
             System.out.println("Graph...Ok");
+        }
+
+        if (cmd.hasOption("stat") && cmd.hasOption("continue")) {
+            GraphStatistics gs = new GraphStatistics();
+            Map result = gs.doOperation(processamento.insumo);
+            System.out.println("Statitics");
+            System.out.println(result);
         }
 
         List<IGenStrategy> operationsToExecute = new ArrayList<IGenStrategy>();
