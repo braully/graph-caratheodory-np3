@@ -135,10 +135,10 @@ public class Processamento {
                             Integer e1 = Integer.parseInt(matcher.group(2));
                             Integer e2 = Integer.parseInt(matcher.group(3));
                             List<Integer> caminho = UtilTmp.strToList(matcher.group(4));
-                            Integer aresta = (Integer) insumo.addEdge(e1, e2);
-                            if (!numEdge.equals(aresta)) {
-                                throw new IllegalStateException(String.format("Incorrect load info edge %d expected %d for: %s ", aresta, numEdge, str));
-                            }
+                            Integer aresta = addEdge(e1, e2);
+//                            if (!numEdge.equals(aresta)) {
+//                                throw new IllegalStateException(String.format("Incorrect load info edge %d expected %d for: %s ", aresta, numEdge, str));
+//                            }
                             caminhoPercorrido.put(aresta, caminho);
                             if (verbose) {
                                 System.out.printf("e1=%d,e2=%d,e=%d:", e1, e2, aresta);
@@ -405,13 +405,22 @@ public class Processamento {
         return caminhosPossiveis.get(trabalhoAtual);
     }
 
+    private Integer getPosicaoAtualAbsoluta(Integer e1) {
+        return getPosicaoAtualRelativa(e1) + numAretasFinais;
+
+    }
+
     public Integer getPosicaoAtualAbsoluta() {
 //        return insumo.getEdgeCount();
         return getPosicaoAtualRelativa() + numAretasFinais;
     }
 
     public Integer getPosicaoAtualRelativa() {
-        return trabalhoAtual * k + insumo.degree(trabalhoAtual);
+        return getPosicaoAtualRelativa(trabalhoAtual);
+    }
+
+    public Integer getPosicaoAtualRelativa(Integer v) {
+        return v * k + insumo.degree(v);
     }
 
     void mergeProcessamentos(List<Processamento> processamentos) {
@@ -440,7 +449,7 @@ public class Processamento {
     }
 
     private boolean addEdgeIfConsistent(Integer first, Integer second, Collection<Integer> value) {
-        int posicaoAtual = insumo.getEdgeCount();
+        int posicaoAtual = getPosicaoAtualAbsoluta(first);
         boolean ret = addEdgeIfConsistent(first, second);
         if (ret) {
             caminhoPercorrido.put(posicaoAtual, new ArrayList<>(value));
@@ -484,8 +493,16 @@ public class Processamento {
     }
 
     Integer addEge() {
-        Integer edge = getPosicaoAtualAbsoluta();
-        if (insumo.addEdge(edge, trabalhoAtual, melhorOpcaoLocal)) {
+//        Integer edge = getPosicaoAtualAbsoluta();
+//        if (insumo.addEdge(edge, trabalhoAtual, melhorOpcaoLocal)) {
+//            return edge;
+//        }
+        return addEdge(trabalhoAtual, melhorOpcaoLocal);
+    }
+
+    private Integer addEdge(Integer e1, Integer e2) {
+        Integer edge = getPosicaoAtualAbsoluta(e1);
+        if (insumo.addEdge(edge, e1, e2)) {
             return edge;
         }
         return null;
