@@ -13,7 +13,7 @@ public class StrategyBlockSeq
     @Override
     public void estagnarBloco(Processamento processamento, LinkedList<Integer> bloco) {
         for (Integer v : bloco) {
-            processamento.marcoInicial = processamento.insumo.getEdgeCount();
+            processamento.marcoInicial();
             processamento.trabalhoAtual = v;
             estagnarVertice(processamento);
             verboseFimEtapa(processamento);

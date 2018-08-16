@@ -1,6 +1,5 @@
 package tmp;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +49,10 @@ public class StrategyBlock
             Map.Entry<Integer, LinkedList<Integer>> firstEntry = blocos.firstEntry();
             LinkedList<Integer> bloco = firstEntry.getValue();
             System.out.printf("Processando bloco %d vertices %s\n", firstEntry.getKey(), firstEntry.getValue().toString());
-            processamento.marcoInicial = processamento.insumo.getEdgeCount();
-
+            processamento.marcoInicial();
             estagnarBloco(processamento, bloco);
 
-            if (processamento.marcoInicial < processamento.insumo.getEdgeCount()) {
+            if (!processamento.deuPassoFrente()) {
                 processamento.printGraphCaminhoPercorrido();
                 throw new IllegalStateException("Grafo inviavel no bloco: " + bloco);
             }
@@ -68,14 +66,10 @@ public class StrategyBlock
 
     public void estagnarBloco(Processamento processamento, LinkedList<Integer> bloco) {
         while (temTrabalhoNoBloco(processamento, bloco)) {
-            processamento.trabalhoAtual = UtilTmp.getOverflow(bloco, processamento.getPosicaoAtual());
+            processamento.trabalhoAtual = UtilTmp.getOverflow(bloco, processamento.countEdges());
             verboseInicioEtapa(processamento);
-
             if (trabalhoNaoAcabou(processamento)
-                    && temOpcoesDisponiveis(processamento)) {
-                if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
-                    processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-                }
+                    && processamento.deuPassoFrente()) {
                 processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
                 adicionarMellhorOpcao(processamento);
             }

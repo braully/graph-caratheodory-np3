@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tmp;
 
 import com.github.braully.graph.UndirectedSparseGraphTO;
@@ -28,7 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author strike
  */
 public class Processamento {
@@ -72,6 +66,8 @@ public class Processamento {
     Map<Integer, List<Integer>> caminhosPossiveisOriginal;
     TreeMap<Integer, Collection<Integer>> caminhoPercorrido = new TreeMap<>();
     Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
+//    LinkedList<Integer> edegesAdded = new LinkedList<>();
+
     int numArestasIniciais;
     int numVertices;
     int numAretasFinais;
@@ -409,8 +405,13 @@ public class Processamento {
         return caminhosPossiveis.get(trabalhoAtual);
     }
 
-    public Integer getPosicaoAtual() {
-        return insumo.getEdgeCount();
+    public Integer getPosicaoAtualAbsoluta() {
+//        return insumo.getEdgeCount();
+        return getPosicaoAtualRelativa() + numAretasFinais;
+    }
+
+    public Integer getPosicaoAtualRelativa() {
+        return trabalhoAtual * k + insumo.degree(trabalhoAtual);
     }
 
     void mergeProcessamentos(List<Processamento> processamentos) {
@@ -467,4 +468,71 @@ public class Processamento {
         trabalhoPorFazer.removeAll(removeList);
     }
 
+    public void marcoInicial() {
+        this.marcoInicial = insumo.getEdgeCount();
+    }
+
+    public boolean deuPassoFrente() {
+        return insumo.getEdgeCount() >= this.marcoInicial;
+    }
+
+    public Collection<Integer> getCaminhoPercorridoPosicaoAtual() {
+        Integer posicaoAtual = getPosicaoAtualAbsoluta();
+        Collection<Integer> caminho = caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
+        caminhoPercorrido.putIfAbsent(posicaoAtual, caminho);
+        return caminho;
+    }
+
+    Integer addEge() {
+        Integer edge = getPosicaoAtualAbsoluta();
+        if (insumo.addEdge(edge, trabalhoAtual, melhorOpcaoLocal)) {
+            return edge;
+        }
+        return null;
+    }
+
+    int getDvTrabalhoAtual() {
+        return (k - insumo.degree(trabalhoAtual));
+    }
+
+    Pair<Integer> desfazerUltimoTrabalho() {
+        if (falhaInRollBack) {
+            if (falhaRollbackCount-- <= 0) {
+                throw new IllegalStateException("Interrução forçada");
+            }
+        }
+        Integer posicaoAtual = getPosicaoAtualAbsoluta();
+        caminhoPercorrido.get(posicaoAtual).clear();
+        Integer ultimoPasso = posicaoAtual - 1;
+        Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
+        if (desfazer == null) {
+            throw new IllegalStateException("Vertice falhou na primeira posição " + trabalhoAtual + " " + melhorOpcaoLocal + " " + posicaoAtual);
+        }
+        //caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
+        insumo.removeEdge(ultimoPasso);
+        if (!trabalhoPorFazer.contains(desfazer.getSecond())) {
+            trabalhoPorFazer.add(desfazer.getSecond());
+        }
+        if (!trabalhoAtual.equals(desfazer.getFirst())
+                && !trabalhoPorFazer.contains(desfazer.getFirst())) {
+            trabalhoPorFazer.add(desfazer.getFirst());
+        }
+        //Zerar as opções posteriores
+        if (verbose) {
+            System.out.printf("-[%5d](%4d,%4d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
+        }
+        return desfazer;
+    }
+
+    void bfsRanking(Integer val) {
+        bfsRanking.bfsRanking(insumo, trabalhoAtual, val);
+    }
+
+    boolean atingiuObjetivo() {
+        return insumo.getEdgeCount() == numAretasFinais;
+    }
+
+    int countEdges() {
+        return insumo.getEdgeCount();
+    }
 }

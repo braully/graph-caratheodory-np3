@@ -2,6 +2,7 @@ package tmp;
 
 import edu.uci.ics.jung.graph.util.Pair;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -25,16 +26,16 @@ public class StrategyAvoidCollid
         for (Integer v : processamento.trabalhoPorFazer) {
             sortindex[v] = processamento.caminhosPossiveis.get(v).size();
         }
-        while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
+        processamento.marcoInicial();
+        while (!processamento.trabalhoPorFazer.isEmpty() && processamento.deuPassoFrente()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
-            processamento.marcoInicial = processamento.insumo.getEdgeCount();
+            processamento.marcoInicial();
             verboseInicioEtapa(processamento);
 
-            if (trabalhoNaoAcabou(processamento)
-                    && temOpcoesDisponiveis(processamento)) {
-                if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
-                    processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-                }
+            if (trabalhoNaoAcabou(processamento) && processamento.deuPassoFrente()) {
+                Integer posicaoAtual = processamento.getPosicaoAtualAbsoluta();
+                Collection<Integer> caminho = processamento.caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
+                processamento.caminhoPercorrido.putIfAbsent(posicaoAtual, caminho);
                 processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
                 adicionarMellhorOpcao(processamento);
             }
@@ -66,7 +67,7 @@ public class StrategyAvoidCollid
 
     @Override
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-        Pair<Integer> ultimoTrabalho = super.desfazerUltimoTrabalho(processamento);
+        Pair<Integer> ultimoTrabalho = processamento.desfazerUltimoTrabalho();
         sortindex[ultimoTrabalho.getFirst()]++;
         sortindex[ultimoTrabalho.getSecond()]++;
         return ultimoTrabalho;

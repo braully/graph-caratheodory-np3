@@ -42,13 +42,10 @@ public class StrategyEstagnacao implements IGenStrategy {
         ordenacaoFimEtapa(processamento);
         verboseInicioGeracao(processamento);
         UtilTmp.printCurrentItme();
-
-        if (processamento.caminhoPercorrido.isEmpty()) {
-            //Marco zero
-            processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-        }
-        while (!processamento.trabalhoPorFazer.isEmpty() && !processamento.caminhoPercorrido.isEmpty()) {
+        processamento.marcoInicial();
+        while (!processamento.trabalhoPorFazer.isEmpty() && processamento.deuPassoFrente()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
+            processamento.marcoInicial();
             estagnarVertice(processamento);
             verboseFimEtapa(processamento);
             ordenacaoFimEtapa(processamento);
@@ -58,16 +55,10 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     public void estagnarVertice(Processamento processamento) throws IllegalStateException {
-        processamento.marcoInicial = processamento.insumo.getEdgeCount();
-
         verboseInicioEtapa(processamento);
 //            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
-
-        while (trabalhoNaoAcabou(processamento)
-                && temOpcoesDisponiveis(processamento)) {
-            if (!processamento.caminhoPercorrido.containsKey(processamento.insumo.getEdgeCount())) {
-                processamento.caminhoPercorrido.put(processamento.insumo.getEdgeCount(), new ArrayList<>());
-            }
+        while (trabalhoNaoAcabou(processamento) && processamento.deuPassoFrente()) {
+            processamento.getCaminhoPercorridoPosicaoAtual();
             processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
             adicionarMellhorOpcao(processamento);
         }
@@ -105,13 +96,13 @@ public class StrategyEstagnacao implements IGenStrategy {
         //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
         //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
         if (opcaoViavel(processamento)) {
-            Integer posicaoAtual = processamento.getPosicaoAtual();
+            Integer posicaoAtual = processamento.getPosicaoAtualAbsoluta();
             Collection<Integer> subcaminho = processamento.caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
             subcaminho.add(processamento.melhorOpcaoLocal);
             if (processamento.verticeComplete(processamento.melhorOpcaoLocal)) {
                 throw new IllegalStateException("vertice statured " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
             }
-            Integer aresta = (Integer) processamento.insumo.addEdge(processamento.trabalhoAtual, processamento.melhorOpcaoLocal);
+            Integer aresta = processamento.addEge();
             if (!aresta.equals(posicaoAtual)) {
                 throw new IllegalStateException("Edge not added: " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
             }
@@ -149,22 +140,28 @@ public class StrategyEstagnacao implements IGenStrategy {
         Integer melhorOpcao = processamento.melhorOpcaoLocal;
         if (melhorOpcao == null) {
             processamento.rbcount[0]++;
+            if (processamento.verbose) {
+                System.out.println("melhor opçao é nula");
+            }
             return false;
         }
 
 //        if (trabalhoAtual.equals(113)) {
 //            return false;
 //        }
-        int posicao = processamento.insumo.getEdgeCount();
+        int posicao = processamento.getPosicaoAtualAbsoluta();
         int distanciaMelhorOpcao = processamento.bfsalg.getDistance(processamento.insumo, melhorOpcao);
         if (distanciaMelhorOpcao < 4) {
             processamento.rbcount[1]++;
+            if (processamento.verbose) {
+                System.out.println("cintura inadequada");
+            }
             return false;
         }
 
         if (processamento.anteciparVazio && processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual) == 0) {
             boolean condicao1 = true;
-            int dv = (processamento.k - processamento.insumo.degree(processamento.trabalhoAtual));
+            int dv = processamento.getDvTrabalhoAtual();
             condicao1 = dv <= processamento.bfsalg.depthcount[4];
             if (!condicao1 && processamento.verbose) {
                 System.out.printf("*[%d](%d,%d -> rdv=%d 4c=%d) ", posicao, processamento.trabalhoAtual, melhorOpcao, dv, processamento.bfsalg.depthcount[4]);
@@ -188,34 +185,8 @@ public class StrategyEstagnacao implements IGenStrategy {
         return true;
     }
 
-    Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
-        if (processamento.falhaInRollBack) {
-            if (processamento.falhaRollbackCount-- <= 0) {
-                throw new IllegalStateException("Interrução forçada");
-            }
-        }
-
-        processamento.caminhoPercorrido.tailMap(processamento.insumo.getEdgeCount()).values().forEach(l -> l.clear());//Zerar as opções posteriores
-        Integer ultimoPasso = processamento.insumo.getEdgeCount() - 1;
-        Pair<Integer> desfazer = processamento.insumo.getEndpoints(ultimoPasso);
-        //caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
-        processamento.insumo.removeEdge(ultimoPasso);
-        if (!processamento.trabalhoPorFazer.contains(desfazer.getSecond())) {
-            processamento.trabalhoPorFazer.add(desfazer.getSecond());
-        }
-        if (!processamento.trabalhoAtual.equals(desfazer.getFirst())
-                && !processamento.trabalhoPorFazer.contains(desfazer.getFirst())) {
-            processamento.trabalhoPorFazer.add(desfazer.getFirst());
-        }
-        //Zerar as opções posteriores
-        if (processamento.verbose) {
-            System.out.printf("-[%5d](%4d,%4d) ", ultimoPasso, desfazer.getFirst(), desfazer.getSecond());
-        }
-        return desfazer;
-    }
-
     boolean trabalhoAcabou(Processamento processamento, Integer vertice) {
-        return processamento.insumo.degree(vertice) == processamento.k;
+        return processamento.verticeComplete(vertice);
     }
 
     boolean trabalhoNaoAcabou(Processamento processamento) {
@@ -224,11 +195,6 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     boolean temFuturo(Integer trabalhoAtual) {
         return true;
-    }
-
-    boolean temOpcoesDisponiveis(Processamento processamento) {
-        boolean condicao0 = processamento.insumo.getEdgeCount() >= processamento.marcoInicial;
-        return condicao0;
     }
 
     void observadorDeEtapa(Integer aresta,
@@ -241,7 +207,7 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     void verboseResultadoFinal(Processamento processamento) {
         System.out.println();
-        if (processamento.insumo.getEdgeCount() < processamento.numAretasFinais) {
+        if (!processamento.atingiuObjetivo()) {
             System.out.println("Busca pelo grafo Falhou ***");
         } else {
             System.out.println("Grafo Encontrado");
@@ -267,7 +233,7 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     void verboseFimEtapa(Processamento processamento) throws IllegalStateException {
         if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
-            System.out.printf(".. %d [%d] \n", processamento.trabalhoAtual, processamento.insumo.getEdgeCount());
+            System.out.printf(".. %d [%d] \n", processamento.trabalhoAtual, processamento.countEdges());
         } else {
             System.out.printf("!! %d \n", processamento.trabalhoAtual);
         }
@@ -310,9 +276,9 @@ public class StrategyEstagnacao implements IGenStrategy {
     Integer avaliarMelhorOpcao(Processamento processsamento) {
         processsamento.bfsalg.labelDistances(processsamento.insumo, processsamento.trabalhoAtual);
 //        sort(opcoesPossiveis, bfsalg.getDistanceDecorator());
+        processsamento.getCaminhoPercorridoPosicaoAtual();
         sortAndRanking(processsamento);
-        Collection<Integer> jaSelecionados = processsamento.caminhoPercorrido.get(processsamento.insumo.getEdgeCount());
-        Integer indice = jaSelecionados.size();
+        Collection<Integer> jaSelecionados = processsamento.getCaminhoPercorridoPosicaoAtual();
         Integer melhorOpcao = getOpcao(processsamento.getOpcoesPossiveisAtuais(), jaSelecionados);
         return melhorOpcao;
     }
@@ -320,8 +286,8 @@ public class StrategyEstagnacao implements IGenStrategy {
     void sortAndRanking(Processamento processamento) {
         Integer[] bfs = processamento.bfsalg.bfs;
         processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
-        int posicaoAtual = processamento.insumo.getEdgeCount();
-        Collection<Integer> opcoesPassadas = processamento.caminhoPercorrido.get(processamento.insumo.getEdgeCount());
+        int posicaoAtual = processamento.getPosicaoAtualAbsoluta();
+        Collection<Integer> opcoesPassadas = processamento.getCaminhoPercorridoPosicaoAtual();
         if (processamento.rankearOpcoes) {
             Map<Integer, List<Integer>> rankingAtual = processamento.historicoRanking.getOrDefault(posicaoAtual, new HashMap<>());
             processamento.historicoRanking.putIfAbsent(posicaoAtual, rankingAtual);
@@ -334,7 +300,7 @@ public class StrategyEstagnacao implements IGenStrategy {
                 for (i = 0; i < processamento.getOpcoesPossiveisAtuais().size(); i++) {
                     Integer val = processamento.getOpcoesPossiveisAtuais().get(i);
                     if (bfs[val] == 4) {
-                        processamento.bfsRanking.bfsRanking(processamento.insumo, processamento.trabalhoAtual, val);
+                        processamento.bfsRanking(val);
 //                        processamento.ranking[val] = processamento.bfsRanking.depthcount[4];
                         List<Integer> listRankingVal = rankingAtual.get(val);
                         if (listRankingVal == null) {
@@ -398,5 +364,9 @@ public class StrategyEstagnacao implements IGenStrategy {
             }
         }
         return opcao;
+    }
+
+    Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
+        return processamento.desfazerUltimoTrabalho();
     }
 }
