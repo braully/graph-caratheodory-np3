@@ -32,7 +32,7 @@ public class TrabalhoProcessamento extends StrategyEstagnacao {
 
     public void processarBlocoTotal(Processamento p) {
         while (indiceAtual < bloco.size()) {
-            processarBlocoTotal(p);
+            generateGraph(p);
             indiceAtual++;
         }
         p.printGraphCaminhoPercorrido();
