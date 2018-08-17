@@ -222,7 +222,7 @@ public class PipeGraph {
             System.out.println("Graph...Ok");
         }
 
-        if (cmd.hasOption("stat") && cmd.hasOption("continue")) {
+        if (cmd.hasOption("stat") && (cmd.hasOption("continue") || cmd.hasOption("merge-continue"))) {
             GraphStatistics gs = new GraphStatistics();
             Map result = gs.doOperation(processamento.insumo);
             System.out.println("Statitics");

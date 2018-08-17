@@ -55,6 +55,7 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     public void estagnarVertice(Processamento processamento) throws IllegalStateException {
         verboseInicioEtapa(processamento);
+        System.out.println("Estagnando vertice: " + processamento.trabalhoAtual);
 //            printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
         while (trabalhoNaoAcabou(processamento) && processamento.deuPassoFrente()) {
             processamento.getCaminhoPercorridoPosicaoAtual();
