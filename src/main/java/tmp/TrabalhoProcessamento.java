@@ -35,6 +35,7 @@ public class TrabalhoProcessamento extends StrategyEstagnacao {
             processarBlocoTotal(p);
             indiceAtual++;
         }
+        p.printGraphCaminhoPercorrido();
     }
 
     @Override
@@ -47,7 +48,6 @@ public class TrabalhoProcessamento extends StrategyEstagnacao {
         }
         System.out.printf("Trabalho atual %d do indice %d \n", processamento.trabalhoAtual, indiceAtual);
         estagnarVertice(processamento);
-        processamento.printGraphCaminhoPercorrido();
         System.out.printf("Concluido trabalho %d do indice %d \n", processamento.trabalhoAtual, indiceAtual);
     }
 
