@@ -34,28 +34,41 @@ public class StrategyBlockParallel
 
         UtilTmp.printCurrentItme();
         /* */
-        List<TrabalhoProcessamento> processos = new ArrayList<>();
         Integer numThreads = blocksBySize.get(great).size();
         List<Integer> blocosPraProcessar = blocksBySize.get(great);
+        Processamento base = processamento.fork();
 
-        for (Integer i = 0; i < numThreads; i++) {
-            LinkedList<Integer> bloco = blocos.get(blocosPraProcessar.get(i));
-//            Integer vp = blocos.get().get(0);
-//            Integer vertice = bloco.get(0);
-//            Integer indexOf = processamento.trabalhoPorFazer.indexOf(vertice);
+        List<TrabalhoProcessamento> processos = new ArrayList<>();
+        int maxthreads = Runtime.getRuntime().availableProcessors();
+
+        for (Integer b : blocosPraProcessar) {
+            LinkedList<Integer> bloco = blocos.get(b);
             processos.add(new TrabalhoProcessamento(bloco));
+            if (processos.size() >= maxthreads) {
+                processos.parallelStream().forEach(p -> p.generateGraph(base));
+                processos.parallelStream().forEach(p -> p.processarProximo());
+                List<Processamento> processamentos = new ArrayList<>();
+                for (TrabalhoProcessamento processo : processos) {
+                    Processamento last = processo.last;
+                    last.dumpCaminho();
+                    processamentos.add(last);
+                }
+                System.out.println("Barreira atingida... merge");
+                processamento.mergeProcessamentos(processamentos);
+                processamento.dumpResultadoSeInteressante();
+                UtilTmp.printCurrentItme();
+                processos.clear();
+            }
         }
-        processos.parallelStream().forEach(p -> p.generateGraph(processamento.fork()));
-        List<Processamento> processamentos = new ArrayList<>();
-        for (TrabalhoProcessamento processo : processos) {
-            processamentos.add(processo.last);
-        }
-        System.out.println("Barreira atingida");
-        UtilTmp.printCurrentItme();
-//        processos.parallelStream().forEach(p -> p.processarProximo());
-        System.out.println("Merge");
-        processamento.mergeProcessamentos(processamentos);
-        processamento.dumpResultadoSeInteressante();
 
+//        for (Integer i = 0; i < numThreads; i++) {
+//            LinkedList<Integer> bloco = blocos.get(blocosPraProcessar.get(i));
+//            processos.add(new TrabalhoProcessamento(bloco));
+//        }
+//        for (TrabalhoProcessamento processo : processos) {
+//            processamentos.add(processo.last);
+//        }
+//        processos.parallelStream().forEach(p -> p.processarProximo());
+//        System.out.println("Merge");
     }
 }

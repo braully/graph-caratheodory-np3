@@ -546,7 +546,7 @@ public class Processamento {
     }
 
     public boolean deuPassoFrente() {
-        return insumo.getEdgeCount() >= this.marcoInicial;
+        return insumo.getEdgeCount() >= this.marcoInicial || !caminhoPercorrido.isEmpty();
     }
 
     public Collection<Integer> getCaminhoPercorridoPosicaoAtual() {
@@ -621,5 +621,11 @@ public class Processamento {
         TreeMap<Integer, Collection<Integer>> pend = this.pendencia.getOrDefault(v, new TreeMap<>());
         this.pendencia.putIfAbsent(v, pend);
         pend.put((Integer) endpoints.getSecond(), percorrido);
+    }
+
+    void dumpCaminho() {
+        UtilTmp.dumpVertAddArray(insumo,
+                numArestasIniciais,
+                caminhoPercorrido);
     }
 }

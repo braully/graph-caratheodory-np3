@@ -45,7 +45,6 @@ public class StrategyEstagnacao implements IGenStrategy {
         processamento.marcoInicial();
         while (!processamento.trabalhoPorFazer.isEmpty() && processamento.deuPassoFrente()) {
             processamento.trabalhoAtual = processamento.trabalhoPorFazer.get(0);
-            processamento.marcoInicial();
             estagnarVertice(processamento);
             verboseFimEtapa(processamento);
             ordenacaoFimEtapa(processamento);
@@ -138,6 +137,11 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     boolean opcaoViavel(Processamento processamento) {
         Integer melhorOpcao = processamento.melhorOpcaoLocal;
+
+        if (!processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual).equals(0)) {
+            throw new IllegalStateException("Etado do bfs incorreto para" + processamento.trabalhoAtual + " " + processamento.getPosicaoAtualAbsoluta());
+        }
+
         if (melhorOpcao == null) {
             processamento.rbcount[0]++;
             if (processamento.verbose) {

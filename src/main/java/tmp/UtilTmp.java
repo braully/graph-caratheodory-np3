@@ -336,35 +336,38 @@ public class UtilTmp {
 
             System.out.print("vert-add: ");
             fileWriter.append("dump-caminho-percorrido: ");
-            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-                Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
-                String str = String.format("{%d}(%d,%d)",
-                        i, lastgraph.getEndpoints(i).getFirst(),
-                        lastgraph.getEndpoints(i).getSecond());
-                System.out.printf(str);
-                fileWriter.append(str);
-                charcount = charcount - str.length();
-                if (trunk && charcount <= 0) {
-                    charcount = max_length_file;
-                    fileWriter.append("\n");
-                }
-                fileWriter.append("[");
-                System.out.print("[");
 
-                for (Integer j : opcoesTestadas) {
-                    String jstr = j.toString();
-                    System.out.print(jstr);
-                    System.out.print(",");
-                    fileWriter.append(jstr);
-                    fileWriter.append(",");
-                    charcount = charcount - jstr.length() - 1;
+            for (Integer i : (Collection<Integer>) lastgraph.getEdges()) {
+                if (i > numArestasIniciais) {
+                    Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
+                    String str = String.format("{%d}(%d,%d)",
+                            i, lastgraph.getEndpoints(i).getFirst(),
+                            lastgraph.getEndpoints(i).getSecond());
+                    System.out.printf(str);
+                    fileWriter.append(str);
+                    charcount = charcount - str.length();
                     if (trunk && charcount <= 0) {
                         charcount = max_length_file;
                         fileWriter.append("\n");
                     }
+                    fileWriter.append("[");
+                    System.out.print("[");
+
+                    for (Integer j : opcoesTestadas) {
+                        String jstr = j.toString();
+                        System.out.print(jstr);
+                        System.out.print(",");
+                        fileWriter.append(jstr);
+                        fileWriter.append(",");
+                        charcount = charcount - jstr.length() - 1;
+                        if (trunk && charcount <= 0) {
+                            charcount = max_length_file;
+                            fileWriter.append("\n");
+                        }
+                    }
+                    fileWriter.append("] ");
+                    System.out.print("] ");
                 }
-                fileWriter.append("] ");
-                System.out.print("] ");
             }
             System.out.println();
             fileWriter.append("\n");
@@ -383,26 +386,30 @@ public class UtilTmp {
             int charcount = max_length_file;
             System.out.print("vert-add: ");
             fileWriter.append("vert-add: ");
-            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-                String str = String.format("%d, ", lastgraph.getEndpoints(i).getFirst());
-                System.out.printf(str);
-                fileWriter.append(str);
-                charcount = charcount - str.length();
-                if (charcount <= 0) {
-                    charcount = max_length_file;
-                    fileWriter.append("\n");
+            for (Integer i : (Collection<Integer>) lastgraph.getEdges()) {
+                if (i > numArestasIniciais) {
+                    String str = String.format("%d, ", lastgraph.getEndpoints(i).getFirst());
+                    System.out.printf(str);
+                    fileWriter.append(str);
+                    charcount = charcount - str.length();
+                    if (charcount <= 0) {
+                        charcount = max_length_file;
+                        fileWriter.append("\n");
+                    }
                 }
             }
             System.out.println(" | ");
             fileWriter.append(" | ");
-            for (int i = numArestasIniciais; i < lastgraph.getEdgeCount(); i++) {
-                String str = String.format("%d, ", lastgraph.getEndpoints(i).getSecond());
-                System.out.printf(str);
-                fileWriter.append(str);
-                charcount = charcount - str.length();
-                if (charcount <= 0) {
-                    charcount = max_length_file;
-                    fileWriter.append("\n");
+            for (Integer i : (Collection<Integer>) lastgraph.getEdges()) {
+                if (i > numArestasIniciais) {
+                    String str = String.format("%d, ", lastgraph.getEndpoints(i).getSecond());
+                    System.out.printf(str);
+                    fileWriter.append(str);
+                    charcount = charcount - str.length();
+                    if (charcount <= 0) {
+                        charcount = max_length_file;
+                        fileWriter.append("\n");
+                    }
                 }
             }
             System.out.println();
