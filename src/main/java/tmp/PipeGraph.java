@@ -101,7 +101,7 @@ public class PipeGraph {
         iparallel.setRequired(false);
         options.addOption(iparallel);
 
-        Option merge = new Option("mc", "merege-continue", true, "merge multiple continue process from comb state");
+        Option merge = new Option("mc", "merge-continue", true, "merge multiple continue process from comb state");
         loadprocess.setRequired(false);
         options.addOption(merge);
 
@@ -195,6 +195,18 @@ public class PipeGraph {
         if (loadProcess != null) {
             processamento.loadCaminho(loadProcess);
             System.out.println("...Ok");
+        }
+        String mergec = cmd.getOptionValue("merge-continue");
+        if (mergec != null) {
+            String[] strmerge = mergec.split(",");
+            if (strmerge == null || strmerge.length == 0) {
+                System.out.println("Invalid merge-continue");
+            } else {
+                for (int i = 0; i < strmerge.length; i++) {
+                    strmerge[i] = strmerge[i].trim();
+                }
+                processamento.mergeContinues(strmerge);
+            }
         }
 
         if (cmd.hasOption("check-possibility")) {
