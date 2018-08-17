@@ -30,6 +30,13 @@ public class TrabalhoProcessamento extends StrategyEstagnacao {
         this.indiceAtual = indiceAtual;
     }
 
+    public void processarBlocoTotal(Processamento p) {
+        while (indiceAtual < bloco.size()) {
+            processarBlocoTotal(p);
+            indiceAtual++;
+        }
+    }
+
     @Override
     public void generateGraph(Processamento processamento) {
         last = processamento;

@@ -39,14 +39,14 @@ public class StrategyBlockParallel
         Processamento base = processamento.fork();
 
         List<TrabalhoProcessamento> processos = new ArrayList<>();
-        int maxthreads = Runtime.getRuntime().availableProcessors();
+        int maxthreads = (int) (Runtime.getRuntime().availableProcessors() * 1.5);
 
-        for (Integer b : blocosPraProcessar) {
-            LinkedList<Integer> bloco = blocos.get(b);
+        for (Integer i = 0; i < numThreads; i++) {
+            LinkedList<Integer> bloco = blocos.get(blocosPraProcessar.get(i));
             processos.add(new TrabalhoProcessamento(bloco));
             if (processos.size() >= maxthreads) {
-                processos.parallelStream().forEach(p -> p.generateGraph(base));
-                processos.parallelStream().forEach(p -> p.processarProximo());
+                processos.parallelStream().forEach(p -> p.processarBlocoTotal(base.fork()));
+//                processos.parallelStream().forEach(p -> p.processarProximo());
                 List<Processamento> processamentos = new ArrayList<>();
                 for (TrabalhoProcessamento processo : processos) {
                     Processamento last = processo.last;

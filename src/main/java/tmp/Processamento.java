@@ -435,21 +435,23 @@ public class Processamento {
     void printGraphCaminhoPercorrido() {
         try {
             System.out.print("vert-adds: ");
-            for (int i = numArestasIniciais; i < insumo.getEdgeCount(); i++) {
-                Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
-                String str = String.format("{%d}(%d,%d)",
-                        i, insumo.getEndpoints(i).getFirst(),
-                        insumo.getEndpoints(i).getSecond());
-                System.out.printf(str);
-                System.out.print("[");
+            for (Integer i : (Collection<Integer>) insumo.getEdges()) {
+                if (i > numArestasIniciais) {
+                    Collection<Integer> opcoesTestadas = caminhoPercorrido.get(i);
+                    String str = String.format("{%d}(%d,%d)",
+                            i, insumo.getEndpoints(i).getFirst(),
+                            insumo.getEndpoints(i).getSecond());
+                    System.out.printf(str);
+                    System.out.print("[");
 
-                for (Integer j : opcoesTestadas) {
-                    String jstr = j.toString();
-                    System.out.print(jstr);
-                    System.out.print(",");
+                    for (Integer j : opcoesTestadas) {
+                        String jstr = j.toString();
+                        System.out.print(jstr);
+                        System.out.print(",");
+                    }
+
+                    System.out.print("] ");
                 }
-
-                System.out.print("] ");
             }
             System.out.println();
         } catch (Exception ex) {
