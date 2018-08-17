@@ -50,6 +50,7 @@ public class StrategyEstagnacao implements IGenStrategy {
             ordenacaoFimEtapa(processamento);
         }
 //        printMapOpcoes(trabalhPorFazerOriginal, insumo, caminhosPossiveis);
+        processamento.printGraphCount();
         verboseResultadoFinal(processamento);
     }
 
