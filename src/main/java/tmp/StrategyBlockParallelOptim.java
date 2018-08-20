@@ -91,7 +91,7 @@ public class StrategyBlockParallelOptim
             processamento.dumpResultadoSeInteressante();
             UtilTmp.printCurrentItme();
             processos.clear();
-            processamento.recheckPossibilities();
+            processamento.sanitizeGraphPossibility();
         }
 
 //        for (Integer i = 0; i < numThreads; i++) {
