@@ -33,9 +33,7 @@ public class BFSTmp {
         for (int i = 0; i < bfs.length; i++) {
             bfs[i] = null;
         }
-        for (int i = 0; i < depthcount.length; i++) {
-            depthcount[i] = 0;
-        }
+        clearRanking();
         queue.clear();
         queue.add(v);
         bfs[v] = 0;
@@ -47,6 +45,12 @@ public class BFSTmp {
             }
         }
         visitVertexRanking(v, bfs, subgraph);
+    }
+
+    public void clearRanking() {
+        for (int i = 0; i < depthcount.length; i++) {
+            depthcount[i] = 0;
+        }
     }
 
     void visitVertexRanking(Integer v, Integer[] bfs, UndirectedSparseGraphTO<Integer, Integer> subgraph1) {
@@ -90,5 +94,11 @@ public class BFSTmp {
 //                }
 //            }
 //        }
+    }
+
+    void incDepthcount(int[] depthcount) {
+        for (int i = 0; i < depthcount.length; i++) {
+            this.depthcount[i] = this.depthcount[i] + depthcount[i];
+        }
     }
 }

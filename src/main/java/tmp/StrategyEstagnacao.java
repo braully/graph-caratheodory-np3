@@ -243,7 +243,10 @@ public class StrategyEstagnacao implements IGenStrategy {
         } else {
             System.out.printf("!! %d \n", processamento.trabalhoAtual);
         }
-        System.out.printf("rbcount[%d,%d,%d,%d]=%d ", processamento.rbcount[0], processamento.rbcount[1], processamento.rbcount[2], processamento.rbcount[3], (processamento.rbcount[0] + processamento.rbcount[1] + processamento.rbcount[2] + processamento.rbcount[3]));
+        System.out.printf("rbcount[%d,%d,%d,%d]=%d ", processamento.rbcount[0], processamento.rbcount[1],
+                processamento.rbcount[2], processamento.rbcount[3],
+                (processamento.rbcount[0] + processamento.rbcount[1]
+                + processamento.rbcount[2] + processamento.rbcount[3]));
         System.out.println(processamento.getEstrategiaString());
         UtilTmp.printCurrentItme();
 
@@ -290,54 +293,42 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     void sortAndRanking(Processamento processamento) {
+        if (processamento.rankearOpcoes) {
+            rankearOpcoes(processamento);
+        }
+    }
+
+    public void rankearOpcoes(Processamento processamento) throws RuntimeException {
         Integer[] bfs = processamento.bfsalg.bfs;
         int posicaoAtual = processamento.getPosicaoAtualAbsoluta();
         Collection<Integer> opcoesPassadas = processamento.getCaminhoPercorridoPosicaoAtual();
-        if (processamento.rankearOpcoes) {
-            Map<Integer, List<Integer>> rankingAtual = processamento.historicoRanking.getOrDefault(posicaoAtual, new HashMap<>());
-            processamento.historicoRanking.putIfAbsent(posicaoAtual, rankingAtual);
-            if (opcoesPassadas.isEmpty() || rankingAtual.isEmpty()) {
-                processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
-                rankingAtual.clear();
-                int i = 0;
+        Map<Integer, List<Integer>> rankingAtual = processamento.historicoRanking.getOrDefault(posicaoAtual, new HashMap<>());
+        processamento.historicoRanking.putIfAbsent(posicaoAtual, rankingAtual);
+        if (opcoesPassadas.isEmpty() || rankingAtual.isEmpty()) {
+            processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
+            rankingAtual.clear();
+            int i = 0;
 //                for (i = 0; i < processamento.ranking.length; i++) {
 //                    processamento.ranking[i] = 0;
 //                }
-                for (i = 0; i < processamento.getOpcoesPossiveisAtuais().size(); i++) {
-                    Integer val = processamento.getOpcoesPossiveisAtuais().get(i);
-                    if (bfs[val] == 4) {
-                        processamento.bfsRanking(val);
-//                        processamento.ranking[val] = processamento.bfsRanking.depthcount[4];
-                        List<Integer> listRankingVal = rankingAtual.get(val);
-                        if (listRankingVal == null) {
-                            listRankingVal = new ArrayList<>(4);
-                            rankingAtual.put(val, listRankingVal);
-                        } else {
-                            listRankingVal.clear();
-                        }
-                        listRankingVal.add(processamento.bfsRanking.depthcount[4]);
-                        listRankingVal.add(-processamento.bfsRanking.depthcount[3]);
-                        listRankingVal.add(processamento.bfsRanking.depthcount[2]);
-                        if (processamento.rankearSegundaOpcoes) {
-                            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val, processamento.trabalhoAtual);
-                            int f = processamento.bfsRankingSegundaOpcao.depthcount[3];
-                            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val);
-                            listRankingVal.add(processamento.bfsRankingSegundaOpcao.depthcount[3] - f);
-                        }
-//                        listRankingVal.add(bfsRanking.depthcount[1]);
-//                    ranking[val] = bfsRanking.depthcount[4] + bfsRanking.depthcount[3];
-//                    ranking[val] = bfsRanking.depthcount[4] * 1000 + bfsRanking.depthcount[3];
-//                    ranking[val] = bfsRanking.depthcount[3];
-//                    ranking[val] = bfsRanking.depthcount[4] * 3000 + bfsRanking.depthcount[3] * 100 + bfsRanking.depthcount[3];
-                    } else {
-                        break;
+            for (i = 0; i < processamento.getOpcoesPossiveisAtuais().size(); i++) {
+                Integer val = processamento.getOpcoesPossiveisAtuais().get(i);
+                if (bfs[val] == 4) {
+                    List<Integer> listRankingVal = rankingAtual.get(val);
+                    if (listRankingVal == null) {
+                        listRankingVal = new ArrayList<>(4);
+                        rankingAtual.put(val, listRankingVal);
                     }
+                    rankearOpcao(processamento, posicaoAtual, val);
+                } else {
+                    break;
+                }
 //                if (trabalhoAtual.equals(18) && (val.equals(22) || val.equals(23))) {
 //                    if (trabalhoAtual.equals(18)) {
 //                    if (verboseRankingOption || posicaoAtual == 9505) {
-                    if (processamento.verboseRankingOption) {
-                        System.out.printf("Ranking (%4d,%4d): ", val, processamento.trabalhoAtual);
-                        UtilTmp.printArray(processamento.bfsRanking.depthcount);
+                if (processamento.verboseRankingOption) {
+                    System.out.printf("Ranking (%4d,%4d): ", val, processamento.trabalhoAtual);
+                    UtilTmp.printArray(processamento.bfsRanking.depthcount);
 //                        if (rankearSegundaOpcoes) {
 //                            int f = processamento.bfsRankingSegundaOpcao.depthcount[3];
 //                            UtilTmp.printArray(processamento.bfsRankingSegundaOpcao.depthcount);
@@ -345,22 +336,37 @@ public class StrategyEstagnacao implements IGenStrategy {
 //                            UtilTmp.printArray(processamento.bfsRankingSegundaOpcao.depthcount);
 //                            listRankingVal.add(processamento.bfsRankingSegundaOpcao.depthcount[3]-f);
 //                        }
-                    }
+                }
 //                    }
-                }
-//                opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
-                processamento.getOpcoesPossiveisAtuais().subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
-            } else {
-                List<Integer> subList = null;
-                try {
-//                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
-                    subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
-                    subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
-                    //Reaproveintando ranking anteriormente calculado
-                } catch (RuntimeException e) {
-                    throw e;
-                }
             }
+//                opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
+            processamento.getOpcoesPossiveisAtuais().subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
+        } else {
+            List<Integer> subList = null;
+            try {
+//                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
+                subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
+                subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
+//Reaproveintando ranking anteriormente calculado
+            } catch (RuntimeException e) {
+                throw e;
+            }
+        }
+    }
+
+    public void rankearOpcao(Processamento processamento, Integer posicaoAtual, Integer val) {
+        processamento.bfsRanking(val);
+        List<Integer> listRankingVal = processamento.historicoRanking.get(posicaoAtual).get(val);
+//       
+        listRankingVal.clear();
+        listRankingVal.add(processamento.bfsRanking.depthcount[4]);
+        listRankingVal.add(-processamento.bfsRanking.depthcount[3]);
+        listRankingVal.add(processamento.bfsRanking.depthcount[2]);
+        if (processamento.rankearSegundaOpcoes) {
+            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val, processamento.trabalhoAtual);
+            int f = processamento.bfsRankingSegundaOpcao.depthcount[3];
+            processamento.bfsRankingSegundaOpcao.bfsRanking(processamento.insumo, val);
+            listRankingVal.add(processamento.bfsRankingSegundaOpcao.depthcount[3] - f);
         }
     }
 
