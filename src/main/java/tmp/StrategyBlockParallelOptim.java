@@ -73,7 +73,7 @@ public class StrategyBlockParallelOptim
                     }
                 }
             }
-            System.out.println();
+//            System.out.println();
         }
         int maxthreads = (int) (Runtime.getRuntime().availableProcessors() * 1.5);
 
