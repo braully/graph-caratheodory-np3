@@ -25,18 +25,20 @@ public class StrategyBlock
 
         for (Integer e : processamento.trabalhoPorFazer) {
             List<Integer> at = processamento.caminhosPossiveis.get(e);
-            if (!at.equals(ant)) {
-                count++;
-                blocos.put(count, new LinkedList<>());
-                if (processamento.vebosePossibilidadesIniciais) {
-                    System.out.println("----------------------------------------------------------------------------------------------");
+            if (at != null && !at.isEmpty()) {
+                if (!at.equals(ant)) {
+                    count++;
+                    blocos.put(count, new LinkedList<>());
+                    if (processamento.vebosePossibilidadesIniciais) {
+                        System.out.println("----------------------------------------------------------------------------------------------");
+                    }
                 }
+                blocos.get(count).add(e);
+                if (processamento.vebosePossibilidadesIniciais) {
+                    System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
+                }
+                ant = at;
             }
-            blocos.get(count).add(e);
-            if (processamento.vebosePossibilidadesIniciais) {
-                System.out.printf("%d|%d|=%s\n", e, at.size(), at.toString());
-            }
-            ant = at;
         }
 //        blocos.pollLastEntry();
         processarBlocos(blocos, processamento);

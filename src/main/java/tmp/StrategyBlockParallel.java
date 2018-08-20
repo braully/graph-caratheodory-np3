@@ -2,11 +2,9 @@ package tmp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 public class StrategyBlockParallel
@@ -18,7 +16,8 @@ public class StrategyBlockParallel
     }
 
     @Override
-    public void processarBlocos(TreeMap<Integer, LinkedList<Integer>> blocos, Processamento processamento) throws IllegalStateException {
+    public void processarBlocos(TreeMap<Integer, LinkedList<Integer>> blocos,
+            Processamento processamento) throws IllegalStateException {
         Map<Integer, List<Integer>> blocksBySize = new HashMap<>();
         Integer great = 0;
         for (Map.Entry<Integer, LinkedList<Integer>> es : blocos.entrySet()) {
@@ -32,7 +31,9 @@ public class StrategyBlockParallel
         }
 
         System.out.println(" " + blocos.size() + " Blocos ");
-        System.out.println(blocksBySize.get(great).size() + " blocos de tamanho " + great + " serão processados");
+        System.out.println(blocksBySize.get(great).size()
+                + " blocos de tamanho " + great
+                + " serão processados");
 
         UtilTmp.printCurrentItme();
         /* */
