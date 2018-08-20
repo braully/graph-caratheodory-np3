@@ -56,7 +56,7 @@ public class StrategyBlockParallelOptim
             for (Integer v : bloco) {
                 blockset.addAll(processamento.caminhosPossiveis.get(v));
             }
-            System.out.print("Similaridade " + bloco + ": ");
+//            System.out.print("Similaridade " + bloco + ": ");
             for (Integer j = 0; j < numThreads; j++) {
                 Integer idxBlocoj = blocosPraProcessar.get(j);
                 LinkedList<Integer> blocoj = blocos.get(idxBlocoj);
@@ -66,8 +66,8 @@ public class StrategyBlockParallelOptim
                 }
                 if (!tmpblockset.isEmpty()) {
                     tmpblockset.retainAll(blockset);
-                    System.out.print(" ");
-                    System.out.print(tmpblockset.size());
+//                    System.out.print(" ");
+//                    System.out.print(tmpblockset.size());
                     if (tmpblockset.size() == 0) {
                         concorrencia.get(idxBloco).add(idxBlocoj);
                     }
