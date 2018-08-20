@@ -291,13 +291,13 @@ public class StrategyEstagnacao implements IGenStrategy {
 
     void sortAndRanking(Processamento processamento) {
         Integer[] bfs = processamento.bfsalg.bfs;
-        processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
         int posicaoAtual = processamento.getPosicaoAtualAbsoluta();
         Collection<Integer> opcoesPassadas = processamento.getCaminhoPercorridoPosicaoAtual();
         if (processamento.rankearOpcoes) {
             Map<Integer, List<Integer>> rankingAtual = processamento.historicoRanking.getOrDefault(posicaoAtual, new HashMap<>());
             processamento.historicoRanking.putIfAbsent(posicaoAtual, rankingAtual);
             if (opcoesPassadas.isEmpty() || rankingAtual.isEmpty()) {
+                processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
                 rankingAtual.clear();
                 int i = 0;
 //                for (i = 0; i < processamento.ranking.length; i++) {
@@ -351,10 +351,15 @@ public class StrategyEstagnacao implements IGenStrategy {
 //                opcoesPossiveis.subList(0, i).sort(comparatorProfundidade.setBfs(ranking));
                 processamento.getOpcoesPossiveisAtuais().subList(0, i).sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
             } else {
+                List<Integer> subList = null;
+                try {
 //                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
-                List<Integer> subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
-                subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
-                //Reaproveintando ranking anteriormente calculado
+                    subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
+                    subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
+                    //Reaproveintando ranking anteriormente calculado
+                } catch (RuntimeException e) {
+                    throw e;
+                }
             }
         }
     }

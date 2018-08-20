@@ -145,6 +145,9 @@ public class PipeGraph {
         if (cmd.hasOption("uncompress-possibility")) {
             processamento.compressPossiblidades = false;
         }
+        if (cmd.hasOption("verbrank")) {
+            processamento.verboseRankingOption = true;
+        }
 
         String strfailcom = cmd.getOptionValue("commit-fail");
         if (strfailcom != null && !strfailcom.isEmpty()) {
