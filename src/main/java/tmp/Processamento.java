@@ -69,6 +69,7 @@ public class Processamento {
     Map<Integer, Map<Integer, List<Integer>>> historicoRanking = new TreeMap<>();
 //    LinkedList<Integer> edegesAdded = new LinkedList<>();
     Map<Integer, TreeMap<Integer, Collection<Integer>>> pendencia = new HashMap<>();
+    Map<Integer, BFSTmp> rankingTmp = new HashMap<>();
 
     int numArestasIniciais;
     int numVertices;
@@ -87,7 +88,9 @@ public class Processamento {
 
     /* */
     public String getEstrategiaString() {
-        return (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f") + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff") + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
+        return (rankearSegundaOpcoes ? "rsot" : "rsof") + "-" + (rankearOpcoes ? "rt0t" : "rt0f")
+                + rankearOpcoesProfundidade + "-" + (ordenarTrabalhoPorFazerPorPrimeiraOpcao ? "opft" : "otpff")
+                + "-" + (descartarOpcoesNaoOptimais ? "dnot" : "dnof") + "-" + (anteciparVazio ? "avt" : "avf");
     }
 
     void loadGraph(String inputFilePath) {
@@ -315,6 +318,35 @@ public class Processamento {
                 }
             }
         }
+        UndirectedSparseGraphTO insumoTmp = sanitizarVertices(verticeSanitizar);
+        System.out.println("grafo sanitizado");
+        System.out.println("reecheck");
+        recheckPossibilities(insumoTmp);
+        System.out.println("redesing graph");
+        this.insumo = insumoTmp;
+        resincTrabalhosPorFazer();
+        this.printGraphCount();
+    }
+
+    void stripIncompleteVertices() {
+        System.out.println("strip grafo");
+        TreeSet<Integer> verticeSanitizar = new TreeSet<>();
+        for (Integer v : vertices) {
+            if (!verticeComplete(v)) {
+                verticeSanitizar.add(v);
+            }
+        }
+        UndirectedSparseGraphTO insumoTmp = sanitizarVertices(verticeSanitizar);
+        System.out.println("grafo stripe");
+        System.out.println("reecheck");
+        recheckPossibilities(insumoTmp);
+        System.out.println("redesing graph");
+        this.insumo = insumoTmp;
+        resincTrabalhosPorFazer();
+        this.printGraphCount();
+    }
+
+    public UndirectedSparseGraphTO sanitizarVertices(TreeSet<Integer> verticeSanitizar) throws IllegalStateException {
         UndirectedSparseGraphTO insumoTmp = insumo.clone();
         for (Integer v : verticeSanitizar) {
             System.out.println("Sanitizando vertice " + v);
@@ -338,13 +370,7 @@ public class Processamento {
                 }
             }
         }
-        System.out.println("grafo sanitizado");
-        System.out.println("reecheck");
-        recheckPossibilities(insumoTmp);
-        System.out.println("redesing graph");
-        this.insumo = insumoTmp;
-        resincTrabalhosPorFazer();
-        this.printGraphCount();
+        return insumoTmp;
     }
 
     void printGraphCount() {
@@ -613,8 +639,14 @@ public class Processamento {
         Object edge = insumo.addEdge(trabalhoAtual, val);
         if (edge != null) {
             for (Integer v : trabalhoPorFazer) {
-                bfsRankingSegundaOpcao.bfsRanking(insumo, v);
-                bfsRanking.incDepthcount(bfsRankingSegundaOpcao.depthcount);
+                BFSTmp bfstmp = rankingTmp.get(v);
+                if (bfstmp == null) {
+                    rankingTmp.put(v, new BFSTmp(numVertices));
+                }
+            }
+            trabalhoPorFazer.parallelStream().forEach(v -> rankingTmp.get(v).bfsRanking(insumo, v));
+            for (Integer v : trabalhoPorFazer) {
+                bfsRanking.incDepthcount(rankingTmp.get(v).depthcount);
             }
             insumo.removeEdge(edge);
         }
@@ -657,4 +689,5 @@ public class Processamento {
         }
         this.mergeProcessamentos(processamentos);
     }
+
 }

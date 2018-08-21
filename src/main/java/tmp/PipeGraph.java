@@ -71,6 +71,9 @@ public class PipeGraph {
         Option sanitize = new Option("s", "sanitize", false, "sanitizar grafo");
         options.addOption(sanitize);
 
+        Option strip = new Option("si", "strip-incomplete", false, "Strip incomplete vertices");
+        options.addOption(strip);
+
         Option output = new Option("o", "output", true, "output file");
         output.setRequired(false);
         options.addOption(output);
@@ -224,6 +227,12 @@ public class PipeGraph {
             processamento.sanitizeGraphPossibility();
             System.out.println("Recheck possibility ");
             processamento.recheckPossibilities();
+            System.out.println("Graph...Ok");
+        }
+
+        if (cmd.hasOption("strip-incomplete")) {
+            System.out.println("Strip incomplete vertices");
+            processamento.stripIncompleteVertices();
             System.out.println("Graph...Ok");
         }
 
