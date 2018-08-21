@@ -345,6 +345,8 @@ public class StrategyEstagnacao implements IGenStrategy {
             List<Integer> subList = null;
             try {
 //                opcoesPossiveis.subList(0, rankingAtual.size()).sort(comparatorProfundidade.setMap(rankingAtual));
+//                processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
+                processamento.getOpcoesPossiveisAtuais().sort(getComparatorProfundidade(processamento).setBfs(bfs));
                 subList = processamento.getOpcoesPossiveisAtuais().subList(0, rankingAtual.size());
                 subList.sort(getComparatorProfundidade(processamento).setMapList(rankingAtual));
 //Reaproveintando ranking anteriormente calculado
