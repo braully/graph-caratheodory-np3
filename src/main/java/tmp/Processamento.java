@@ -635,18 +635,23 @@ public class Processamento {
 
     void bfsRankingTotal(Integer val) {
         bfsRanking.clearRanking();
+        bfsRanking.labelDistances(insumo, trabalhoAtual);
 //        bfsRanking.bfsRanking(insumo, trabalhoAtual, val);
         Object edge = insumo.addEdge(trabalhoAtual, val);
         if (edge != null) {
             for (Integer v : trabalhoPorFazer) {
-                BFSTmp bfstmp = rankingTmp.get(v);
-                if (bfstmp == null) {
-                    rankingTmp.put(v, new BFSTmp(numVertices));
+                if (bfsRanking.bfs[v] == 4) {
+                    BFSTmp bfstmp = rankingTmp.get(v);
+                    if (bfstmp == null) {
+                        rankingTmp.put(v, new BFSTmp(numVertices));
+                    }
                 }
             }
-            trabalhoPorFazer.parallelStream().forEach(v -> rankingTmp.get(v).bfsRanking(insumo, v));
+            trabalhoPorFazer.parallelStream().filter(v -> bfsRanking.bfs[v] == 4).forEach(v -> rankingTmp.get(v).bfsRanking(insumo, v));
             for (Integer v : trabalhoPorFazer) {
-                bfsRanking.incDepthcount(rankingTmp.get(v).depthcount);
+                if (bfsRanking.bfs[v] == 4) {
+                    bfsRanking.incDepthcount(rankingTmp.get(v).depthcount);
+                }
             }
             insumo.removeEdge(edge);
         }
