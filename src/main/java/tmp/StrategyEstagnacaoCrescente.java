@@ -160,7 +160,7 @@ public class StrategyEstagnacaoCrescente implements IGenStrategy {
             condicao1 = dv <= contRemanescente;
 
             if (!condicao1 && processamento.verbose) {
-                System.out.printf("*[%d](%d,%d -> rdv=%d 4c=%d) ", posicao, processamento.trabalhoAtual, melhorOpcao, dv, processamento.bfsalg.depthcount[4]);
+                System.out.printf("*[%d](%d,%d -> rdv=%d 4c=%d) ", posicao, processamento.trabalhoAtual, melhorOpcao, dv, contRemanescente);
             }
             if (!condicao1) {
                 processamento.rbcount[2]++;
