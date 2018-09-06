@@ -153,6 +153,8 @@ public class StrategyEstagnacaoCrescente implements IGenStrategy {
                         contRemanescente++;
                     }
                 }
+            } else {
+                contRemanescente = processamento.bfsalg.depthcount[4];
             }
 //            condicao1 = dv <= processamento.bfsalg.depthcount[4];
             condicao1 = dv <= contRemanescente;
