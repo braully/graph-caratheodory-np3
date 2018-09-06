@@ -695,4 +695,17 @@ public class Processamento {
         this.mergeProcessamentos(processamentos);
     }
 
+    Pair<Integer> getEdgePosicao(int i) {
+        Pair<Integer> endpoints = insumo.getEndpoints(i);
+        return endpoints;
+    }
+
+    Integer getLastAdd() {
+        Integer lastAdd = null;
+        Pair<Integer> edgePosicao = getEdgePosicao(getPosicaoAtualAbsoluta() - 1);
+        if (edgePosicao != null && edgePosicao.getFirst().equals(trabalhoAtual)) {
+            lastAdd = edgePosicao.getSecond();
+        }
+        return lastAdd;
+    }
 }

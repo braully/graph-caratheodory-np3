@@ -26,7 +26,8 @@ public class PipeGraph {
         new StrategyBlockSeq(),
         new StrategyBlockParallel(),
         new StrategyBlockParallelOptim(),
-        new StrategyEstagnacaoLenta()
+        new StrategyEstagnacaoLenta(),
+        new StrategyEstagnacaoCrescente()
     };
 
     public static void main(String... args) {

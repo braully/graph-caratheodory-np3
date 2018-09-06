@@ -116,7 +116,7 @@ public class GraphSkelTest extends TestCase {
 
         int[] comb = getCombincaoInterna(k);
         int idx = 0;
-
+        List post = new ArrayList();
         for (int j = 0; j < k - 1; j++) {
             int u = j;
             int v = j + k - 1;
@@ -128,15 +128,17 @@ public class GraphSkelTest extends TestCase {
 //                if (j == 0) {
 //                    System.out.printf("%d-%d,", offset, join);
 //                }
-                System.out.printf("%d-%d,", offset, join + comb[idx]);
+//                System.out.printf("*%d-%d,", offset, join + comb[idx]);
                 System.out.printf("%d-%d,", offset++, ++tv);
                 System.out.printf("%d-%d,", v, offset);
 //                if (j == 0) {
 //                    System.out.printf("%d-%d,", maxvert, join);
 //                    System.out.printf("%d-%d,", offset, join++);
 //                }
-                System.out.printf("%d-%d,", maxvert, join + comb[idx]);
-                System.out.printf("%d-%d,", offset, join + comb[idx++]);
+//                System.out.printf("**%d-%d,", maxvert, join + comb[idx]);
+                post.add(String.format("**%d-%d", maxvert, join + comb[idx]));
+//                System.out.printf("**%d-%d,", maxvert, join + comb[idx]);
+//                System.out.printf("*%d-%d,", offset, join + comb[idx++]);
                 System.out.printf("%d-%d,", offset++, ++tu);
             }
             System.out.println();
@@ -152,6 +154,8 @@ public class GraphSkelTest extends TestCase {
             System.out.printf("%d-%d,", join + 1, v);
         }
         System.out.println();
+
+        System.out.println(post);
     }
 
     private boolean exclude(int[] arrup, int[] arrdown, int[] arr, int pos, int val) {
