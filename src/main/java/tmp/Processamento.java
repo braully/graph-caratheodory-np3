@@ -614,9 +614,11 @@ public class Processamento {
         caminhoPercorrido.get(posicaoAtual).clear();
         Integer ultimoPasso = posicaoAtual - 1;
         Pair<Integer> desfazer = insumo.getEndpoints(ultimoPasso);
+
         if (desfazer == null) {
             throw new IllegalStateException("Vertice falhou na primeira posição " + trabalhoAtual + " " + melhorOpcaoLocal + " " + posicaoAtual);
         }
+
         //caminhoPercorrido.get(ultimoPasso).add(desfazer.getSecond());
         insumo.removeEdge(ultimoPasso);
         if (!trabalhoPorFazer.contains(desfazer.getSecond())) {
@@ -717,4 +719,5 @@ public class Processamento {
         }
         return ranking;
     }
+
 }

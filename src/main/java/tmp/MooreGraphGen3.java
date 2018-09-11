@@ -29,7 +29,7 @@ public class MooreGraphGen3 {
     private static Queue<Integer> queue = new LinkedList<Integer>();
 
     public static void main(String... args) {
-        K = 57;
+        K = 7;
 
         List<Integer> startArray = new ArrayList<>();
 

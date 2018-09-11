@@ -16,9 +16,15 @@ import java.util.Map;
 public class ComparatorTrabalhoPorFazer implements Comparator<Integer> {
 
     Map<Integer, List<Integer>> caminhosPossiveis;
+    boolean aprofundar = true;
 
     public ComparatorTrabalhoPorFazer(Map<Integer, List<Integer>> caminhosPossiveis) {
         this.caminhosPossiveis = caminhosPossiveis;
+    }
+
+    public ComparatorTrabalhoPorFazer(Map<Integer, List<Integer>> caminhosPossiveis, boolean aprofundar) {
+        this.caminhosPossiveis = caminhosPossiveis;
+        this.aprofundar = aprofundar;
     }
 
     @Override
@@ -26,7 +32,7 @@ public class ComparatorTrabalhoPorFazer implements Comparator<Integer> {
         int ret = 0;
         ret = Integer.compare(caminhosPossiveis.get(t1).size(), caminhosPossiveis.get(t).size());
         int cont = 0;
-        while (ret == 0 && cont < caminhosPossiveis.get(t).size()) {
+        while (aprofundar && ret == 0 && cont < caminhosPossiveis.get(t).size()) {
             ret = Integer.compare(caminhosPossiveis.get(t).get(cont), caminhosPossiveis.get(t1).get(cont));
             cont++;
         }
