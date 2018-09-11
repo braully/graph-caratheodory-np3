@@ -10,7 +10,7 @@ public class StrategyBlock
         implements IGenStrategy {
 
     public String getName() {
-        return "Gerar em Bloco";
+        return "Estangar em Bloco";
     }
 
     public void generateGraph(Processamento processamento) {

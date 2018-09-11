@@ -12,7 +12,7 @@ public class StrategyBlockParallel
         implements IGenStrategy {
 
     public String getName() {
-        return "Gerar em Bloco Paralelamente";
+        return "Estagnar em Bloco Paralelamente";
     }
 
     @Override

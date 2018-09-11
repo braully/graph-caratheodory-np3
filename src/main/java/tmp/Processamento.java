@@ -708,4 +708,13 @@ public class Processamento {
         }
         return lastAdd;
     }
+
+    Integer getRankingHistorico(int posicao, Integer melhorOpcao) {
+        Integer ranking = null;
+        List<Integer> get = historicoRanking.get(posicao).get(melhorOpcao);
+        if (get != null) {
+            ranking = get.get(0);
+        }
+        return ranking;
+    }
 }

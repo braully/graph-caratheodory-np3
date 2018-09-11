@@ -14,7 +14,7 @@ public class StrategyBlockParallelOptim
         implements IGenStrategy {
 
     public String getName() {
-        return "Gerar em Bloco Paralelamente Optimin";
+        return "Estagnar em Bloco Paralelamente Optimin";
     }
 
     @Override

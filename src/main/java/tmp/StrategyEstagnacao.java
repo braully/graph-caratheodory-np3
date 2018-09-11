@@ -63,7 +63,7 @@ public class StrategyEstagnacao implements IGenStrategy {
             processamento.melhorOpcaoLocal = avaliarMelhorOpcao(processamento);
             adicionarMellhorOpcao(processamento);
         }
-        if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
+        if (trabalhoAcabou(processamento, processamento.trabalhoAtual)) {
             processamento.trabalhoPorFazer.remove(processamento.trabalhoAtual);
         }
     }
@@ -96,10 +96,13 @@ public class StrategyEstagnacao implements IGenStrategy {
     void adicionarMellhorOpcao(Processamento processamento) {
         //boolean fakeProblem = trabalhoAtual.equals(13) && insumo.degree(13) == K - 1;
         //if (opcaoViavel(insumo, melhorOpcaoLocal) && !fakeProblem) {
-        if (opcaoViavel(processamento)) {
-            Integer posicaoAtual = processamento.getPosicaoAtualAbsoluta();
-            Collection<Integer> subcaminho = processamento.caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
+        Integer posicaoAtual = processamento.getPosicaoAtualAbsoluta();
+        Collection<Integer> subcaminho = processamento.caminhoPercorrido.getOrDefault(posicaoAtual, new ArrayList<>());
+        processamento.caminhoPercorrido.putIfAbsent(posicaoAtual, subcaminho);
+        if (processamento.melhorOpcaoLocal != null) {
             subcaminho.add(processamento.melhorOpcaoLocal);
+        }
+        if (opcaoValida(processamento)) {
             if (processamento.verticeComplete(processamento.melhorOpcaoLocal)) {
                 throw new IllegalStateException("vertice statured " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
             }
@@ -107,7 +110,6 @@ public class StrategyEstagnacao implements IGenStrategy {
             if (!aresta.equals(posicaoAtual)) {
                 throw new IllegalStateException("Edge not added: " + posicaoAtual + " " + processamento.trabalhoAtual + " " + processamento.melhorOpcaoLocal);
             }
-            processamento.caminhoPercorrido.putIfAbsent(aresta, subcaminho);
             if (trabalhoAcabou(processamento, processamento.melhorOpcaoLocal)) {
                 processamento.trabalhoPorFazer.remove(processamento.melhorOpcaoLocal);
             }
@@ -117,54 +119,19 @@ public class StrategyEstagnacao implements IGenStrategy {
         }
     }
 
-    /* */
-    void verboseInicioEtapa(Processamento processamento) {
-//        System.out.print("Start trabalho: ");
-//        System.out.println(processamento.trabalhoAtual);
-//        if (falhaInCommitCount) {
-//            bfsalg.labelDistances(insumo, trabalhoAtual);
-//            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
-//            for (Integer o : opcoesPossiveis) {
-//                if (bfsalg.getDistance(insumo, o) == 1) {
-//                    System.out.print('x');
-//                } else if (bfsalg.getDistance(insumo, o) == 4) {
-//                    System.out.print('4');
-//                } else {
-//                    System.out.print(' ');
-//                }
-//            }
-//            System.out.print("]\n");
-//        }
-    }
-
-    boolean opcaoViavel(Processamento processamento) {
+    private boolean posicaoTemMaisOpcoes(Processamento processamento) {
+//        return false;
         Integer melhorOpcao = processamento.melhorOpcaoLocal;
-
-        if (!processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual).equals(0)) {
-            throw new IllegalStateException("Etado do bfs incorreto para" + processamento.trabalhoAtual + " " + processamento.getPosicaoAtualAbsoluta());
-        }
-
-        if (melhorOpcao == null) {
-            processamento.rbcount[0]++;
-            if (processamento.verbose) {
-                System.out.println("melhor opçao é nula");
-            }
-            return false;
-        }
-
-//        if (trabalhoAtual.equals(113)) {
+        Integer posicao = processamento.getPosicaoAtualAbsoluta();
+//
+//        if (melhorOpcao == null) {
+//            processamento.rbcount[0]++;
+//            if (processamento.verbose) {
+//                System.out.println("melhor opçao é nula");
+//            }
 //            return false;
 //        }
-        int posicao = processamento.getPosicaoAtualAbsoluta();
-        int distanciaMelhorOpcao = processamento.bfsalg.getDistance(processamento.insumo, melhorOpcao);
-        if (distanciaMelhorOpcao < 4) {
-            processamento.rbcount[1]++;
-            if (processamento.verbose) {
-                System.out.println("cintura inadequada");
-            }
-            return false;
-        }
-
+//
         if (processamento.anteciparVazio && processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual) == 0) {
             boolean condicao1 = true;
             int dv = processamento.getDvTrabalhoAtual();
@@ -187,6 +154,84 @@ public class StrategyEstagnacao implements IGenStrategy {
                     return false;
                 }
             }
+        }
+        return true;
+    }
+
+    /* */
+    void verboseInicioEtapa(Processamento processamento) {
+//        System.out.print("Start trabalho: ");
+//        System.out.println(processamento.trabalhoAtual);
+//        if (falhaInCommitCount) {
+//            bfsalg.labelDistances(insumo, trabalhoAtual);
+//            System.out.printf("\nbfs-map-ini[%4d]: [", trabalhoAtual);
+//            for (Integer o : opcoesPossiveis) {
+//                if (bfsalg.getDistance(insumo, o) == 1) {
+//                    System.out.print('x');
+//                } else if (bfsalg.getDistance(insumo, o) == 4) {
+//                    System.out.print('4');
+//                } else {
+//                    System.out.print(' ');
+//                }
+//            }
+//            System.out.print("]\n");
+//        }
+    }
+
+    boolean opcaoValida(Processamento processamento) {
+        Integer melhorOpcao = processamento.melhorOpcaoLocal;
+
+        if (!processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual).equals(0)) {
+            throw new IllegalStateException("Etado do bfs incorreto para" + processamento.trabalhoAtual + " " + processamento.getPosicaoAtualAbsoluta());
+        }
+
+        if (melhorOpcao == null) {
+            processamento.rbcount[0]++;
+            if (processamento.verbose) {
+                System.out.println("melhor opçao é nula");
+            }
+            return false;
+        }
+
+//        if (trabalhoAtual.equals(113)) {
+//            return false;
+//        }
+        int posicao = processamento.getPosicaoAtualAbsoluta();
+
+        if (processamento.anteciparVazio && processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual) == 0) {
+            boolean condicao1 = true;
+            int dv = processamento.getDvTrabalhoAtual();
+            condicao1 = dv <= processamento.bfsalg.depthcount[4];
+            if (!condicao1 && processamento.verbose) {
+                System.out.printf("*[%d](%d,%d -> rdv=%d 4c=%d) ", posicao, processamento.trabalhoAtual, melhorOpcao, dv, processamento.bfsalg.depthcount[4]);
+            }
+            if (!condicao1) {
+                processamento.rbcount[2]++;
+                return false;
+            }
+        }
+        if (processamento.descartarOpcoesNaoOptimais && !processamento.caminhoPercorrido.get(posicao).isEmpty()) {
+            Integer escolhaAnterior = ((List<Integer>) processamento.caminhoPercorrido.get(posicao)).get(0);
+            List<Integer> rankingAnterior = processamento.historicoRanking.get(posicao).get(escolhaAnterior);
+            if (rankingAnterior != null) {
+                Integer rankingEscolhaAnterior = rankingAnterior.get(0);
+                Integer rankingOpcaoAtual = processamento.getRankingHistorico(posicao, melhorOpcao);
+                if (rankingEscolhaAnterior != null && rankingOpcaoAtual != null && rankingOpcaoAtual < rankingEscolhaAnterior) {
+                    processamento.rbcount[3]++;
+                    if (processamento.verbose) {
+                        System.out.printf("o[%d](%d,%d) ", posicao, processamento.trabalhoAtual, melhorOpcao);
+                    }
+                    return false;
+                }
+            }
+        }
+        int distanciaMelhorOpcao = processamento.bfsalg.getDistance(processamento.insumo, melhorOpcao);
+        if (distanciaMelhorOpcao < 4) {
+            processamento.rbcount[1]++;
+            if (processamento.verbose) {
+                System.out.printf("g[%d](%d,%d) ", posicao, processamento.trabalhoAtual, melhorOpcao);
+            }
+            return false;
         }
         return true;
     }
@@ -238,7 +283,7 @@ public class StrategyEstagnacao implements IGenStrategy {
     }
 
     void verboseFimEtapa(Processamento processamento) throws IllegalStateException {
-        if (trabalhoAcabou(processamento, processamento.trabalhoAtual) && temFuturo(processamento.trabalhoAtual)) {
+        if (trabalhoAcabou(processamento, processamento.trabalhoAtual)) {
             System.out.printf(".. %d [%d] \n", processamento.trabalhoAtual, processamento.countEdges());
         } else {
             System.out.printf("!! %d \n", processamento.trabalhoAtual);
@@ -388,4 +433,5 @@ public class StrategyEstagnacao implements IGenStrategy {
     Pair<Integer> desfazerUltimoTrabalho(Processamento processamento) {
         return processamento.desfazerUltimoTrabalho();
     }
+
 }
