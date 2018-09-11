@@ -193,11 +193,19 @@ public class StrategyEstagnacao implements IGenStrategy {
             return false;
         }
 
+        int posicao = processamento.getPosicaoAtualAbsoluta();
+        int distanciaMelhorOpcao = processamento.bfsalg.getDistance(processamento.insumo, melhorOpcao);
+        if (distanciaMelhorOpcao < 4) {
+            processamento.rbcount[1]++;
+            if (processamento.verbose) {
+                System.out.printf("g[%d](%d,%d) ", posicao, processamento.trabalhoAtual, melhorOpcao);
+            }
+            return false;
+        }
+
 //        if (trabalhoAtual.equals(113)) {
 //            return false;
 //        }
-        int posicao = processamento.getPosicaoAtualAbsoluta();
-
         if (processamento.anteciparVazio && processamento.bfsalg.getDistance(processamento.insumo, processamento.trabalhoAtual) == 0) {
             boolean condicao1 = true;
             int dv = processamento.getDvTrabalhoAtual();
@@ -224,14 +232,6 @@ public class StrategyEstagnacao implements IGenStrategy {
                     return false;
                 }
             }
-        }
-        int distanciaMelhorOpcao = processamento.bfsalg.getDistance(processamento.insumo, melhorOpcao);
-        if (distanciaMelhorOpcao < 4) {
-            processamento.rbcount[1]++;
-            if (processamento.verbose) {
-                System.out.printf("g[%d](%d,%d) ", posicao, processamento.trabalhoAtual, melhorOpcao);
-            }
-            return false;
         }
         return true;
     }
